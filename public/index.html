@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Juliana Carvalhaes — Liderança Consciente & Meditação Total®</title>
-  <meta name="description" content="Juliana Carvalhaes ensina líderes, empresários e executivos a dominar a mente através da Meditação Total® — liderança da mente para alta performance sustentável.">
-  <meta name="author" content="Juliana Brescovici Carvalhaes">
-  <meta property="og:title" content="Juliana Carvalhaes — Liderança Consciente & Meditação Total®">
-  <meta property="og:description" content="Mentoria Meditação Total®, palestras e retiros para quem lidera com consciência.">
+  <title>Juliana Carvalhaes — Liderança Mental & Performance Sustentável</title>
+  <meta name="description" content="Juliana Carvalhaes ajuda líderes, empresários e grandes mentes a desenvolverem clareza, presença, segurança emocional e performance sustentável.">
+  <meta property="og:title" content="Juliana Carvalhaes — Liderança Mental & Performance Sustentável">
+  <meta property="og:description" content="Organize sua mente para decidir melhor, performar mais e sustentar resultados com clareza.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://institutodemeditacao.com.br">
   <meta property="og:locale" content="pt_BR">
@@ -23,568 +22,215 @@
       --green: #205447;
       --petrol: #13434C;
       --wine: #4B1F2D;
-      --plum: #6E2D5A;
       --graphite: #333333;
-      --green-soft: rgba(32, 84, 71, 0.08);
-      --green-glow: rgba(32, 84, 71, 0.12);
+      --muted: #6B6058;
+      --green-soft: rgba(32,84,71,0.08);
+      --green-glow: rgba(32,84,71,0.12);
       --sand-dark: #D4C9BA;
-      --font-display: 'Playfair Display', Georgia, serif;
-      --font-body: 'Montserrat', 'Helvetica Neue', sans-serif;
-      --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --border: rgba(0,0,0,0.07);
+      --border-light: rgba(255,255,255,0.1);
+      --fd: 'Playfair Display', Georgia, serif;
+      --fb: 'Montserrat', 'Helvetica Neue', sans-serif;
+      --ease: cubic-bezier(0.25,0.46,0.45,0.94);
     }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth;font-size:16px;-webkit-font-smoothing:antialiased}
+    body{font-family:var(--fb);background:var(--white);color:var(--graphite);line-height:1.7;overflow-x:hidden}
+    img{max-width:100%;display:block}
+    a{text-decoration:none;color:inherit}
+    .ctn{max-width:1200px;margin:0 auto;padding:0 clamp(1.5rem,5vw,4rem)}
 
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Labels & Titles */
+    .lbl{font-family:var(--fb);font-size:0.7rem;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--green);margin-bottom:1.25rem;display:flex;align-items:center;gap:0.75rem}
+    .lbl::before{content:'';width:1.5rem;height:1px;background:var(--green)}
+    .st{font-family:var(--fd);font-size:clamp(2rem,4.5vw,3.2rem);font-weight:400;line-height:1.15;margin-bottom:1.5rem}
+    .st em{font-style:italic;color:var(--green)}
 
-    html {
-      scroll-behavior: smooth;
-      font-size: 16px;
-      -webkit-font-smoothing: antialiased;
-    }
+    /* Animations */
+    @keyframes breathe{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.1);opacity:.6}}
+    .rv{opacity:0;transform:translateY(35px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .d1{transition-delay:.12s}.d2{transition-delay:.24s}.d3{transition-delay:.36s}.d4{transition-delay:.48s}
 
-    body {
-      font-family: var(--font-body);
-      background: var(--white);
-      color: var(--graphite);
-      line-height: 1.7;
-      overflow-x: hidden;
-    }
+    /* Nav */
+    .nav{position:fixed;top:0;left:0;width:100%;z-index:1000;padding:1.25rem 0;transition:all .5s var(--ease)}
+    .nav.scrolled{background:rgba(247,246,244,.93);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:.8rem 0;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+    .nav-in{display:flex;align-items:center;justify-content:space-between}
+    .nav-logo{font-family:var(--fd);font-size:1.05rem;font-weight:500;color:var(--graphite)}
+    .nav-logo span{color:var(--green)}
+    .nav-links{display:flex;gap:2rem;list-style:none;align-items:center}
+    .nav-links a{font-size:.72rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--graphite);opacity:.65;transition:opacity .3s;position:relative}
+    .nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--green);transition:width .4s var(--ease)}
+    .nav-links a:hover{opacity:1}
+    .nav-links a:hover::after{width:100%}
+    .nav-cta{font-size:.72rem!important;font-weight:600!important;color:var(--white)!important;opacity:1!important;background:var(--green);padding:.6rem 1.6rem;transition:all .4s var(--ease)!important}
+    .nav-cta:hover{background:var(--petrol);transform:translateY(-1px)}
+    .nav-cta::after{display:none!important}
+    .nav-toggle{display:none;background:0;border:0;cursor:pointer;padding:.5rem;z-index:1001}
+    .nav-toggle span{display:block;width:22px;height:1.5px;background:var(--graphite);margin:5px 0;transition:all .3s}
+    .nav-toggle.active span:nth-child(1){transform:rotate(45deg) translate(5px,4px)}
+    .nav-toggle.active span:nth-child(2){opacity:0}
+    .nav-toggle.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-4px)}
+    .mm{position:fixed;top:0;left:0;width:100%;height:100vh;background:var(--white);z-index:999;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2rem;opacity:0;pointer-events:none;transition:opacity .4s}
+    .mm.open{opacity:1;pointer-events:all}
+    .mm a{font-family:var(--fd);font-size:1.8rem;color:var(--graphite);transition:color .3s}
+    .mm a:hover{color:var(--green)}
 
-    img { max-width: 100%; display: block; }
-    a { text-decoration: none; color: inherit; }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 clamp(1.5rem, 5vw, 4rem);
-    }
-
-    /* ── SECTION LABELS ── */
-    .label {
-      font-family: var(--font-body);
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--green);
-      margin-bottom: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .label::before {
-      content: '';
-      width: 1.5rem;
-      height: 1px;
-      background: var(--green);
-    }
-
-    .stitle {
-      font-family: var(--font-display);
-      font-size: clamp(2rem, 4.5vw, 3.2rem);
-      font-weight: 400;
-      line-height: 1.15;
-      margin-bottom: 1.5rem;
-      color: var(--graphite);
-    }
-
-    .stitle em {
-      font-style: italic;
-      color: var(--green);
-    }
-
-    /* ── ANIMATIONS ── */
-    @keyframes breathe {
-      0%, 100% { transform: scale(1); opacity: 0.3; }
-      50% { transform: scale(1.1); opacity: 0.6; }
-    }
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(35px);
-      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
-    }
-    .reveal.vis { opacity: 1; transform: translateY(0); }
-    .d1 { transition-delay: 0.12s; }
-    .d2 { transition-delay: 0.24s; }
-    .d3 { transition-delay: 0.36s; }
-    .d4 { transition-delay: 0.48s; }
-
-    /* ── NAVIGATION ── */
-    .nav {
-      position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
-      padding: 1.25rem 0;
-      transition: all 0.5s var(--ease);
-    }
-
-    .nav.scrolled {
-      background: rgba(247, 246, 244, 0.93);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      padding: 0.8rem 0;
-      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
-    }
-
-    .nav-inner {
-      display: flex; align-items: center; justify-content: space-between;
-    }
-
-    .nav-logo {
-      font-family: var(--font-display);
-      font-size: 1.05rem;
-      font-weight: 500;
-      color: var(--graphite);
-    }
-
-    .nav-logo span { color: var(--green); }
-
-    .nav-links {
-      display: flex; gap: 2.2rem; list-style: none; align-items: center;
-    }
-
-    .nav-links a {
-      font-size: 0.72rem; font-weight: 500;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--graphite); opacity: 0.65;
-      transition: opacity 0.3s; position: relative;
-    }
-
-    .nav-links a::after {
-      content: ''; position: absolute; bottom: -3px; left: 0;
-      width: 0; height: 1px; background: var(--green);
-      transition: width 0.4s var(--ease);
-    }
-
-    .nav-links a:hover { opacity: 1; }
-    .nav-links a:hover::after { width: 100%; }
-
-    .nav-cta-btn {
-      font-size: 0.72rem !important; font-weight: 600 !important;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--white) !important; opacity: 1 !important;
-      background: var(--green); padding: 0.6rem 1.6rem;
-      transition: all 0.4s var(--ease) !important;
-    }
-
-    .nav-cta-btn:hover {
-      background: var(--petrol);
-      transform: translateY(-1px);
-    }
-
-    .nav-cta-btn::after { display: none !important; }
-
-    .nav-toggle {
-      display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 1001;
-    }
-    .nav-toggle span {
-      display: block; width: 22px; height: 1.5px; background: var(--graphite); margin: 5px 0; transition: all 0.3s;
-    }
-    .nav-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 4px); }
-    .nav-toggle.active span:nth-child(2) { opacity: 0; }
-    .nav-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -4px); }
-
-    .mobile-menu {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-      background: var(--white); z-index: 999;
-      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2rem;
-      opacity: 0; pointer-events: none; transition: opacity 0.4s;
-    }
-    .mobile-menu.open { opacity: 1; pointer-events: all; }
-    .mobile-menu a {
-      font-family: var(--font-display); font-size: 1.8rem; color: var(--graphite); transition: color 0.3s;
-    }
-    .mobile-menu a:hover { color: var(--green); }
+    /* Buttons */
+    .btn-main{display:inline-flex;align-items:center;gap:.6rem;background:var(--green);color:var(--white);padding:.9rem 2rem;font-family:var(--fb);font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;border:0;cursor:pointer;transition:all .4s var(--ease)}
+    .btn-main:hover{background:var(--petrol);transform:translateY(-2px);box-shadow:0 10px 30px rgba(32,84,71,.2)}
+    .btn-main svg{width:15px;height:15px;transition:transform .3s}
+    .btn-main:hover svg{transform:translateX(4px)}
+    .btn-ghost{font-size:.75rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--sand-dark);padding-bottom:3px;transition:color .3s}
+    .btn-ghost:hover{color:var(--green)}
+    .btn-line{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;border:1px solid var(--green);font-family:var(--fb);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green);background:0;cursor:pointer;transition:all .4s var(--ease);white-space:nowrap}
+    .btn-line:hover{background:var(--green);color:var(--white)}
+    .arrow-svg{viewBox:0 0 24 24}
 
     /* ── HERO ── */
-    .hero {
-      min-height: 100vh; display: flex; align-items: center;
-      padding-top: 5rem; position: relative; overflow: hidden;
-    }
-
-    .hero::before {
-      content: ''; position: absolute; top: -15%; right: -8%;
-      width: 550px; height: 550px;
-      background: radial-gradient(circle, var(--green-glow) 0%, transparent 70%);
-      border-radius: 50%; animation: breathe 10s ease-in-out infinite; pointer-events: none;
-    }
-
-    .hero-grid {
-      display: grid; grid-template-columns: 1.1fr 1fr; gap: 4rem; align-items: center;
-    }
-
-    .hero-tag {
-      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase;
-      color: var(--green); margin-bottom: 1.5rem;
-    }
-
-    .hero-title {
-      font-family: var(--font-display); font-size: clamp(2.4rem, 5vw, 3.8rem);
-      font-weight: 400; line-height: 1.12; margin-bottom: 1.75rem;
-    }
-
-    .hero-title em { font-style: italic; color: var(--green); display: block; }
-
-    .hero-sub {
-      font-size: 0.95rem; font-weight: 400; color: #6B6058;
-      max-width: 460px; margin-bottom: 2.5rem; line-height: 1.85;
-    }
-
-    .hero-actions { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
-
-    .btn-main {
-      display: inline-flex; align-items: center; gap: 0.6rem;
-      background: var(--green); color: var(--white);
-      padding: 0.9rem 2rem; font-family: var(--font-body);
-      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-      border: none; cursor: pointer; transition: all 0.4s var(--ease);
-    }
-
-    .btn-main:hover {
-      background: var(--petrol); transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(32, 84, 71, 0.2);
-    }
-
-    .btn-main svg { width: 15px; height: 15px; transition: transform 0.3s; }
-    .btn-main:hover svg { transform: translateX(4px); }
-
-    .btn-ghost {
-      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
-      color: #6B6058; border-bottom: 1px solid var(--sand-dark); padding-bottom: 3px;
-      transition: color 0.3s;
-    }
-    .btn-ghost:hover { color: var(--green); }
-
-    .hero-img-wrap {
-      position: relative;
-      animation: fadeIn 1.2s var(--ease);
-    }
-
-    .hero-img {
-      width: 100%; height: 580px; object-fit: cover; object-position: top center;
-    }
-
-    .hero-accent {
-      position: absolute; top: -16px; right: -16px;
-      width: 100px; height: 100px; border: 1px solid var(--green); opacity: 0.2;
-    }
-
-    .hero-accent-2 {
-      position: absolute; bottom: -12px; left: -12px;
-      width: 70px; height: 70px; background: var(--green-soft);
-    }
-
-    /* ── ABOUT ── */
-    .about { padding: 7rem 0; }
-
-    .about-grid {
-      display: grid; grid-template-columns: 1fr 1.3fr; gap: 4.5rem; align-items: center;
-    }
-
-    .about-img {
-      width: 100%; height: 520px; object-fit: cover; object-position: top center;
-    }
-
-    .about-text p {
-      color: #6B6058; margin-bottom: 1.25rem; font-size: 0.95rem;
-    }
-
-    .about-text p:first-of-type {
-      font-size: 1.02rem; color: var(--graphite);
-    }
-
-    .about-sig {
-      margin-top: 2rem; font-family: var(--font-display);
-      font-size: 1.5rem; font-style: italic; color: var(--green);
-    }
-
-    /* ── CREDENTIALS ── */
-    .creds {
-      background: var(--petrol); color: var(--white); padding: 5.5rem 0;
-    }
-
-    .creds .label { color: var(--sand); }
-    .creds .label::before { background: var(--sand); }
-
-    .creds-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3.5rem;
-    }
-
-    .cred-card {
-      text-align: center; padding: 2.2rem 1.2rem;
-      border: 1px solid rgba(255,255,255,0.1);
-      transition: all 0.4s var(--ease);
-    }
-
-    .cred-card:hover {
-      border-color: rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.04);
-      transform: translateY(-3px);
-    }
-
-    .cred-num {
-      font-family: var(--font-display); font-size: clamp(2.2rem, 3.5vw, 3rem);
-      font-weight: 400; color: var(--sand); line-height: 1; margin-bottom: 0.6rem;
-    }
-
-    .cred-text {
-      font-size: 0.75rem; letter-spacing: 0.03em;
-      color: rgba(255,255,255,0.55); line-height: 1.5;
-    }
-
-    .creds-logos {
-      display: flex; align-items: center; justify-content: center;
-      gap: 2.5rem; flex-wrap: wrap; padding-top: 2.5rem;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .creds-logos-label {
-      font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase;
-      color: rgba(255,255,255,0.4); width: 100%; text-align: center; margin-bottom: 0.25rem;
-    }
-
-    .creds-logos span {
-      font-family: var(--font-display); font-size: 1.05rem; font-weight: 500;
-      color: rgba(255,255,255,0.45); transition: color 0.3s;
-    }
-
-    .creds-logos span:hover { color: rgba(255,255,255,0.8); }
-
-    /* ── SERVICES ── */
-    .services { padding: 7rem 0; }
-
-    .services-header { max-width: 580px; margin-bottom: 3.5rem; }
-    .services-header p { color: #6B6058; font-size: 0.95rem; }
-
-    .svc-item {
-      display: grid; grid-template-columns: 70px 1fr auto; gap: 2rem; align-items: start;
-      padding: 2.5rem 0; border-top: 1px solid rgba(0,0,0,0.07);
-      transition: all 0.35s var(--ease);
-    }
-
-    .svc-item:last-child { border-bottom: 1px solid rgba(0,0,0,0.07); }
-    .svc-item:hover { padding-left: 1rem; }
-
-    .svc-num {
-      font-family: var(--font-display); font-size: 2.2rem; font-weight: 400;
-      color: var(--taupe); line-height: 1;
-    }
-
-    .svc-body h3 {
-      font-family: var(--font-display); font-size: 1.45rem; font-weight: 500; margin-bottom: 0.6rem;
-    }
-
-    .svc-body p { color: #6B6058; max-width: 480px; margin-bottom: 1rem; font-size: 0.9rem; }
-
-    .svc-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-
-    .svc-tag {
-      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-      padding: 0.35rem 0.85rem; border: 1px solid rgba(0,0,0,0.08); color: #6B6058;
-    }
-
-    .svc-cta { align-self: center; }
-
-    .btn-line {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.7rem 1.5rem; border: 1px solid var(--green);
-      font-family: var(--font-body); font-size: 0.7rem; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase; color: var(--green);
-      background: transparent; cursor: pointer; transition: all 0.4s var(--ease); white-space: nowrap;
-    }
-
-    .btn-line:hover { background: var(--green); color: var(--white); }
-
-    /* ── METHOD ── */
-    .method {
-      background: var(--sand); padding: 7rem 0; position: relative; overflow: hidden;
-    }
-
-    .method::after {
-      content: ''; position: absolute; bottom: -180px; left: -80px;
-      width: 450px; height: 450px;
-      background: radial-gradient(circle, var(--green-glow) 0%, transparent 70%);
-      border-radius: 50%; pointer-events: none;
-    }
-
-    .method-center { text-align: center; max-width: 580px; margin: 0 auto 3.5rem; }
-
-    .method-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;
-      position: relative; z-index: 1;
-    }
-
-    .method-card {
-      padding: 2.2rem; background: var(--white);
-      border: 1px solid rgba(0,0,0,0.06);
-      transition: all 0.4s var(--ease);
-    }
-
-    .method-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 16px 50px rgba(0,0,0,0.05);
-      border-color: var(--green);
-    }
-
-    .method-step {
-      font-family: var(--font-display); font-size: 2.5rem; font-weight: 400;
-      color: var(--green); opacity: 0.25; margin-bottom: 1rem; line-height: 1;
-    }
-
-    .method-card h3 {
-      font-family: var(--font-display); font-size: 1.3rem; font-weight: 500; margin-bottom: 0.75rem;
-    }
-
-    .method-card p { color: #6B6058; font-size: 0.88rem; line-height: 1.8; }
-
-    /* ── RESULTS ── */
-    .results { padding: 7rem 0; }
-
-    .results-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-top: 2.5rem;
-    }
-
-    .results-img {
-      width: 100%; height: 480px; object-fit: cover; object-position: top center;
-    }
-
-    .results-list { display: flex; flex-direction: column; gap: 1rem; }
-
-    .result-item {
-      display: flex; align-items: flex-start; gap: 1rem;
-      padding: 0.75rem 0;
-    }
-
-    .result-icon {
-      flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
-      background: var(--green-soft); display: flex; align-items: center; justify-content: center;
-      margin-top: 2px;
-    }
-
-    .result-icon svg { width: 14px; height: 14px; color: var(--green); }
-
-    .result-item p { color: var(--graphite); font-size: 0.9rem; font-weight: 500; }
-
-    /* ── TESTIMONIALS ── */
-    .testimonials {
-      background: var(--petrol); color: var(--white); padding: 6rem 0;
-    }
-
-    .testimonials .label { color: var(--sand); }
-    .testimonials .label::before { background: var(--sand); }
-    .testimonials .stitle { color: var(--white); }
-
-    .test-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2.5rem;
-    }
-
-    .test-card {
-      padding: 2.2rem; border: 1px solid rgba(255,255,255,0.1);
-      transition: all 0.4s var(--ease);
-    }
-
-    .test-card:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.03); }
-
-    .test-q {
-      font-family: var(--font-display); font-size: 2.5rem; color: var(--sand); line-height: 1; margin-bottom: 0.75rem;
-    }
-
-    .test-text {
-      color: rgba(255,255,255,0.7); font-size: 0.88rem; line-height: 1.8;
-      margin-bottom: 1.25rem; font-style: italic;
-    }
-
-    .test-name { font-size: 0.78rem; font-weight: 600; color: var(--white); }
-    .test-role { font-size: 0.7rem; color: rgba(255,255,255,0.45); }
-
-    /* ── MEDIA ── */
-    .media { padding: 7rem 0; }
-
-    .media-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2.5rem;
-    }
-
-    .media-card {
-      display: block; padding: 1.8rem;
-      border: 1px solid rgba(0,0,0,0.07);
-      transition: all 0.4s var(--ease);
-    }
-
-    .media-card:hover {
-      border-color: var(--green); transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-    }
-
-    .media-src {
-      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--green); margin-bottom: 0.6rem;
-    }
-
-    .media-title {
-      font-family: var(--font-display); font-size: 1rem; font-weight: 400; line-height: 1.4;
-    }
-
-    /* ── CTA ── */
-    .cta { padding: 7rem 0; text-align: center; }
-
-    .cta .stitle { max-width: 650px; margin-left: auto; margin-right: auto; }
-
-    .cta p { color: #6B6058; max-width: 460px; margin: 0 auto 2.5rem; font-size: 0.95rem; }
-
-    .cta-row {
-      display: flex; justify-content: center; gap: 1.5rem; align-items: center; flex-wrap: wrap;
-    }
-
-    .cta-email {
-      font-size: 0.82rem; color: #6B6058;
-      border-bottom: 1px solid var(--sand-dark); padding-bottom: 2px;
-    }
+    .hero{min-height:100vh;display:flex;align-items:center;padding-top:5rem;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;top:-15%;right:-8%;width:550px;height:550px;background:radial-gradient(circle,var(--green-glow) 0%,transparent 70%);border-radius:50%;animation:breathe 10s ease-in-out infinite;pointer-events:none}
+    .hero-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:4rem;align-items:center}
+    .hero-tag{font-size:.7rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--green);margin-bottom:1.5rem}
+    .hero h1{font-family:var(--fd);font-size:clamp(2.2rem,4.8vw,3.5rem);font-weight:400;line-height:1.12;margin-bottom:1.75rem}
+    .hero h1 em{font-style:italic;color:var(--green);display:block}
+    .hero-sub{font-size:.95rem;color:var(--muted);max-width:460px;margin-bottom:2.5rem;line-height:1.85}
+    .hero-actions{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap}
+    .hero-img-wrap{position:relative;animation:fadeIn 1.2s var(--ease)}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .hero-img{width:100%;height:580px;object-fit:cover;object-position:top center}
+    .hero-accent{position:absolute;top:-16px;right:-16px;width:100px;height:100px;border:1px solid var(--green);opacity:.2}
+    .hero-accent-2{position:absolute;bottom:-12px;left:-12px;width:70px;height:70px;background:var(--green-soft)}
+
+    /* ── SOBRE ── */
+    .about{padding:7rem 0}
+    .about-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:4.5rem;align-items:center}
+    .about-img{width:100%;height:520px;object-fit:cover;object-position:top center}
+    .about-text p{color:var(--muted);margin-bottom:1.25rem;font-size:.95rem}
+    .about-text p:first-of-type{font-size:1.02rem;color:var(--graphite)}
+    .about-sig{margin-top:2rem;font-family:var(--fd);font-size:1.5rem;font-style:italic;color:var(--green)}
+
+    /* ── TESE ── */
+    .tese{background:var(--petrol);color:var(--white);padding:6rem 0;position:relative;overflow:hidden}
+    .tese::after{content:'';position:absolute;bottom:-200px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(32,84,71,.2) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+    .tese .lbl{color:var(--sand)}.tese .lbl::before{background:var(--sand)}
+    .tese .st{color:var(--white)}
+    .tese-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:4rem;align-items:center;position:relative;z-index:1}
+    .tese-text p{color:rgba(255,255,255,.7);font-size:.95rem;margin-bottom:1rem;line-height:1.8}
+    .tese-text p strong{color:var(--white);font-weight:600}
+    .tese-chain{display:flex;flex-direction:column;gap:0}
+    .tese-step{display:flex;align-items:center;gap:1rem;padding:1.2rem 1.5rem;border:1px solid var(--border-light);transition:all .4s var(--ease)}
+    .tese-step:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.04)}
+    .tese-arrow{text-align:center;padding:.3rem 0;color:var(--taupe);font-size:1.2rem}
+    .tese-icon{width:36px;height:36px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .tese-icon svg{width:16px;height:16px;color:var(--white)}
+    .tese-step-text{font-size:.85rem;color:rgba(255,255,255,.8);font-weight:500}
+    .tese-step-text strong{color:var(--white)}
+
+    /* ── MÉTODO ── */
+    .metodo{padding:7rem 0;background:var(--sand);position:relative;overflow:hidden}
+    .metodo::after{content:'';position:absolute;bottom:-180px;left:-80px;width:450px;height:450px;background:radial-gradient(circle,var(--green-glow) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+    .metodo-center{text-align:center;max-width:580px;margin:0 auto 3.5rem}
+    .metodo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;position:relative;z-index:1}
+    .metodo-card{padding:2.5rem 2rem;background:var(--white);border:1px solid rgba(0,0,0,.06);transition:all .4s var(--ease)}
+    .metodo-card:hover{transform:translateY(-5px);box-shadow:0 16px 50px rgba(0,0,0,.05);border-color:var(--green)}
+    .metodo-num{font-family:var(--fd);font-size:3rem;font-weight:400;color:var(--green);opacity:.2;margin-bottom:.5rem;line-height:1}
+    .metodo-card h3{font-family:var(--fd);font-size:1.3rem;font-weight:500;margin-bottom:.75rem}
+    .metodo-card p{color:var(--muted);font-size:.88rem;line-height:1.8}
+
+    /* ── DESENVOLVE ── */
+    .desenvolve{padding:7rem 0}
+    .dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;margin-top:2.5rem}
+    .dev-img{width:100%;height:480px;object-fit:cover;object-position:top center}
+    .dev-list{display:flex;flex-direction:column;gap:.75rem}
+    .dev-item{display:flex;align-items:center;gap:1rem;padding:.6rem 0}
+    .dev-dot{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--green-soft);display:flex;align-items:center;justify-content:center}
+    .dev-dot svg{width:14px;height:14px;color:var(--green)}
+    .dev-item p{color:var(--graphite);font-size:.9rem;font-weight:500}
+
+    /* ── PARA QUEM ── */
+    .quem{background:var(--petrol);color:var(--white);padding:6rem 0}
+    .quem .lbl{color:var(--sand)}.quem .lbl::before{background:var(--sand)}
+    .quem .st{color:var(--white)}
+    .quem-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:4rem;align-items:center}
+    .quem-text p{color:rgba(255,255,255,.7);font-size:.95rem;margin-bottom:1.25rem;line-height:1.8}
+    .quem-text p strong{color:var(--white)}
+    .quem-highlight{display:flex;flex-direction:column;gap:.5rem}
+    .quem-line{padding:1rem 1.5rem;border-left:3px solid var(--green);background:rgba(255,255,255,.04);font-family:var(--fd);font-size:1.1rem;color:var(--sand);font-style:italic}
+
+    /* ── SERVIÇOS ── */
+    .servicos{padding:7rem 0}
+    .servicos-header{max-width:580px;margin-bottom:3.5rem}
+    .servicos-header p{color:var(--muted);font-size:.95rem}
+    .svc{display:grid;grid-template-columns:70px 1fr auto;gap:2rem;align-items:start;padding:2.5rem 0;border-top:1px solid var(--border);transition:all .35s var(--ease)}
+    .svc:last-child{border-bottom:1px solid var(--border)}
+    .svc:hover{padding-left:1rem}
+    .svc-n{font-family:var(--fd);font-size:2.2rem;font-weight:400;color:var(--taupe);line-height:1}
+    .svc-body h3{font-family:var(--fd);font-size:1.45rem;font-weight:500;margin-bottom:.6rem}
+    .svc-body p{color:var(--muted);max-width:480px;margin-bottom:1rem;font-size:.9rem}
+    .svc-tags{display:flex;flex-wrap:wrap;gap:.4rem}
+    .svc-tag{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .85rem;border:1px solid rgba(0,0,0,.08);color:var(--muted)}
+    .svc-cta{align-self:center}
+
+    /* ── DEPOIMENTOS ── */
+    .depos{background:var(--sand);padding:6rem 0}
+    .dep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem}
+    .dep-card{padding:2.2rem;background:var(--white);border:1px solid rgba(0,0,0,.06);transition:all .4s var(--ease)}
+    .dep-card:hover{border-color:var(--green);transform:translateY(-3px)}
+    .dep-q{font-family:var(--fd);font-size:2.5rem;color:var(--taupe);line-height:1;margin-bottom:.75rem}
+    .dep-text{color:var(--muted);font-size:.88rem;line-height:1.8;margin-bottom:1.25rem;font-style:italic}
+    .dep-name{font-size:.78rem;font-weight:600;color:var(--graphite)}
+    .dep-role{font-size:.7rem;color:var(--muted)}
+
+    /* ── MÍDIA ── */
+    .media{padding:7rem 0}
+    .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem}
+    .media-card{display:block;padding:1.8rem;border:1px solid var(--border);transition:all .4s var(--ease)}
+    .media-card:hover{border-color:var(--green);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.04)}
+    .media-src{font-size:.65rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:.6rem}
+    .media-title{font-family:var(--fd);font-size:1rem;font-weight:400;line-height:1.4}
+
+    /* ── CTA FINAL ── */
+    .cta-final{background:var(--petrol);color:var(--white);padding:6rem 0;text-align:center}
+    .cta-final .st{color:var(--white);max-width:700px;margin-left:auto;margin-right:auto}
+    .cta-final p{color:rgba(255,255,255,.65);max-width:500px;margin:0 auto 2.5rem;font-size:1rem}
+    .cta-row{display:flex;justify-content:center;gap:1.5rem;align-items:center;flex-wrap:wrap}
+    .cta-email{font-size:.82rem;color:rgba(255,255,255,.5);border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:2px}
 
     /* ── FOOTER ── */
-    .footer { padding: 2.5rem 0; border-top: 1px solid rgba(0,0,0,0.06); }
-
-    .footer-inner { display: flex; justify-content: space-between; align-items: center; }
-
-    .footer-left { font-size: 0.75rem; color: #6B6058; }
-    .footer-left span { font-family: var(--font-display); font-style: italic; color: var(--green); }
-
-    .footer-social { display: flex; gap: 1.5rem; }
-    .footer-social a {
-      font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
-      color: #6B6058; transition: color 0.3s;
-    }
-    .footer-social a:hover { color: var(--green); }
+    .footer{padding:2.5rem 0;border-top:1px solid rgba(0,0,0,.06)}
+    .footer-in{display:flex;justify-content:space-between;align-items:center}
+    .footer-left{font-size:.75rem;color:var(--muted)}
+    .footer-left span{font-family:var(--fd);font-style:italic;color:var(--green)}
+    .footer-social{display:flex;gap:1.5rem}
+    .footer-social a{font-size:.7rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);transition:color .3s}
+    .footer-social a:hover{color:var(--green)}
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 1024px) {
-      .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; text-align: center; }
-      .hero-sub { margin-left: auto; margin-right: auto; }
-      .hero-actions { justify-content: center; }
-      .hero-img-wrap { max-width: 450px; margin: 0 auto; order: -1; }
-      .hero-img { height: 420px; }
-      .hero-accent, .hero-accent-2 { display: none; }
-      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-      .about-img { height: 380px; }
-      .creds-grid { grid-template-columns: repeat(2, 1fr); }
-      .svc-item { grid-template-columns: 50px 1fr; }
-      .svc-cta { grid-column: 2; }
-      .method-grid, .test-grid, .media-grid { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; }
-      .results-grid { grid-template-columns: 1fr; }
-      .results-img { height: 350px; }
+    @media(max-width:1024px){
+      .hero-grid,.about-grid,.tese-grid,.dev-grid,.quem-grid{grid-template-columns:1fr;gap:2.5rem}
+      .hero-grid{text-align:center}
+      .hero-sub{margin-left:auto;margin-right:auto}
+      .hero-actions{justify-content:center}
+      .hero-img-wrap{max-width:450px;margin:0 auto;order:-1}
+      .hero-img{height:420px}
+      .hero-accent,.hero-accent-2{display:none}
+      .about-img,.dev-img{height:380px}
+      .metodo-grid,.dep-grid,.media-grid{grid-template-columns:1fr;max-width:480px;margin-left:auto;margin-right:auto}
+      .svc{grid-template-columns:50px 1fr}
+      .svc-cta{grid-column:2}
     }
-
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .nav-toggle { display: block; }
-      .hero { min-height: auto; padding: 7rem 0 3.5rem; }
-      .about, .services, .results, .media, .cta { padding: 4.5rem 0; }
-      .creds, .testimonials { padding: 4rem 0; }
-      .method { padding: 4.5rem 0; }
-      .svc-item { grid-template-columns: 1fr; gap: 0.5rem; }
-      .svc-num { font-size: 1.3rem; }
-      .svc-cta { grid-column: 1; margin-top: 0.5rem; }
-      .creds-grid { gap: 0.75rem; }
-      .cred-card { padding: 1.5rem 1rem; }
-      .footer-inner { flex-direction: column; gap: 1rem; text-align: center; }
+    @media(max-width:768px){
+      .nav-links{display:none}
+      .nav-toggle{display:block}
+      .hero{min-height:auto;padding:7rem 0 3.5rem}
+      .about,.servicos,.desenvolve,.media{padding:4.5rem 0}
+      .tese,.quem,.depos,.cta-final{padding:4rem 0}
+      .metodo{padding:4.5rem 0}
+      .svc{grid-template-columns:1fr;gap:.5rem}
+      .svc-n{font-size:1.3rem}
+      .svc-cta{grid-column:1;margin-top:.5rem}
+      .footer-in{flex-direction:column;gap:1rem;text-align:center}
     }
   </style>
 </head>
@@ -592,53 +238,50 @@
 
   <!-- NAV -->
   <nav class="nav" id="nav">
-    <div class="container nav-inner">
+    <div class="ctn nav-in">
       <a href="#top" class="nav-logo">Juliana <span>Carvalhaes</span></a>
       <ul class="nav-links">
         <li><a href="#about">Sobre</a></li>
-        <li><a href="#authority">Reconhecimento</a></li>
-        <li><a href="#services">Programas</a></li>
-        <li><a href="#method">Método</a></li>
-        <li><a href="#testimonials">Depoimentos</a></li>
-        <li><a href="#contact" class="nav-cta-btn">Começar</a></li>
+        <li><a href="#metodo">Método</a></li>
+        <li><a href="#servicos">Programas</a></li>
+        <li><a href="#depoimentos">Depoimentos</a></li>
+        <li><a href="#midia">Mídia</a></li>
+        <li><a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Quero%20dar%20o%20primeiro%20passo%20rumo%20%C3%A0%20lideran%C3%A7a%20da%20minha%20mente.%20Como%20funciona%20o%20processo%3F" class="nav-cta" target="_blank">Agende uma conversa</a></li>
       </ul>
-      <button class="nav-toggle" id="navToggle" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
   </nav>
-
-  <div class="mobile-menu" id="mobileMenu">
+  <div class="mm" id="mobileMenu">
     <a href="#top">Início</a>
     <a href="#about">Sobre</a>
-    <a href="#authority">Reconhecimento</a>
-    <a href="#services">Programas</a>
-    <a href="#method">Método</a>
-    <a href="#testimonials">Depoimentos</a>
-    <a href="#contact">Começar</a>
+    <a href="#metodo">Método</a>
+    <a href="#servicos">Programas</a>
+    <a href="#depoimentos">Depoimentos</a>
+    <a href="#midia">Mídia</a>
+    <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Quero%20dar%20o%20primeiro%20passo%20rumo%20%C3%A0%20lideran%C3%A7a%20da%20minha%20mente.%20Como%20funciona%20o%20processo%3F" target="_blank">Agende uma conversa</a>
   </div>
 
   <!-- HERO -->
   <section class="hero" id="top">
-    <div class="container">
+    <div class="ctn">
       <div class="hero-grid">
-        <div class="hero-content">
-          <p class="hero-tag">Liderança Consciente · Estratégia Humana · Transformação Real</p>
-          <h1 class="hero-title">
-            Liderança da mente
-            <em>para alta performance sustentável.</em>
+        <div>
+          <p class="hero-tag">Liderança Mental · Presença · Performance Sustentável</p>
+          <h1>
+            Organize sua mente para decidir melhor,
+            <em>performar mais e sustentar resultados com clareza.</em>
           </h1>
           <p class="hero-sub">
-            Conduzo empresários, executivos e líderes a dominarem a mente através da 
-            Meditação Total® — um processo estratégico de autoliderança que gera clareza, 
-            estabilidade emocional e resultados duradouros.
+            Sou Juliana Carvalhaes, empresária, mentora e especialista em liderança mental. 
+            Ajudo líderes, empresários e grandes mentes a desenvolverem clareza, presença, 
+            segurança emocional e performance sustentável.
           </p>
           <div class="hero-actions">
-            <a href="#contact" class="btn-main">
-              Fale conosco
+            <a href="#metodo" class="btn-main">
+              Conheça meu método
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </a>
-            <a href="#services" class="btn-ghost">Conheça os programas</a>
+            <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Conheci%20o%20trabalho%20da%20Juliana%20e%20gostaria%20de%20entender%20qual%20programa%20faz%20mais%20sentido%20para%20o%20meu%20momento." class="btn-ghost" target="_blank">Agende uma conversa</a>
           </div>
         </div>
         <div class="hero-img-wrap">
@@ -650,279 +293,292 @@
     </div>
   </section>
 
-  <!-- ABOUT -->
+  <!-- SOBRE -->
   <section class="about" id="about">
-    <div class="container">
+    <div class="ctn">
       <div class="about-grid">
-        <div class="reveal">
+        <div class="rv">
           <img src="img/foto5.jpeg" alt="Juliana Carvalhaes" class="about-img">
         </div>
         <div class="about-text">
-          <p class="label reveal">Sobre</p>
-          <h2 class="stitle reveal d1">Juliana Carvalhaes é <em>especialista em liderança da mente</em></h2>
-          <p class="reveal d2">
-            ...e fundadora do Instituto Nacional de Meditação. Professora de Meditação Transcendental 
-            formada pela Maharishi European Research University (MERU), na Holanda, estudou diretamente 
-            com Maharishi Mahesh Yogi.
+          <p class="lbl rv">Sobre</p>
+          <h2 class="st rv d1">Minha história não começou com meditação. <em>Começou com instabilidade.</em></h2>
+          <p class="rv d2">
+            Antes de ensinar pessoas a liderarem suas próprias mentes, eu precisei aprender a liderar a minha.
           </p>
-          <p class="reveal d2">
-            Com formação em Mindfulness pela Escola Paulista de Medicina (UNIFESP) e graduação em Marketing, 
-            Juliana une neurociência, atenção plena e mais de 20 anos de atuação com líderes 
-            em ambientes de alta exigência.
+          <p class="rv d2">
+            Vivi anos de movimento intenso, pressão, adaptação e reconstrução. A meditação entrou na minha vida 
+            não como profissão, mas como recurso de sobrevivência, clareza e cura.
           </p>
-          <p class="reveal d3">
-            Implementou o Programa de Educação Baseada na Consciência em parceria com a 
-            Fundação David Lynch no Brasil, impactando estudantes em situação de vulnerabilidade 
-            social. Sua trajetória inclui anos como modelo internacional da Ford Models, onde 
-            viveu na pele o custo da performance sem liderança interna.
+          <p class="rv d3">
+            Aos poucos, aquilo que começou como uma busca pessoal se transformou em método, missão e empresa.
           </p>
-          <p class="reveal d3">
-            Hoje, através da Meditação Total®, conduz um processo estruturado de reorganização mental 
-            e fortalecimento da autoliderança para quem já alcançou resultados — mas compreende 
-            que resultado sem estabilidade interna tem custo.
+          <p class="rv d3">
+            Hoje, são mais de 22 anos dedicados ao autoconhecimento, desenvolvimento humano e práticas 
+            contemplativas, com milhares de pessoas impactadas por mentorias, retiros, palestras, cursos 
+            e experiências presenciais.
           </p>
-          <p class="about-sig reveal d4">Juliana Carvalhaes</p>
+          <p class="about-sig rv d4">Juliana Carvalhaes</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CREDENTIALS -->
-  <section class="creds" id="authority">
-    <div class="container">
-      <p class="label reveal">Reconhecimento</p>
-      <div class="creds-grid">
-        <div class="cred-card reveal">
-          <p class="cred-num">20+</p>
-          <p class="cred-text">Anos de atuação com líderes em ambientes de alta exigência</p>
+  <!-- TESE CENTRAL -->
+  <section class="tese">
+    <div class="ctn">
+      <div class="tese-grid">
+        <div class="tese-text">
+          <p class="lbl rv">Tese Central</p>
+          <h2 class="st rv d1">Sua mente é o ativo que sustenta <em>suas decisões, seus resultados e sua vida.</em></h2>
+          <p class="rv d2">
+            Muitas pessoas tentam mudar a rotina, o negócio, o corpo, os relacionamentos e a performance 
+            <strong>sem mudar a mente que conduz tudo isso.</strong>
+          </p>
+          <p class="rv d2">
+            Por isso, liderança mental não é luxo. <strong>É competência essencial</strong> para quem precisa tomar 
+            decisões importantes, sustentar alta performance e viver com mais presença.
+          </p>
         </div>
-        <div class="cred-card reveal d1">
-          <p class="cred-num">2.000+</p>
-          <p class="cred-text">Alunos formados em meditação e liderança da mente</p>
+        <div class="tese-chain rv d3">
+          <div class="tese-step">
+            <div class="tese-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+            <p class="tese-step-text"><strong>A mente</strong> lidera emoções</p>
+          </div>
+          <div class="tese-arrow">↓</div>
+          <div class="tese-step">
+            <div class="tese-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+            <p class="tese-step-text"><strong>Emoções</strong> influenciam ações</p>
+          </div>
+          <div class="tese-arrow">↓</div>
+          <div class="tese-step">
+            <div class="tese-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <p class="tese-step-text"><strong>Ações</strong> constroem resultados</p>
+          </div>
         </div>
-        <div class="cred-card reveal d2">
-          <p class="cred-num">3</p>
-          <p class="cred-text">Cidades impactadas pelo programa com a Fundação David Lynch</p>
-        </div>
-        <div class="cred-card reveal d3">
-          <p class="cred-num">15 min</p>
-          <p class="cred-text">Duas vezes ao dia — seu compromisso com a transformação</p>
-        </div>
-      </div>
-      <div class="creds-logos reveal">
-        <p class="creds-logos-label">Presença em & Formação com</p>
-        <span>MERU</span>
-        <span>UNIFESP</span>
-        <span>Fund. David Lynch</span>
-        <span>Estadão</span>
-        <span>Ford Models</span>
       </div>
     </div>
   </section>
 
-  <!-- SERVICES -->
-  <section class="services" id="services">
-    <div class="container">
-      <div class="services-header">
-        <p class="label reveal">Programas</p>
-        <h2 class="stitle reveal d1">Três formas de <em>construirmos juntos</em></h2>
-        <p class="reveal d2">Minha tese é transformar vidas e negócios através da conexão com sua liderança interna. 
-          Cada programa atende um momento diferente da sua jornada.</p>
+  <!-- MÉTODO -->
+  <section class="metodo" id="metodo">
+    <div class="ctn">
+      <div class="metodo-center">
+        <p class="lbl rv" style="justify-content:center">O Método</p>
+        <h2 class="st rv d1">O Método <em>Juliana Carvalhaes</em></h2>
+        <p class="rv d2" style="color:var(--muted);font-size:.95rem">
+          Organizo o desenvolvimento da liderança mental em três ciclos progressivos.
+        </p>
+      </div>
+      <div class="metodo-grid">
+        <div class="metodo-card rv">
+          <p class="metodo-num">01</p>
+          <h3>Consciência</h3>
+          <p>Desacelerar, silenciar ruídos, perceber padrões e entender o momento real. 
+             Inclui diagnóstico, escuta profunda, alinhamento interno e início da prática meditativa.</p>
+        </div>
+        <div class="metodo-card rv d1">
+          <p class="metodo-num">02</p>
+          <h3>Autoconhecimento</h3>
+          <p>Identificar crenças, padrões emocionais e estruturas internas que limitam clareza, 
+             presença e decisão. Ferramentas de mindfulness, neurociência, reprogramação mental 
+             e práticas de autorregulação.</p>
+        </div>
+        <div class="metodo-card rv d2">
+          <p class="metodo-num">03</p>
+          <h3>Competência</h3>
+          <p>Transformar percepção em ação. Sustentar clareza, foco, presença, tomada de decisão, 
+             regulação emocional e performance mental no dia a dia. 
+             Não é apenas entender. É treinar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- O QUE VOCÊ DESENVOLVE -->
+  <section class="desenvolve">
+    <div class="ctn">
+      <p class="lbl rv">Resultados</p>
+      <h2 class="st rv d1">O que você <em>desenvolve</em></h2>
+      <div class="dev-grid">
+        <div class="rv">
+          <img src="img/foto1.jpeg" alt="Juliana meditando" class="dev-img">
+        </div>
+        <div class="dev-list">
+          <div class="dev-item rv"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Mais clareza mental</p></div>
+          <div class="dev-item rv d1"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Decisão com confiança</p></div>
+          <div class="dev-item rv d1"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Organização interna</p></div>
+          <div class="dev-item rv d2"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Presença e foco</p></div>
+          <div class="dev-item rv d2"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Gestão da ansiedade</p></div>
+          <div class="dev-item rv d3"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Regulação emocional</p></div>
+          <div class="dev-item rv d3"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Transformação de padrões</p></div>
+          <div class="dev-item rv d4"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Performance sustentável</p></div>
+          <div class="dev-item rv d4"><div class="dev-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div><p>Mais consciência sobre rotina, tempo e energia</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARA QUEM É -->
+  <section class="quem">
+    <div class="ctn">
+      <div class="quem-grid">
+        <div>
+          <p class="lbl rv">Para Quem É</p>
+          <h2 class="st rv d1" style="color:var(--white)">Para quem sabe que precisa mudar algo, <em style="color:var(--sand)">mas não quer apenas consumir mais conteúdo.</em></h2>
+          <p class="rv d2" style="color:rgba(255,255,255,.7);font-size:.95rem;line-height:1.8">
+            Este trabalho é para líderes, empresários, profissionais de alta responsabilidade e pessoas em fase 
+            de expansão que desejam crescer sem se perder de si.
+          </p>
+        </div>
+        <div class="quem-highlight rv d3">
+          <div class="quem-line">Quer método.</div>
+          <div class="quem-line">Quer acompanhamento.</div>
+          <div class="quem-line">Quer profundidade.</div>
+          <div class="quem-line">Quer sustentar resultado.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVIÇOS -->
+  <section class="servicos" id="servicos">
+    <div class="ctn">
+      <div class="servicos-header">
+        <p class="lbl rv">Programas</p>
+        <h2 class="st rv d1">Caminhos para <em>sua transformação</em></h2>
       </div>
 
-      <div class="svc-item reveal">
-        <p class="svc-num">01</p>
+      <div class="svc rv">
+        <p class="svc-n">01</p>
         <div class="svc-body">
-          <h3>Mentoria Meditação Total®</h3>
-          <p>Processo individual e estratégico de liderança da mente, conduzido ao longo de 2 meses. 
-             Fase 1: 4 aulas consecutivas em uma semana. Fase 2: 7 semanas com aulas semanais. 
-             Para empresários, executivos e líderes que já alcançaram resultados — mas compreendem 
-             que resultado sem estabilidade interna tem custo.</p>
+          <h3>Mentoria Individual Reprograme-se</h3>
+          <p>Um processo personalizado para reorganizar sua mente, elevar seu nível de consciência 
+             e desenvolver uma nova forma de decidir, agir e sustentar resultados. 
+             Você passa pelos três ciclos do método: consciência, autoconhecimento e competência.</p>
           <div class="svc-tags">
             <span class="svc-tag">Individual</span>
-            <span class="svc-tag">2 meses</span>
-            <span class="svc-tag">Presencial ou Online</span>
+            <span class="svc-tag">Profundo</span>
+            <span class="svc-tag">Estratégico</span>
           </div>
         </div>
         <div class="svc-cta">
-          <a href="#contact" class="btn-line">Se aplique</a>
+          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20na%20Mentoria%20Reprograme-se.%20Gostaria%20de%20saber%20mais%20sobre%20o%20processo%20e%20como%20me%20aplicar." class="btn-line" target="_blank">Quero conhecer</a>
         </div>
       </div>
 
-      <div class="svc-item reveal">
-        <p class="svc-num">02</p>
+      <div class="svc rv">
+        <p class="svc-n">02</p>
         <div class="svc-body">
-          <h3>Retiro 360°</h3>
-          <p>Experiência imersiva de 3 dias em hotel de campo 5 estrelas e grupo reduzido. 
-             Uma pausa estratégica para aprofundar a liderança da mente, fortalecer a autoconfiança 
-             e expandir a clareza decisória — elevando a forma como você percebe, escolhe e conduz 
-             sua vida e seus negócios.</p>
+          <h3>Treino de Liderança Mental</h3>
+          <p>Depois que a mente foi reorganizada, ela precisa continuar sendo treinada. 
+             Acompanhamento contínuo para ex-alunos que desejam manter a prática, fortalecer presença, 
+             sustentar decisões e não perder a conexão com o próprio centro. 
+             Assim como o corpo, a mente também precisa de treino constante.</p>
+          <div class="svc-tags">
+            <span class="svc-tag">Contínuo</span>
+            <span class="svc-tag">Ex-alunos</span>
+            <span class="svc-tag">Prática</span>
+          </div>
+        </div>
+        <div class="svc-cta">
+          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20no%20Treino%20de%20Lideran%C3%A7a%20Mental.%20Gostaria%20de%20saber%20mais." class="btn-line" target="_blank">Saiba mais</a>
+        </div>
+      </div>
+
+      <div class="svc rv">
+        <p class="svc-n">03</p>
+        <div class="svc-body">
+          <h3>Retiro 360° e Retiro Presença</h3>
+          <p>Duas experiências diferentes, complementares, com o mesmo objetivo: ajudar você a voltar para si com mais clareza. 
+             O 360° é uma experiência profunda de transformação, expansão e cura de padrões. 
+             O Presença é uma experiência de descanso profundo, silêncio e práticas sensoriais.</p>
           <div class="svc-tags">
             <span class="svc-tag">Presencial</span>
-            <span class="svc-tag">3 dias</span>
             <span class="svc-tag">Imersivo</span>
+            <span class="svc-tag">Transformador</span>
           </div>
         </div>
         <div class="svc-cta">
-          <a href="#contact" class="btn-line">Reserve</a>
+          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20os%20retiros%20%E2%80%94%20datas%2C%20local%20e%20como%20reservar%20minha%20vaga." class="btn-line" target="_blank">Reserve</a>
         </div>
       </div>
 
-      <div class="svc-item reveal">
-        <p class="svc-num">03</p>
+      <div class="svc rv">
+        <p class="svc-n">04</p>
         <div class="svc-body">
-          <h3>Palestras e Treinamentos</h3>
-          <p>Conteúdos para empresas, conselhos, conferências e eventos corporativos sobre 
-             liderança consciente, gestão emocional, alta performance sustentável e 
-             meditação como ferramenta estratégica. Formatos adaptáveis para diferentes audiências.</p>
+          <h3>Palestras e Experiências para Empresas</h3>
+          <p>Levo liderança mental, presença e performance sustentável para empresas, eventos e grupos de líderes. 
+             Os temas podem ser adaptados para saúde mental, alta performance, tomada de decisão, 
+             presença, foco, gestão emocional e cultura de bem-estar. 
+             Empresas não são feitas apenas de processos. São conduzidas por mentes.</p>
           <div class="svc-tags">
             <span class="svc-tag">Corporativo</span>
             <span class="svc-tag">Eventos</span>
-            <span class="svc-tag">Liderança</span>
+            <span class="svc-tag">Adaptável</span>
           </div>
         </div>
         <div class="svc-cta">
-          <a href="#contact" class="btn-line">Contrate</a>
+          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20em%20levar%20a%20Juliana%20para%20um%20evento%2Fempresa.%20Gostaria%20de%20saber%20sobre%20palestras%20e%20treinamentos." class="btn-line" target="_blank">Contrate</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- METHOD -->
-  <section class="method" id="method">
-    <div class="container">
-      <div class="method-center">
-        <p class="label reveal" style="justify-content: center;">O Método</p>
-        <h2 class="stitle reveal d1">Três pilares para <em>liderar sua mente</em></h2>
-        <p class="reveal d2" style="color: #6B6058; font-size: 0.95rem;">
-          Um processo progressivo que transforma a relação com seus pensamentos, 
-          suas emoções e suas decisões.
-        </p>
-      </div>
-
-      <div class="method-grid">
-        <div class="method-card reveal">
-          <p class="method-step">01</p>
-          <h3>Silêncio e Reconexão</h3>
-          <p>Você aprende a reduzir o ruído mental e sair do modo constante de alerta. 
-             Constrói um espaço interno de estabilidade — um "lugar seguro" dentro de si.</p>
-        </div>
-        <div class="method-card reveal d1">
-          <p class="method-step">02</p>
-          <h3>Liderança dos Pensamentos</h3>
-          <p>Desenvolve inteligência emocional aplicada à tomada de decisão. 
-             Reatividade diminui. Clareza estratégica aumenta.</p>
-        </div>
-        <div class="method-card reveal d2">
-          <p class="method-step">03</p>
-          <h3>Autoliderança Estratégica</h3>
-          <p>Integra mente, emoção e ação. Passa a decidir com coerência interna, 
-             foco e energia sustentável. Você lidera sua própria mente.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- RESULTS -->
-  <section class="results">
-    <div class="container">
-      <p class="label reveal">Resultados</p>
-      <h2 class="stitle reveal d1">Já nas primeiras <em>semanas</em></h2>
-
-      <div class="results-grid">
-        <div class="reveal">
-          <img src="img/foto1.jpeg" alt="Juliana Carvalhaes meditando" class="results-img">
-        </div>
-        <div class="results-list">
-          <div class="result-item reveal">
-            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div>
-            <p>Redução do ruído mental e da fadiga decisória</p>
-          </div>
-          <div class="result-item reveal d1">
-            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div>
-            <p>Clareza estratégica sob pressão</p>
-          </div>
-          <div class="result-item reveal d1">
-            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div>
-            <p>Inteligência emocional aplicada à tomada de decisão</p>
-          </div>
-          <div class="result-item reveal d2">
-            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div>
-            <p>Sono mais profundo e recuperação cognitiva</p>
-          </div>
-          <div class="result-item reveal d2">
-            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div>
-            <p>Autoconfiança baseada em estabilidade interna</p>
-          </div>
-          <div class="result-item reveal d3">
-            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div>
-            <p>Acesso consciente ao estado de flow</p>
-          </div>
-          <div class="result-item reveal d3">
-            <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg></div>
-            <p>Alta performance com sustentabilidade e longevidade</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TESTIMONIALS -->
-  <section class="testimonials" id="testimonials">
-    <div class="container">
-      <p class="label reveal">Quem Pratica</p>
-      <h2 class="stitle reveal d1">O que dizem quem <em>já transformou</em></h2>
-
-      <div class="test-grid">
-        <div class="test-card reveal">
-          <p class="test-q">"</p>
-          <p class="test-text">
-            Eu tinha resultado, mas vivia sob pressão constante. 
-            A Meditação Total me trouxe clareza mental e estabilidade emocional para tomar decisões 
-            com mais segurança. Hoje lidero com presença e energia sustentável, sem perder performance.
+  <!-- DEPOIMENTOS -->
+  <section class="depos" id="depoimentos">
+    <div class="ctn">
+      <p class="lbl rv">Quem Pratica</p>
+      <h2 class="st rv d1">O que dizem quem <em>já transformou</em></h2>
+      <div class="dep-grid">
+        <div class="dep-card rv">
+          <p class="dep-q">"</p>
+          <p class="dep-text">
+            Eu tinha resultado, mas vivia sob pressão constante. A Meditação Total me trouxe clareza mental 
+            e estabilidade emocional para tomar decisões com mais segurança. 
+            Hoje lidero com presença e energia sustentável, sem perder performance.
           </p>
-          <p class="test-name">Alexandra C.</p>
-          <p class="test-role">Empresária · Alta Performance</p>
+          <p class="dep-name">Alexandra C.</p>
+          <p class="dep-role">Empresária · Alta Performance</p>
         </div>
-        <div class="test-card reveal d1">
-          <p class="test-q">"</p>
-          <p class="test-text">
+        <div class="dep-card rv d1">
+          <p class="dep-q">"</p>
+          <p class="dep-text">
             Aprendi a organizar minha mente antes de organizar minha agenda. 
             Passei a reagir menos e decidir melhor. Minha liderança ficou mais consistente 
             e meus resultados mais estáveis.
           </p>
-          <p class="test-name">Rafael T.</p>
-          <p class="test-role">Diretor Executivo</p>
+          <p class="dep-name">Rafael T.</p>
+          <p class="dep-role">Diretor Executivo</p>
         </div>
-        <div class="test-card reveal d2">
-          <p class="test-q">"</p>
-          <p class="test-text">
+        <div class="dep-card rv d2">
+          <p class="dep-q">"</p>
+          <p class="dep-text">
             Minha preparação física sempre foi forte. O diferencial veio quando organizei minha mente. 
             Hoje performo sob pressão com foco e controle emocional.
           </p>
-          <p class="test-name">Bruno C.</p>
-          <p class="test-role">Atleta Profissional</p>
+          <p class="dep-name">Bruno C.</p>
+          <p class="dep-role">Atleta Profissional</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- MEDIA -->
-  <section class="media" id="media">
-    <div class="container">
-      <p class="label reveal">Na Mídia</p>
-      <h2 class="stitle reveal d1">Presença nas <em>mídias</em></h2>
-
+  <!-- MÍDIA -->
+  <section class="media" id="midia">
+    <div class="ctn">
+      <p class="lbl rv">Na Mídia</p>
+      <h2 class="st rv d1">Presença nas <em>mídias</em></h2>
       <div class="media-grid">
-        <a href="https://www.estadao.com.br/fotos/150-anos/viver-em-transformacao/meditacao/" class="media-card reveal" target="_blank" rel="noopener">
+        <a href="https://www.estadao.com.br/fotos/150-anos/viver-em-transformacao/meditacao/" class="media-card rv" target="_blank" rel="noopener">
           <p class="media-src">Estadão</p>
           <p class="media-title">Meditação — Especial 150 Anos Viver em Transformação</p>
         </a>
-        <a href="https://www.estadao.com.br/infograficos/saude,como-meditar-em-casa-um-guia-com-dicas-e-exercicios,1130651" class="media-card reveal d1" target="_blank" rel="noopener">
+        <a href="https://www.estadao.com.br/infograficos/saude,como-meditar-em-casa-um-guia-com-dicas-e-exercicios,1130651" class="media-card rv d1" target="_blank" rel="noopener">
           <p class="media-src">Estadão</p>
           <p class="media-title">Como meditar em casa: um guia com dicas e exercícios</p>
         </a>
-        <a href="https://www.estadao.com.br/150-anos/viver-em-transformacao/passei-um-mes-em-busca-da-felicidade-o-que-aprendi-no-caminho-e-que-voce-pode-usar-na-sua-vida/" class="media-card reveal d2" target="_blank" rel="noopener">
+        <a href="https://www.estadao.com.br/150-anos/viver-em-transformacao/passei-um-mes-em-busca-da-felicidade-o-que-aprendi-no-caminho-e-que-voce-pode-usar-na-sua-vida/" class="media-card rv d2" target="_blank" rel="noopener">
           <p class="media-src">Estadão</p>
           <p class="media-title">Passei um mês em busca da felicidade — o que aprendi no caminho</p>
         </a>
@@ -930,18 +586,20 @@
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="cta" id="contact">
-    <div class="container">
-      <p class="label reveal" style="justify-content: center;">Começar</p>
-      <h2 class="stitle reveal d1">Pronto para liderar <em>sua própria mente?</em></h2>
-      <p class="reveal d2">
-        Se você decidiu alcançar alta performance sem desgaste, com clareza e presença de verdade, 
-        o próximo passo é falar com nosso time.
+  <!-- CTA FINAL -->
+  <section class="cta-final" id="contact">
+    <div class="ctn">
+      <p class="lbl rv" style="justify-content:center;color:var(--sand)">
+        <span style="display:none"></span>Começar
       </p>
-      <div class="cta-row reveal d3">
-        <a href="https://wa.me/5500000000000?text=Ol%C3%A1%2C%20gostaria%20de%20saber%20mais%20sobre%20a%20Medita%C3%A7%C3%A3o%20Total" class="btn-main" target="_blank">
-          Fale pelo WhatsApp
+      <h2 class="st rv d1">
+        Você não precisa apenas fazer mais.<br>
+        <em style="color:var(--sand)">Precisa pensar melhor, decidir melhor e sustentar melhor.</em>
+      </h2>
+      <p class="rv d2">A liderança começa dentro.</p>
+      <div class="cta-row rv d3">
+        <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Visitei%20o%20site%20do%20Instituto%20Nacional%20de%20Medita%C3%A7%C3%A3o%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20programas%20dispon%C3%ADveis." class="btn-main" target="_blank" style="background:var(--sand);color:var(--petrol)">
+          Agende uma conversa
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
         <a href="mailto:contato@institutodemeditacao.com.br" class="cta-email">contato@institutodemeditacao.com.br</a>
@@ -951,10 +609,8 @@
 
   <!-- FOOTER -->
   <footer class="footer">
-    <div class="container footer-inner">
-      <p class="footer-left">
-        © 2026 Instituto Nacional de Meditação — <span>Liderança. Consciência. Transformação.</span>
-      </p>
+    <div class="ctn footer-in">
+      <p class="footer-left">© 2026 Juliana Carvalhaes — <span>Liderança. Consciência. Transformação.</span></p>
       <div class="footer-social">
         <a href="https://www.instagram.com/meditacaoinm" target="_blank">@meditacaoinm</a>
         <a href="https://www.instagram.com/julianacarvalhaes_" target="_blank">@julianacarvalhaes_</a>
@@ -963,33 +619,14 @@
   </footer>
 
   <script>
-    const nav = document.getElementById('nav');
-    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 50));
-
-    const toggle = document.getElementById('navToggle');
-    const mm = document.getElementById('mobileMenu');
-    toggle.addEventListener('click', () => {
-      toggle.classList.toggle('active');
-      mm.classList.toggle('open');
-      document.body.style.overflow = mm.classList.contains('open') ? 'hidden' : '';
-    });
-    mm.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-      toggle.classList.remove('active'); mm.classList.remove('open'); document.body.style.overflow = '';
-    }));
-
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
-    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', function(e) {
-        e.preventDefault();
-        const t = document.querySelector(this.getAttribute('href'));
-        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
+    const nav=document.getElementById('nav');
+    window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>50));
+    const toggle=document.getElementById('navToggle'),mm=document.getElementById('mobileMenu');
+    toggle.addEventListener('click',()=>{toggle.classList.toggle('active');mm.classList.toggle('open');document.body.style.overflow=mm.classList.contains('open')?'hidden':''});
+    mm.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{toggle.classList.remove('active');mm.classList.remove('open');document.body.style.overflow=''}));
+    const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vis')})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
+    document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',function(e){e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})});
   </script>
-
 </body>
 </html>

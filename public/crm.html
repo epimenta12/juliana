@@ -293,9 +293,14 @@ function renderBoard(){
   });
 }
 
+function toDateInputValue(iso){
+  if(!iso) return '';
+  return String(iso).slice(0,10);
+}
+
 function fmtDate(iso){
   if(!iso) return '';
-  const d = new Date(iso+'T00:00:00');
+  const d = new Date(toDateInputValue(iso)+'T00:00:00');
   return d.toLocaleDateString('pt-BR');
 }
 
@@ -327,7 +332,7 @@ function renderCard(lead, statusIdx){
     badges.appendChild(b);
   }
   if(lead.next_contact_date){
-    const overdue = lead.next_contact_date < new Date().toISOString().slice(0,10);
+    const overdue = toDateInputValue(lead.next_contact_date) < new Date().toISOString().slice(0,10);
     const b = document.createElement('span');
     b.className = 'badge';
     if(overdue) b.style.background = 'var(--wine)', b.style.color = 'var(--white)';
@@ -428,9 +433,9 @@ function openDrawer(id){
   drawer.querySelector('#fSource').value = lead.source || '';
   drawer.querySelector('#fStatus').value = lead.status;
   drawer.querySelector('#fStatusNote').value = lead.status_note || '';
-  drawer.querySelector('#fFirstContact').value = lead.first_contact_date || '';
-  drawer.querySelector('#fLastContact').value = lead.last_contact_date || '';
-  drawer.querySelector('#fNextContact').value = lead.next_contact_date || '';
+  drawer.querySelector('#fFirstContact').value = toDateInputValue(lead.first_contact_date);
+  drawer.querySelector('#fLastContact').value = toDateInputValue(lead.last_contact_date);
+  drawer.querySelector('#fNextContact').value = toDateInputValue(lead.next_contact_date);
   drawer.querySelector('#fObservations').value = lead.observations || '';
 
   const saveRow = document.createElement('div');

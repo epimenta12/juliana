@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM — Juliana Carvalhaes</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#F7F6F4;--sand:#E7DFD3;--taupe:#C8B0B0;--green:#205447;--petrol:#13434C;
+    --wine:#4B1F2D;--graphite:#333333;--muted:#6B6058;--border:rgba(0,0,0,.08);
+    --fd:'Cormorant Garamond',Georgia,serif;--fb:'Montserrat','Helvetica Neue',sans-serif;
+    --ease:cubic-bezier(.25,.46,.45,.94);
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--fb);background:var(--white);color:var(--graphite);min-height:100vh}
+  a{color:inherit}
+  button{font-family:var(--fb);cursor:pointer}
+  input,textarea,select{font-family:var(--fb);font-size:.9rem}
+
+  /* ---- Login ---- */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:var(--petrol)}
+  .login-card{background:var(--white);padding:3rem 2.5rem;max-width:380px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.25)}
+  .login-card h1{font-family:var(--fd);font-size:1.8rem;font-weight:500;margin-bottom:.3rem}
+  .login-card h1 em{color:var(--green);font-style:italic}
+  .login-card p.sub{color:var(--muted);font-size:.82rem;margin-bottom:2rem}
+  .field{margin-bottom:1.1rem}
+  .field label{display:block;font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+  .field input{width:100%;padding:.75rem .9rem;border:1px solid var(--border);background:var(--white);outline:none;transition:border-color .3s}
+  .field input:focus{border-color:var(--green)}
+  .btn-primary{width:100%;background:var(--green);color:var(--white);border:0;padding:.85rem;font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:background .3s}
+  .btn-primary:hover{background:var(--petrol)}
+  .btn-primary:disabled{opacity:.6;cursor:default}
+  .error-msg{color:var(--wine);font-size:.78rem;margin-top:1rem;display:none}
+  .error-msg.show{display:block}
+
+  /* ---- App shell ---- */
+  #app{display:none}
+  #app.show{display:block}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--petrol);color:var(--white)}
+  .topbar .logo{font-family:var(--fd);font-size:1.15rem}
+  .topbar .logo em{font-style:italic;color:var(--sand)}
+  .topbar-actions{display:flex;align-items:center;gap:1rem}
+  .btn-ghost-top{background:0;border:1px solid rgba(255,255,255,.3);color:var(--white);padding:.5rem 1rem;font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;transition:all .3s}
+  .btn-ghost-top:hover{background:rgba(255,255,255,.1)}
+
+  .board-wrap{padding:1.5rem}
+  .board-summary{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem}
+  .sum-card{background:var(--white);border:1px solid var(--border);padding:.9rem 1.3rem;min-width:110px}
+  .sum-card .n{font-family:var(--fd);font-size:1.9rem;color:var(--green);line-height:1}
+  .sum-card .l{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:.2rem}
+
+  .board{display:grid;grid-template-columns:repeat(5,minmax(240px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
+  .col{background:var(--sand);display:flex;flex-direction:column;min-width:240px}
+  .col-head{padding:.9rem 1rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.08)}
+  .col-head .count{background:var(--green);color:var(--white);border-radius:20px;font-size:.65rem;padding:.1rem .55rem}
+  .col-body{padding:.7rem;display:flex;flex-direction:column;gap:.6rem;min-height:80px;flex:1}
+
+  .card{background:var(--white);padding:.9rem;border:1px solid var(--border);cursor:pointer;transition:box-shadow .25s,transform .25s}
+  .card:hover{box-shadow:0 8px 24px rgba(0,0,0,.08);transform:translateY(-1px)}
+  .card .name{font-weight:600;font-size:.88rem;margin-bottom:.25rem}
+  .card .meta{font-size:.75rem;color:var(--muted);margin-bottom:.15rem}
+  .card .badges{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem}
+  .badge{font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.2rem .5rem;background:var(--green-soft,rgba(32,84,71,.08));color:var(--green)}
+  .card .time{font-size:.65rem;color:var(--muted);opacity:.75;margin-top:.5rem}
+  .card .movebtns{display:flex;gap:.3rem;margin-top:.6rem}
+  .mv{border:1px solid var(--border);background:var(--white);font-size:.7rem;padding:.25rem .5rem;flex:1;transition:all .2s}
+  .mv:hover{border-color:var(--green);color:var(--green)}
+  .empty-col{font-size:.75rem;color:var(--muted);opacity:.6;padding:1rem;text-align:center}
+
+  /* ---- Drawer ---- */
+  .overlay{position:fixed;inset:0;background:rgba(19,67,76,.55);z-index:100;display:none;align-items:stretch;justify-content:flex-end}
+  .overlay.show{display:flex}
+  .drawer{background:var(--white);width:100%;max-width:440px;height:100%;overflow-y:auto;padding:2rem;position:relative}
+  .drawer-close{position:absolute;top:1.2rem;right:1.2rem;background:0;border:0;font-size:1.4rem;color:var(--muted);line-height:1}
+  .drawer h2{font-family:var(--fd);font-size:1.5rem;font-weight:500;margin-bottom:1.5rem;padding-right:2rem}
+  .drawer .field input,.drawer .field select{width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none}
+  .drawer .field input:focus,.drawer .field select:focus{border-color:var(--green)}
+  .drawer-row{display:flex;gap:1rem}
+  .drawer-row .field{flex:1}
+  .save-row{display:flex;gap:.6rem;margin:1rem 0 1.5rem}
+  .btn-small{padding:.6rem 1.1rem;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:0;transition:all .3s}
+  .btn-small.save{background:var(--green);color:var(--white)}
+  .btn-small.save:hover{background:var(--petrol)}
+  .btn-small.wa{background:var(--sand);color:var(--petrol)}
+  .btn-small.del{background:0;color:var(--wine);border:1px solid var(--wine)}
+  .btn-small.del:hover{background:var(--wine);color:var(--white)}
+
+  .notes-title{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:1.5rem 0 .7rem;border-top:1px solid var(--border);padding-top:1.2rem}
+  .note{background:var(--sand);padding:.7rem .9rem;font-size:.82rem;margin-bottom:.5rem;line-height:1.5}
+  .note .note-time{display:block;font-size:.65rem;color:var(--muted);margin-top:.3rem}
+  .note-form{display:flex;gap:.5rem;margin-top:.8rem}
+  .note-form textarea{flex:1;padding:.6rem .8rem;border:1px solid var(--border);resize:vertical;min-height:44px}
+  .note-form button{background:var(--green);color:var(--white);border:0;padding:0 1rem;font-size:.7rem;font-weight:600;text-transform:uppercase}
+
+  .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--graphite);color:var(--white);padding:.7rem 1.3rem;font-size:.78rem;z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
+  .toast.show{opacity:1}
+
+  @media(max-width:900px){.board{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <form class="login-card" id="loginForm">
+    <h1>CRM <em>Juliana Carvalhaes</em></h1>
+    <p class="sub">Instituto Nacional de Meditação — acesso restrito</p>
+    <div class="field">
+      <label for="lUser">Usuário</label>
+      <input id="lUser" name="username" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label for="lPass">Senha</label>
+      <input id="lPass" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn-primary" type="submit" id="loginBtn">Entrar</button>
+    <p class="error-msg" id="loginError"></p>
+  </form>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="logo">CRM · <em>Juliana Carvalhaes</em></div>
+    <div class="topbar-actions">
+      <button class="btn-ghost-top" id="refreshBtn">Atualizar</button>
+      <button class="btn-ghost-top" id="logoutBtn">Sair</button>
+    </div>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board-summary" id="summary"></div>
+    <div class="board" id="board"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="drawer" id="drawer"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STATUSES = [
+  {key:'novo', label:'Novo'},
+  {key:'em_conversa', label:'Em conversa'},
+  {key:'proposta_enviada', label:'Proposta enviada'},
+  {key:'fechado', label:'Fechado'},
+  {key:'perdido', label:'Perdido'},
+];
+
+let leads = [];
+let selectedId = null;
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function onlyDigits(s){ return (s||'').replace(/\D/g,''); }
+
+function waLink(phone){
+  const digits = onlyDigits(phone);
+  if(!digits) return null;
+  const withCountry = digits.startsWith('55') ? digits : '55'+digits;
+  return `https://wa.me/${withCountry}`;
+}
+
+function relTime(iso){
+  const d = new Date(iso);
+  const diff = (Date.now() - d.getTime())/1000;
+  if(diff < 60) return 'agora há pouco';
+  if(diff < 3600) return `há ${Math.floor(diff/60)} min`;
+  if(diff < 86400) return `há ${Math.floor(diff/3600)}h`;
+  if(diff < 86400*7) return `há ${Math.floor(diff/86400)}d`;
+  return d.toLocaleDateString('pt-BR');
+}
+
+async function api(path, opts){
+  const res = await fetch(path, Object.assign({credentials:'same-origin', headers:{'Content-Type':'application/json'}}, opts));
+  if(res.status === 401){
+    showLogin();
+    throw new Error('unauthorized');
+  }
+  if(!res.ok){
+    const body = await res.json().catch(()=>({}));
+    throw new Error(body.error || 'erro');
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+function showLogin(){
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('loginWrap').style.display = 'flex';
+}
+function showApp(){
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('app').classList.add('show');
+}
+
+async function checkAuth(){
+  try{
+    const r = await api('/api/auth/me');
+    if(r.authenticated){ showApp(); await loadLeads(); }
+    else showLogin();
+  }catch{ showLogin(); }
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  errEl.classList.remove('show');
+  btn.disabled = true;
+  try{
+    const username = document.getElementById('lUser').value.trim();
+    const password = document.getElementById('lPass').value;
+    const res = await fetch('/api/auth/login', {
+      method:'POST', credentials:'same-origin',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok){ throw new Error(data.error || 'Falha no login'); }
+    showApp();
+    await loadLeads();
+  }catch(err){
+    errEl.textContent = err.message;
+    errEl.classList.add('show');
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  await fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'});
+  showLogin();
+});
+document.getElementById('refreshBtn').addEventListener('click', loadLeads);
+
+async function loadLeads(){
+  try{
+    leads = await api('/api/leads');
+    render();
+  }catch(err){
+    if(err.message !== 'unauthorized') toast('Erro ao carregar leads: '+err.message);
+  }
+}
+
+function render(){
+  renderSummary();
+  renderBoard();
+}
+
+function renderSummary(){
+  const el = document.getElementById('summary');
+  el.innerHTML = '';
+  const total = document.createElement('div');
+  total.className = 'sum-card';
+  total.innerHTML = `<div class="n">${leads.length}</div><div class="l">Total de leads</div>`;
+  el.appendChild(total);
+  STATUSES.forEach(s=>{
+    const count = leads.filter(l=>l.status===s.key).length;
+    const c = document.createElement('div');
+    c.className = 'sum-card';
+    c.innerHTML = `<div class="n">${count}</div><div class="l">${s.label}</div>`;
+    el.appendChild(c);
+  });
+}
+
+function renderBoard(){
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  STATUSES.forEach((s, idx)=>{
+    const col = document.createElement('div');
+    col.className = 'col';
+    const colLeads = leads.filter(l=>l.status===s.key);
+    col.innerHTML = `<div class="col-head"><span>${s.label}</span><span class="count">${colLeads.length}</span></div>`;
+    const body = document.createElement('div');
+    body.className = 'col-body';
+    if(colLeads.length===0){
+      body.innerHTML = '<div class="empty-col">Nenhum lead aqui</div>';
+    }
+    colLeads.forEach(lead=>{
+      body.appendChild(renderCard(lead, idx));
+    });
+    col.appendChild(body);
+    board.appendChild(col);
+  });
+}
+
+function renderCard(lead, statusIdx){
+  const card = document.createElement('div');
+  card.className = 'card';
+  const nameEl = document.createElement('div');
+  nameEl.className = 'name';
+  nameEl.textContent = lead.name || '(sem nome)';
+  const phoneEl = document.createElement('div');
+  phoneEl.className = 'meta';
+  phoneEl.textContent = lead.phone || '';
+  card.appendChild(nameEl);
+  card.appendChild(phoneEl);
+
+  const badges = document.createElement('div');
+  badges.className = 'badges';
+  if(lead.program){
+    const b = document.createElement('span');
+    b.className = 'badge';
+    b.textContent = lead.program;
+    badges.appendChild(b);
+  }
+  card.appendChild(badges);
+
+  const time = document.createElement('div');
+  time.className = 'time';
+  time.textContent = relTime(lead.created_at);
+  card.appendChild(time);
+
+  const moveWrap = document.createElement('div');
+  moveWrap.className = 'movebtns';
+  if(statusIdx > 0){
+    const prev = document.createElement('button');
+    prev.className = 'mv'; prev.type='button'; prev.textContent = '‹';
+    prev.addEventListener('click', (e)=>{ e.stopPropagation(); changeStatus(lead.id, STATUSES[statusIdx-1].key); });
+    moveWrap.appendChild(prev);
+  }
+  if(statusIdx < STATUSES.length-1){
+    const next = document.createElement('button');
+    next.className = 'mv'; next.type='button'; next.textContent = '›';
+    next.addEventListener('click', (e)=>{ e.stopPropagation(); changeStatus(lead.id, STATUSES[statusIdx+1].key); });
+    moveWrap.appendChild(next);
+  }
+  card.appendChild(moveWrap);
+
+  card.addEventListener('click', ()=>openDrawer(lead.id));
+  return card;
+}
+
+async function changeStatus(id, status){
+  try{
+    await api(`/api/leads/${id}`, {method:'PATCH', body: JSON.stringify({status})});
+    const lead = leads.find(l=>l.id===id);
+    if(lead) lead.status = status;
+    render();
+  }catch(err){ toast('Erro: '+err.message); }
+}
+
+function openDrawer(id){
+  selectedId = id;
+  const lead = leads.find(l=>l.id===id);
+  if(!lead) return;
+  const drawer = document.getElementById('drawer');
+  const wa = waLink(lead.phone);
+
+  drawer.innerHTML = '';
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'drawer-close';
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', closeDrawer);
+  drawer.appendChild(closeBtn);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = lead.name || '(sem nome)';
+  drawer.appendChild(h2);
+
+  const form = document.createElement('div');
+  form.innerHTML = `
+    <div class="drawer-row">
+      <div class="field"><label>Nome</label><input id="fName"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field"><label>Telefone</label><input id="fPhone"></div>
+      <div class="field"><label>E-mail</label><input id="fEmail"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field"><label>Programa de interesse</label><input id="fProgram"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field"><label>Origem</label><input id="fSource" disabled></div>
+      <div class="field"><label>Status</label>
+        <select id="fStatus">${STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
+      </div>
+    </div>
+  `;
+  drawer.appendChild(form);
+  drawer.querySelector('#fName').value = lead.name || '';
+  drawer.querySelector('#fPhone').value = lead.phone || '';
+  drawer.querySelector('#fEmail').value = lead.email || '';
+  drawer.querySelector('#fProgram').value = lead.program || '';
+  drawer.querySelector('#fSource').value = lead.source || '(não informado)';
+  drawer.querySelector('#fStatus').value = lead.status;
+
+  const saveRow = document.createElement('div');
+  saveRow.className = 'save-row';
+  saveRow.innerHTML = `
+    <button class="btn-small save" id="saveBtn">Salvar</button>
+    ${wa ? `<a class="btn-small wa" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
+    <button class="btn-small del" id="delBtn">Excluir</button>
+  `;
+  drawer.appendChild(saveRow);
+
+  drawer.querySelector('#saveBtn').addEventListener('click', async ()=>{
+    try{
+      await api(`/api/leads/${id}`, {method:'PATCH', body: JSON.stringify({
+        name: drawer.querySelector('#fName').value.trim(),
+        phone: drawer.querySelector('#fPhone').value.trim(),
+        email: drawer.querySelector('#fEmail').value.trim(),
+        program: drawer.querySelector('#fProgram').value.trim(),
+        status: drawer.querySelector('#fStatus').value,
+      })});
+      toast('Lead atualizado');
+      await loadLeads();
+      openDrawer(id);
+    }catch(err){ toast('Erro: '+err.message); }
+  });
+
+  drawer.querySelector('#delBtn').addEventListener('click', async ()=>{
+    if(!confirm('Excluir este lead? Essa ação não pode ser desfeita.')) return;
+    try{
+      await api(`/api/leads/${id}`, {method:'DELETE'});
+      toast('Lead excluído');
+      closeDrawer();
+      await loadLeads();
+    }catch(err){ toast('Erro: '+err.message); }
+  });
+
+  const notesTitle = document.createElement('div');
+  notesTitle.className = 'notes-title';
+  notesTitle.textContent = 'Anotações';
+  drawer.appendChild(notesTitle);
+
+  const notesList = document.createElement('div');
+  (lead.notes||[]).slice().reverse().forEach(n=>{
+    const note = document.createElement('div');
+    note.className = 'note';
+    const textSpan = document.createElement('span');
+    textSpan.textContent = n.text;
+    note.appendChild(textSpan);
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'note-time';
+    timeSpan.textContent = new Date(n.at).toLocaleString('pt-BR');
+    note.appendChild(timeSpan);
+    notesList.appendChild(note);
+  });
+  if(!lead.notes || lead.notes.length===0){
+    notesList.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">Nenhuma anotação ainda.</p>';
+  }
+  drawer.appendChild(notesList);
+
+  const noteForm = document.createElement('div');
+  noteForm.className = 'note-form';
+  noteForm.innerHTML = `<textarea id="noteText" placeholder="Adicionar anotação..."></textarea><button id="noteBtn" type="button">Add</button>`;
+  drawer.appendChild(noteForm);
+  noteForm.querySelector('#noteBtn').addEventListener('click', async ()=>{
+    const text = noteForm.querySelector('#noteText').value.trim();
+    if(!text) return;
+    try{
+      await api(`/api/leads/${id}/notes`, {method:'POST', body: JSON.stringify({text})});
+      await loadLeads();
+      openDrawer(id);
+    }catch(err){ toast('Erro: '+err.message); }
+  });
+
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeDrawer(){
+  document.getElementById('overlay').classList.remove('show');
+  selectedId = null;
+}
+document.getElementById('overlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'overlay') closeDrawer();
+});
+
+checkAuth();
+</script>
+</body>
+</html>

@@ -233,6 +233,21 @@
       .svc-cta{grid-column:1;margin-top:.5rem}
       .footer-in{flex-direction:column;gap:1rem;text-align:center}
     }
+
+    /* ── LEAD MODAL ── */
+    .lead-overlay{position:fixed;inset:0;background:rgba(19,67,76,.6);z-index:2000;display:none;align-items:center;justify-content:center;padding:1.5rem}
+    .lead-overlay.open{display:flex}
+    .lead-modal{background:var(--white);max-width:400px;width:100%;padding:2.5rem 2rem;position:relative}
+    .lead-modal-close{position:absolute;top:1rem;right:1.1rem;background:0;border:0;font-size:1.4rem;color:var(--muted);cursor:pointer;line-height:1}
+    .lead-modal h3{font-family:var(--fd);font-size:1.4rem;font-weight:500;margin-bottom:.4rem}
+    .lead-modal .lm-sub{font-size:.82rem;color:var(--muted);margin-bottom:1.5rem}
+    .lm-field{margin-bottom:1rem}
+    .lm-field label{display:block;font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+    .lm-field input{width:100%;padding:.75rem .9rem;border:1px solid var(--border);background:var(--white);outline:none;font-family:var(--fb);font-size:.9rem;transition:border-color .3s}
+    .lm-field input:focus{border-color:var(--green)}
+    .lead-modal .btn-main{width:100%;justify-content:center;margin-top:.25rem}
+    .lm-skip{display:block;text-align:center;margin-top:1rem;font-size:.75rem;color:var(--muted);border-bottom:1px solid transparent;cursor:pointer}
+    .lm-skip:hover{color:var(--green);border-color:var(--green)}
   </style>
 </head>
 <body>
@@ -247,7 +262,7 @@
         <li><a href="#servicos">Programas</a></li>
         <li><a href="#depoimentos">Depoimentos</a></li>
         <li><a href="#midia">Mídia</a></li>
-        <li><a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Quero%20dar%20o%20primeiro%20passo%20rumo%20%C3%A0%20lideran%C3%A7a%20da%20minha%20mente.%20Como%20funciona%20o%20processo%3F" class="nav-cta" target="_blank">Agende uma conversa</a></li>
+        <li><a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Quero%20dar%20o%20primeiro%20passo%20rumo%20%C3%A0%20lideran%C3%A7a%20da%20minha%20mente.%20Como%20funciona%20o%20processo%3F" class="nav-cta wa-cta" data-program="Contato geral" data-source="Nav — Agende uma conversa" target="_blank">Agende uma conversa</a></li>
       </ul>
       <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
@@ -259,7 +274,7 @@
     <a href="#servicos">Programas</a>
     <a href="#depoimentos">Depoimentos</a>
     <a href="#midia">Mídia</a>
-    <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Quero%20dar%20o%20primeiro%20passo%20rumo%20%C3%A0%20lideran%C3%A7a%20da%20minha%20mente.%20Como%20funciona%20o%20processo%3F" target="_blank">Agende uma conversa</a>
+    <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Quero%20dar%20o%20primeiro%20passo%20rumo%20%C3%A0%20lideran%C3%A7a%20da%20minha%20mente.%20Como%20funciona%20o%20processo%3F" class="wa-cta" data-program="Contato geral" data-source="Menu mobile — Agende uma conversa" target="_blank">Agende uma conversa</a>
   </div>
 
   <!-- HERO -->
@@ -282,7 +297,7 @@
               Conheça meu método
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </a>
-            <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Conheci%20o%20trabalho%20da%20Juliana%20e%20gostaria%20de%20entender%20qual%20programa%20faz%20mais%20sentido%20para%20o%20meu%20momento." class="btn-ghost" target="_blank">Agende uma conversa</a>
+            <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Conheci%20o%20trabalho%20da%20Juliana%20e%20gostaria%20de%20entender%20qual%20programa%20faz%20mais%20sentido%20para%20o%20meu%20momento." class="btn-ghost wa-cta" data-program="Contato geral" data-source="Hero — Agende uma conversa" target="_blank">Agende uma conversa</a>
           </div>
         </div>
         <div class="hero-img-wrap">
@@ -464,7 +479,7 @@
           </div>
         </div>
         <div class="svc-cta">
-          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20na%20Mentoria%20Reprograme-se.%20Gostaria%20de%20saber%20mais%20sobre%20o%20processo%20e%20como%20me%20aplicar." class="btn-line" target="_blank">Quero conhecer</a>
+          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20na%20Mentoria%20Reprograme-se.%20Gostaria%20de%20saber%20mais%20sobre%20o%20processo%20e%20como%20me%20aplicar." class="btn-line wa-cta" data-program="Mentoria Individual Reprograme-se" data-source="Programas — Quero conhecer" target="_blank">Quero conhecer</a>
         </div>
       </div>
 
@@ -483,7 +498,7 @@
           </div>
         </div>
         <div class="svc-cta">
-          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20no%20Treino%20de%20Lideran%C3%A7a%20Mental.%20Gostaria%20de%20saber%20mais." class="btn-line" target="_blank">Saiba mais</a>
+          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20no%20Treino%20de%20Lideran%C3%A7a%20Mental.%20Gostaria%20de%20saber%20mais." class="btn-line wa-cta" data-program="Treino de Liderança Mental" data-source="Programas — Saiba mais" target="_blank">Saiba mais</a>
         </div>
       </div>
 
@@ -501,7 +516,7 @@
           </div>
         </div>
         <div class="svc-cta">
-          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20os%20retiros%20%E2%80%94%20datas%2C%20local%20e%20como%20reservar%20minha%20vaga." class="btn-line" target="_blank">Reserve</a>
+          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20os%20retiros%20%E2%80%94%20datas%2C%20local%20e%20como%20reservar%20minha%20vaga." class="btn-line wa-cta" data-program="Retiro 360° / Retiro Presença" data-source="Programas — Reserve" target="_blank">Reserve</a>
         </div>
       </div>
 
@@ -520,7 +535,7 @@
           </div>
         </div>
         <div class="svc-cta">
-          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20em%20levar%20a%20Juliana%20para%20um%20evento%2Fempresa.%20Gostaria%20de%20saber%20sobre%20palestras%20e%20treinamentos." class="btn-line" target="_blank">Contrate</a>
+          <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Tenho%20interesse%20em%20levar%20a%20Juliana%20para%20um%20evento%2Fempresa.%20Gostaria%20de%20saber%20sobre%20palestras%20e%20treinamentos." class="btn-line wa-cta" data-program="Palestras e Experiências para Empresas" data-source="Programas — Contrate" target="_blank">Contrate</a>
         </div>
       </div>
     </div>
@@ -599,7 +614,7 @@
       </h2>
       <p class="rv d2">A liderança começa dentro.</p>
       <div class="cta-row rv d3">
-        <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Visitei%20o%20site%20do%20Instituto%20Nacional%20de%20Medita%C3%A7%C3%A3o%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20programas%20dispon%C3%ADveis." class="btn-main" target="_blank" style="background:var(--sand);color:var(--petrol)">
+        <a href="https://wa.me/5511983738511?text=Ol%C3%A1!%20Visitei%20o%20site%20do%20Instituto%20Nacional%20de%20Medita%C3%A7%C3%A3o%20e%20gostaria%20de%20saber%20mais%20sobre%20os%20programas%20dispon%C3%ADveis." class="btn-main wa-cta" data-program="Contato geral" data-source="CTA final — Agende uma conversa" target="_blank" style="background:var(--sand);color:var(--petrol)">
           Agende uma conversa
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
@@ -619,6 +634,30 @@
     </div>
   </footer>
 
+  <!-- LEAD MODAL -->
+  <div class="lead-overlay" id="leadOverlay">
+    <div class="lead-modal">
+      <button class="lead-modal-close" id="leadModalClose" aria-label="Fechar">×</button>
+      <h3>Antes de continuar</h3>
+      <p class="lm-sub">Deixe seu nome e telefone para a Juliana te responder melhor.</p>
+      <form id="leadForm">
+        <div class="lm-field">
+          <label for="leadName">Nome</label>
+          <input id="leadName" name="name" required autocomplete="name">
+        </div>
+        <div class="lm-field">
+          <label for="leadPhone">Telefone (WhatsApp)</label>
+          <input id="leadPhone" name="phone" required autocomplete="tel" inputmode="tel" placeholder="(11) 90000-0000">
+        </div>
+        <button type="submit" class="btn-main">
+          Continuar para o WhatsApp
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </form>
+      <span class="lm-skip" id="leadSkip">Prefiro ir direto para o WhatsApp</span>
+    </div>
+  </div>
+
   <script>
     const nav=document.getElementById('nav');
     window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>50));
@@ -628,6 +667,54 @@
     const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vis')})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});
     document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
     document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',function(e){e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})});
+
+    // ── Captura de lead antes do WhatsApp ──
+    (function(){
+      const overlay=document.getElementById('leadOverlay');
+      const form=document.getElementById('leadForm');
+      const closeBtn=document.getElementById('leadModalClose');
+      const skipBtn=document.getElementById('leadSkip');
+      let pendingWa=null, pendingProgram='', pendingSource='';
+
+      function openModal(waUrl,program,source){
+        pendingWa=waUrl;pendingProgram=program;pendingSource=source;
+        overlay.classList.add('open');
+        document.body.style.overflow='hidden';
+        setTimeout(()=>document.getElementById('leadName').focus(),50);
+      }
+      function closeModal(){
+        overlay.classList.remove('open');
+        document.body.style.overflow='';
+        form.reset();
+      }
+      function goToWhatsApp(){
+        if(pendingWa) window.open(pendingWa,'_blank');
+        closeModal();
+      }
+
+      document.querySelectorAll('.wa-cta').forEach(a=>{
+        a.addEventListener('click',function(e){
+          e.preventDefault();
+          openModal(this.getAttribute('href'), this.dataset.program||'', this.dataset.source||'');
+        });
+      });
+
+      closeBtn.addEventListener('click',closeModal);
+      overlay.addEventListener('click',(e)=>{if(e.target===overlay)closeModal();});
+      skipBtn.addEventListener('click',goToWhatsApp);
+
+      form.addEventListener('submit',function(e){
+        e.preventDefault();
+        const name=document.getElementById('leadName').value.trim();
+        const phone=document.getElementById('leadPhone').value.trim();
+        if(!name||!phone) return;
+        fetch('/api/leads',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({name,phone,program:pendingProgram,source:pendingSource})
+        }).catch(()=>{}).finally(goToWhatsApp);
+      });
+    })();
   </script>
 </body>
 </html>

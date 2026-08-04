@@ -23,6 +23,7 @@ async function runMigrations() {
   await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS first_contact_date DATE`;
   await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_contact_date DATE`;
   await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS next_contact_date DATE`;
+  await sql`ALTER TABLE leads ADD COLUMN IF NOT EXISTS priority TEXT NOT NULL DEFAULT ''`;
 }
 
 function ensureSchema() {

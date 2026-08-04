@@ -53,7 +53,7 @@
   .sum-card .n{font-family:var(--fd);font-size:1.9rem;color:var(--green);line-height:1}
   .sum-card .l{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:.2rem}
 
-  .board{display:grid;grid-template-columns:repeat(5,minmax(240px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
+  .board{display:grid;grid-template-columns:repeat(7,minmax(230px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
   .col{background:var(--sand);display:flex;flex-direction:column;min-width:240px}
   .col-head{padding:.9rem 1rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.08)}
   .col-head .count{background:var(--green);color:var(--white);border-radius:20px;font-size:.65rem;padding:.1rem .55rem}
@@ -144,12 +144,16 @@
 
 <script>
 const STATUSES = [
-  {key:'novo', label:'Novo'},
-  {key:'em_conversa', label:'Em conversa'},
-  {key:'proposta_enviada', label:'Proposta enviada'},
+  {key:'novo_lead', label:'Novo lead'},
+  {key:'aguardando_retorno', label:'Aguardando retorno'},
+  {key:'em_negociacao', label:'Em negociação'},
+  {key:'relacionamento', label:'Relacionamento'},
+  {key:'pausado', label:'Pausado'},
   {key:'fechado', label:'Fechado'},
-  {key:'perdido', label:'Perdido'},
+  {key:'sem_retorno', label:'Sem retorno'},
 ];
+
+const PRIORITIES = ['Alta', 'Média', 'Baixa'];
 
 let leads = [];
 let selectedId = null;
@@ -325,6 +329,15 @@ function renderCard(lead, statusIdx){
 
   const badges = document.createElement('div');
   badges.className = 'badges';
+  if(lead.priority){
+    const b = document.createElement('span');
+    b.className = 'badge';
+    const colors = {Alta:'var(--wine)', 'Média':'var(--petrol)', Baixa:'var(--muted)'};
+    b.style.background = colors[lead.priority] || 'var(--green)';
+    b.style.color = 'var(--white)';
+    b.textContent = lead.priority;
+    badges.appendChild(b);
+  }
   if(lead.program){
     const b = document.createElement('span');
     b.className = 'badge';
@@ -408,6 +421,11 @@ function openDrawer(id){
     </div>
     <div class="drawer-row">
       <div class="field"><label>Origem</label><input id="fSource"></div>
+      <div class="field"><label>Prioridade</label>
+        <select id="fPriority"><option value="">—</option>${PRIORITIES.map(p=>`<option value="${p}">${p}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="drawer-row">
       <div class="field"><label>Pipeline</label>
         <select id="fStatus">${STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
       </div>
@@ -431,6 +449,7 @@ function openDrawer(id){
   drawer.querySelector('#fEmail').value = lead.email || '';
   drawer.querySelector('#fProgram').value = lead.program || '';
   drawer.querySelector('#fSource').value = lead.source || '';
+  drawer.querySelector('#fPriority').value = lead.priority || '';
   drawer.querySelector('#fStatus').value = lead.status;
   drawer.querySelector('#fStatusNote').value = lead.status_note || '';
   drawer.querySelector('#fFirstContact').value = toDateInputValue(lead.first_contact_date);
@@ -456,6 +475,7 @@ function openDrawer(id){
         email: drawer.querySelector('#fEmail').value.trim(),
         program: drawer.querySelector('#fProgram').value.trim(),
         source: drawer.querySelector('#fSource').value.trim(),
+        priority: drawer.querySelector('#fPriority').value,
         status: drawer.querySelector('#fStatus').value,
         status_note: drawer.querySelector('#fStatusNote').value.trim(),
         first_contact_date: drawer.querySelector('#fFirstContact').value || '',

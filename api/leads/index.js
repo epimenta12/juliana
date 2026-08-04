@@ -23,7 +23,8 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'POST') {
-    // Público: usado pelo formulário de captura do site antes de abrir o WhatsApp.
+    // Público (site de captura) ou autenticado (cadastro manual no CRM).
+    const authed = isAuthed(req);
     const body = parseBody(req);
     const name = String(body.name || '').trim().slice(0, 200);
     const phone = String(body.phone || '').trim().slice(0, 60);
@@ -31,14 +32,14 @@ module.exports = async (req, res) => {
     const program = String(body.program || '').trim().slice(0, 200);
     const source = String(body.source || '').trim().slice(0, 200);
 
-    if (!name || !phone) {
+    if (!name || (!authed && !phone)) {
       res.status(400).json({ error: 'nome e telefone são obrigatórios' });
       return;
     }
 
     const { rows } = await sql`
       INSERT INTO leads (name, phone, email, program, source, status)
-      VALUES (${name}, ${phone}, ${email}, ${program}, ${source}, 'novo')
+      VALUES (${name}, ${phone}, ${email}, ${program}, ${source}, 'novo_lead')
       RETURNING id
     `;
     res.status(201).json({ ok: true, id: rows[0].id });

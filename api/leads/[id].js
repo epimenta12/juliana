@@ -1,7 +1,7 @@
 const { sql, ensureSchema } = require('../_db');
 const { isAuthed } = require('../_auth');
 
-const ALLOWED_STATUS = ['novo', 'em_conversa', 'proposta_enviada', 'fechado', 'perdido'];
+const ALLOWED_STATUS = ['novo_lead', 'aguardando_retorno', 'em_negociacao', 'relacionamento', 'pausado', 'fechado', 'sem_retorno'];
 
 function parseBody(req) {
   if (!req.body) return {};
@@ -40,6 +40,7 @@ module.exports = async (req, res) => {
     const program = typeof body.program === 'string' ? body.program.trim().slice(0, 200) : null;
     const source = typeof body.source === 'string' ? body.source.trim().slice(0, 200) : null;
     const instagram = typeof body.instagram === 'string' ? body.instagram.trim().slice(0, 200) : null;
+    const priority = typeof body.priority === 'string' ? body.priority.trim().slice(0, 20) : null;
     const statusNote = typeof body.status_note === 'string' ? body.status_note.trim().slice(0, 2000) : null;
     const observations = typeof body.observations === 'string' ? body.observations.trim().slice(0, 4000) : null;
     const firstContactDate = toDateOrNull(body.first_contact_date);
@@ -55,6 +56,7 @@ module.exports = async (req, res) => {
         program = COALESCE(${program}, program),
         source = COALESCE(${source}, source),
         instagram = COALESCE(${instagram}, instagram),
+        priority = COALESCE(${priority}, priority),
         status_note = COALESCE(${statusNote}, status_note),
         observations = COALESCE(${observations}, observations),
         first_contact_date = COALESCE(${firstContactDate}, first_contact_date),

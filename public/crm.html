@@ -53,9 +53,9 @@
   .sum-card .n{font-family:var(--fd);font-size:1.9rem;color:var(--green);line-height:1}
   .sum-card .l{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:.2rem}
 
-  .board{display:grid;grid-template-columns:repeat(7,minmax(230px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
+  .board{display:grid;grid-template-columns:repeat(8,minmax(220px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
   .col{background:var(--sand);display:flex;flex-direction:column;min-width:240px}
-  .col-head{padding:.9rem 1rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.08)}
+  .col-head{padding:.9rem 1rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.08);cursor:help}
   .col-head .count{background:var(--green);color:var(--white);border-radius:20px;font-size:.65rem;padding:.1rem .55rem}
   .col-body{padding:.7rem;display:flex;flex-direction:column;gap:.6rem;min-height:80px;flex:1}
 
@@ -145,13 +145,14 @@
 
 <script>
 const STATUSES = [
-  {key:'novo_lead', label:'Novo lead'},
-  {key:'aguardando_retorno', label:'Aguardando retorno'},
-  {key:'em_negociacao', label:'Em negociação'},
-  {key:'relacionamento', label:'Relacionamento'},
-  {key:'pausado', label:'Pausado'},
-  {key:'fechado', label:'Fechado'},
-  {key:'sem_retorno', label:'Sem retorno'},
+  {key:'novo_lead', label:'Novo lead', desc:'Todos os dados estão cadastrados, mas ainda não houve nenhuma conversa.'},
+  {key:'primeiro_contato', label:'Primeiro contato', desc:'Teve uma conversa inicial pelo WhatsApp ou Instagram.'},
+  {key:'aguardando_retorno', label:'Aguardando retorno', desc:'Conversamos, mas depois disso não veio mais retorno.'},
+  {key:'qualificacao', label:'Qualificação do lead', desc:'Retornou as mensagens — estamos entendendo melhor o momento dela e apresentando o produto.'},
+  {key:'fechamento', label:'Fechamento', desc:'Está com uma call de vendas marcada.'},
+  {key:'ganho', label:'Ganho', desc:'Comprou.'},
+  {key:'perda', label:'Perda', desc:'Não comprou após a call, ou está há mais de 1 mês sem contato.'},
+  {key:'contato_futuro', label:'Contato futuro', desc:'Tem interesse e perfil, mas não consegue fechar no momento.'},
 ];
 
 const PRIORITIES = ['Alta', 'Média', 'Baixa'];
@@ -285,7 +286,7 @@ function renderBoard(){
     const col = document.createElement('div');
     col.className = 'col';
     const colLeads = leads.filter(l=>l.status===s.key);
-    col.innerHTML = `<div class="col-head"><span>${s.label}</span><span class="count">${colLeads.length}</span></div>`;
+    col.innerHTML = `<div class="col-head" title="${s.desc}"><span>${s.label}</span><span class="count">${colLeads.length}</span></div>`;
     const body = document.createElement('div');
     body.className = 'col-body';
     if(colLeads.length===0){

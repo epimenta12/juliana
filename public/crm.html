@@ -125,6 +125,7 @@
   <div class="topbar">
     <div class="logo">CRM · <em>Juliana Carvalhaes</em></div>
     <div class="topbar-actions">
+      <button class="btn-ghost-top" id="newLeadBtn" style="background:var(--green);border-color:var(--green)">+ Novo Lead</button>
       <button class="btn-ghost-top" id="refreshBtn">Atualizar</button>
       <button class="btn-ghost-top" id="logoutBtn">Sair</button>
     </div>
@@ -245,6 +246,7 @@ document.getElementById('logoutBtn').addEventListener('click', async ()=>{
   showLogin();
 });
 document.getElementById('refreshBtn').addEventListener('click', loadLeads);
+document.getElementById('newLeadBtn').addEventListener('click', ()=>openDrawer(null));
 
 async function loadLeads(){
   try{
@@ -389,11 +391,12 @@ async function changeStatus(id, status){
 }
 
 function openDrawer(id){
-  selectedId = id;
-  const lead = leads.find(l=>l.id===id);
-  if(!lead) return;
+  const isNew = !id;
+  selectedId = id || null;
+  const lead = isNew ? {status:'novo_lead'} : leads.find(l=>l.id===id);
+  if(!isNew && !lead) return;
   const drawer = document.getElementById('drawer');
-  const wa = waLink(lead.phone);
+  const wa = !isNew && waLink(lead.phone);
 
   drawer.innerHTML = '';
   const closeBtn = document.createElement('button');
@@ -403,7 +406,7 @@ function openDrawer(id){
   drawer.appendChild(closeBtn);
 
   const h2 = document.createElement('h2');
-  h2.textContent = lead.name || '(sem nome)';
+  h2.textContent = isNew ? 'Novo lead' : (lead.name || '(sem nome)');
   drawer.appendChild(h2);
 
   const form = document.createElement('div');
@@ -459,7 +462,9 @@ function openDrawer(id){
 
   const saveRow = document.createElement('div');
   saveRow.className = 'save-row';
-  saveRow.innerHTML = `
+  saveRow.innerHTML = isNew
+    ? `<button class="btn-small save" id="saveBtn">Criar lead</button>`
+    : `
     <button class="btn-small save" id="saveBtn">Salvar</button>
     ${wa ? `<a class="btn-small wa" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
     <button class="btn-small del" id="delBtn">Excluir</button>
@@ -467,74 +472,88 @@ function openDrawer(id){
   drawer.appendChild(saveRow);
 
   drawer.querySelector('#saveBtn').addEventListener('click', async ()=>{
+    const fields = {
+      name: drawer.querySelector('#fName').value.trim(),
+      phone: drawer.querySelector('#fPhone').value.trim(),
+      instagram: drawer.querySelector('#fInstagram').value.trim(),
+      email: drawer.querySelector('#fEmail').value.trim(),
+      program: drawer.querySelector('#fProgram').value.trim(),
+      source: drawer.querySelector('#fSource').value.trim(),
+      priority: drawer.querySelector('#fPriority').value,
+      status: drawer.querySelector('#fStatus').value,
+      status_note: drawer.querySelector('#fStatusNote').value.trim(),
+      first_contact_date: drawer.querySelector('#fFirstContact').value || '',
+      last_contact_date: drawer.querySelector('#fLastContact').value || '',
+      next_contact_date: drawer.querySelector('#fNextContact').value || '',
+      observations: drawer.querySelector('#fObservations').value.trim(),
+    };
+    if(!fields.name){ toast('Informe ao menos o nome'); return; }
     try{
-      await api(`/api/leads/${id}`, {method:'PATCH', body: JSON.stringify({
-        name: drawer.querySelector('#fName').value.trim(),
-        phone: drawer.querySelector('#fPhone').value.trim(),
-        instagram: drawer.querySelector('#fInstagram').value.trim(),
-        email: drawer.querySelector('#fEmail').value.trim(),
-        program: drawer.querySelector('#fProgram').value.trim(),
-        source: drawer.querySelector('#fSource').value.trim(),
-        priority: drawer.querySelector('#fPriority').value,
-        status: drawer.querySelector('#fStatus').value,
-        status_note: drawer.querySelector('#fStatusNote').value.trim(),
-        first_contact_date: drawer.querySelector('#fFirstContact').value || '',
-        last_contact_date: drawer.querySelector('#fLastContact').value || '',
-        next_contact_date: drawer.querySelector('#fNextContact').value || '',
-        observations: drawer.querySelector('#fObservations').value.trim(),
-      })});
-      toast('Lead atualizado');
-      await loadLeads();
-      openDrawer(id);
+      if(isNew){
+        const created = await api('/api/leads', {method:'POST', body: JSON.stringify({
+          name: fields.name, phone: fields.phone, program: fields.program, source: fields.source,
+        })});
+        await api(`/api/leads/${created.id}`, {method:'PATCH', body: JSON.stringify(fields)});
+        toast('Lead criado');
+        await loadLeads();
+        openDrawer(created.id);
+      }else{
+        await api(`/api/leads/${id}`, {method:'PATCH', body: JSON.stringify(fields)});
+        toast('Lead atualizado');
+        await loadLeads();
+        openDrawer(id);
+      }
     }catch(err){ toast('Erro: '+err.message); }
   });
 
-  drawer.querySelector('#delBtn').addEventListener('click', async ()=>{
-    if(!confirm('Excluir este lead? Essa ação não pode ser desfeita.')) return;
-    try{
-      await api(`/api/leads/${id}`, {method:'DELETE'});
-      toast('Lead excluído');
-      closeDrawer();
-      await loadLeads();
-    }catch(err){ toast('Erro: '+err.message); }
-  });
+  if(!isNew){
+    drawer.querySelector('#delBtn').addEventListener('click', async ()=>{
+      if(!confirm('Excluir este lead? Essa ação não pode ser desfeita.')) return;
+      try{
+        await api(`/api/leads/${id}`, {method:'DELETE'});
+        toast('Lead excluído');
+        closeDrawer();
+        await loadLeads();
+      }catch(err){ toast('Erro: '+err.message); }
+    });
 
-  const notesTitle = document.createElement('div');
-  notesTitle.className = 'notes-title';
-  notesTitle.textContent = 'Anotações';
-  drawer.appendChild(notesTitle);
+    const notesTitle = document.createElement('div');
+    notesTitle.className = 'notes-title';
+    notesTitle.textContent = 'Anotações';
+    drawer.appendChild(notesTitle);
 
-  const notesList = document.createElement('div');
-  (lead.notes||[]).slice().reverse().forEach(n=>{
-    const note = document.createElement('div');
-    note.className = 'note';
-    const textSpan = document.createElement('span');
-    textSpan.textContent = n.text;
-    note.appendChild(textSpan);
-    const timeSpan = document.createElement('span');
-    timeSpan.className = 'note-time';
-    timeSpan.textContent = new Date(n.at).toLocaleString('pt-BR');
-    note.appendChild(timeSpan);
-    notesList.appendChild(note);
-  });
-  if(!lead.notes || lead.notes.length===0){
-    notesList.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">Nenhuma anotação ainda.</p>';
+    const notesList = document.createElement('div');
+    (lead.notes||[]).slice().reverse().forEach(n=>{
+      const note = document.createElement('div');
+      note.className = 'note';
+      const textSpan = document.createElement('span');
+      textSpan.textContent = n.text;
+      note.appendChild(textSpan);
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'note-time';
+      timeSpan.textContent = new Date(n.at).toLocaleString('pt-BR');
+      note.appendChild(timeSpan);
+      notesList.appendChild(note);
+    });
+    if(!lead.notes || lead.notes.length===0){
+      notesList.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">Nenhuma anotação ainda.</p>';
+    }
+    drawer.appendChild(notesList);
+
+    const noteForm = document.createElement('div');
+    noteForm.className = 'note-form';
+    noteForm.innerHTML = `<textarea id="noteText" placeholder="Adicionar anotação..."></textarea><button id="noteBtn" type="button">Add</button>`;
+    drawer.appendChild(noteForm);
+    noteForm.querySelector('#noteBtn').addEventListener('click', async ()=>{
+      const text = noteForm.querySelector('#noteText').value.trim();
+      if(!text) return;
+      try{
+        await api(`/api/leads/${id}/notes`, {method:'POST', body: JSON.stringify({text})});
+        await loadLeads();
+        openDrawer(id);
+      }catch(err){ toast('Erro: '+err.message); }
+    });
   }
-  drawer.appendChild(notesList);
-
-  const noteForm = document.createElement('div');
-  noteForm.className = 'note-form';
-  noteForm.innerHTML = `<textarea id="noteText" placeholder="Adicionar anotação..."></textarea><button id="noteBtn" type="button">Add</button>`;
-  drawer.appendChild(noteForm);
-  noteForm.querySelector('#noteBtn').addEventListener('click', async ()=>{
-    const text = noteForm.querySelector('#noteText').value.trim();
-    if(!text) return;
-    try{
-      await api(`/api/leads/${id}/notes`, {method:'POST', body: JSON.stringify({text})});
-      await loadLeads();
-      openDrawer(id);
-    }catch(err){ toast('Erro: '+err.message); }
-  });
 
   document.getElementById('overlay').classList.add('show');
 }

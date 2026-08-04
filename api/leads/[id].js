@@ -11,6 +11,13 @@ function parseBody(req) {
   return req.body;
 }
 
+function toDateOrNull(v) {
+  if (typeof v !== 'string') return null;
+  const s = v.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  return s;
+}
+
 module.exports = async (req, res) => {
   if (!isAuthed(req)) {
     res.status(401).json({ error: 'unauthorized' });
@@ -31,6 +38,13 @@ module.exports = async (req, res) => {
     const phone = typeof body.phone === 'string' ? body.phone.trim().slice(0, 60) : null;
     const email = typeof body.email === 'string' ? body.email.trim().slice(0, 200) : null;
     const program = typeof body.program === 'string' ? body.program.trim().slice(0, 200) : null;
+    const source = typeof body.source === 'string' ? body.source.trim().slice(0, 200) : null;
+    const instagram = typeof body.instagram === 'string' ? body.instagram.trim().slice(0, 200) : null;
+    const statusNote = typeof body.status_note === 'string' ? body.status_note.trim().slice(0, 2000) : null;
+    const observations = typeof body.observations === 'string' ? body.observations.trim().slice(0, 4000) : null;
+    const firstContactDate = toDateOrNull(body.first_contact_date);
+    const lastContactDate = toDateOrNull(body.last_contact_date);
+    const nextContactDate = toDateOrNull(body.next_contact_date);
 
     await sql`
       UPDATE leads SET
@@ -39,6 +53,13 @@ module.exports = async (req, res) => {
         phone = COALESCE(${phone}, phone),
         email = COALESCE(${email}, email),
         program = COALESCE(${program}, program),
+        source = COALESCE(${source}, source),
+        instagram = COALESCE(${instagram}, instagram),
+        status_note = COALESCE(${statusNote}, status_note),
+        observations = COALESCE(${observations}, observations),
+        first_contact_date = COALESCE(${firstContactDate}, first_contact_date),
+        last_contact_date = COALESCE(${lastContactDate}, last_contact_date),
+        next_contact_date = COALESCE(${nextContactDate}, next_contact_date),
         updated_at = now()
       WHERE id = ${id}
     `;

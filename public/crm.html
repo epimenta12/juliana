@@ -293,6 +293,12 @@ function renderBoard(){
   });
 }
 
+function fmtDate(iso){
+  if(!iso) return '';
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('pt-BR');
+}
+
 function renderCard(lead, statusIdx){
   const card = document.createElement('div');
   card.className = 'card';
@@ -304,6 +310,13 @@ function renderCard(lead, statusIdx){
   phoneEl.textContent = lead.phone || '';
   card.appendChild(nameEl);
   card.appendChild(phoneEl);
+  if(lead.status_note){
+    const sn = document.createElement('div');
+    sn.className = 'meta';
+    sn.style.marginTop = '.3rem';
+    sn.textContent = lead.status_note;
+    card.appendChild(sn);
+  }
 
   const badges = document.createElement('div');
   badges.className = 'badges';
@@ -311,6 +324,14 @@ function renderCard(lead, statusIdx){
     const b = document.createElement('span');
     b.className = 'badge';
     b.textContent = lead.program;
+    badges.appendChild(b);
+  }
+  if(lead.next_contact_date){
+    const overdue = lead.next_contact_date < new Date().toISOString().slice(0,10);
+    const b = document.createElement('span');
+    b.className = 'badge';
+    if(overdue) b.style.background = 'var(--wine)', b.style.color = 'var(--white)';
+    b.textContent = 'Próximo: '+fmtDate(lead.next_contact_date);
     badges.appendChild(b);
   }
   card.appendChild(badges);
@@ -374,25 +395,43 @@ function openDrawer(id){
     </div>
     <div class="drawer-row">
       <div class="field"><label>Telefone</label><input id="fPhone"></div>
-      <div class="field"><label>E-mail</label><input id="fEmail"></div>
+      <div class="field"><label>Instagram</label><input id="fInstagram" placeholder="@usuario"></div>
     </div>
     <div class="drawer-row">
+      <div class="field"><label>E-mail</label><input id="fEmail"></div>
       <div class="field"><label>Programa de interesse</label><input id="fProgram"></div>
     </div>
     <div class="drawer-row">
-      <div class="field"><label>Origem</label><input id="fSource" disabled></div>
-      <div class="field"><label>Status</label>
+      <div class="field"><label>Origem</label><input id="fSource"></div>
+      <div class="field"><label>Pipeline</label>
         <select id="fStatus">${STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
       </div>
+    </div>
+    <div class="drawer-row">
+      <div class="field"><label>Status / próximo passo</label><input id="fStatusNote" placeholder="Ex: Fechou o Treino, oferecer Retiro depois"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field"><label>1º contato</label><input id="fFirstContact" type="date"></div>
+      <div class="field"><label>Último contato</label><input id="fLastContact" type="date"></div>
+      <div class="field"><label>Próximo contato</label><input id="fNextContact" type="date"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field" style="flex:1"><label>Observações</label><textarea id="fObservations" rows="3" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);resize:vertical"></textarea></div>
     </div>
   `;
   drawer.appendChild(form);
   drawer.querySelector('#fName').value = lead.name || '';
   drawer.querySelector('#fPhone').value = lead.phone || '';
+  drawer.querySelector('#fInstagram').value = lead.instagram || '';
   drawer.querySelector('#fEmail').value = lead.email || '';
   drawer.querySelector('#fProgram').value = lead.program || '';
-  drawer.querySelector('#fSource').value = lead.source || '(não informado)';
+  drawer.querySelector('#fSource').value = lead.source || '';
   drawer.querySelector('#fStatus').value = lead.status;
+  drawer.querySelector('#fStatusNote').value = lead.status_note || '';
+  drawer.querySelector('#fFirstContact').value = lead.first_contact_date || '';
+  drawer.querySelector('#fLastContact').value = lead.last_contact_date || '';
+  drawer.querySelector('#fNextContact').value = lead.next_contact_date || '';
+  drawer.querySelector('#fObservations').value = lead.observations || '';
 
   const saveRow = document.createElement('div');
   saveRow.className = 'save-row';
@@ -408,9 +447,16 @@ function openDrawer(id){
       await api(`/api/leads/${id}`, {method:'PATCH', body: JSON.stringify({
         name: drawer.querySelector('#fName').value.trim(),
         phone: drawer.querySelector('#fPhone').value.trim(),
+        instagram: drawer.querySelector('#fInstagram').value.trim(),
         email: drawer.querySelector('#fEmail').value.trim(),
         program: drawer.querySelector('#fProgram').value.trim(),
+        source: drawer.querySelector('#fSource').value.trim(),
         status: drawer.querySelector('#fStatus').value,
+        status_note: drawer.querySelector('#fStatusNote').value.trim(),
+        first_contact_date: drawer.querySelector('#fFirstContact').value || '',
+        last_contact_date: drawer.querySelector('#fLastContact').value || '',
+        next_contact_date: drawer.querySelector('#fNextContact').value || '',
+        observations: drawer.querySelector('#fObservations').value.trim(),
       })});
       toast('Lead atualizado');
       await loadLeads();

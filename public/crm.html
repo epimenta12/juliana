@@ -52,6 +52,14 @@
   .table-wrap{overflow-x:auto;background:var(--white);border:1px solid var(--border)}
   .crm-table{width:100%;border-collapse:collapse;font-size:.8rem;white-space:nowrap}
   .crm-table th{background:var(--sand);text-align:left;padding:.7rem .9rem;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--graphite)}
+  .crm-table th[data-sort]{cursor:pointer;user-select:none}
+  .crm-table th[data-sort]:hover{color:var(--green)}
+  .table-filters{display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem}
+  .tf-group{display:flex;flex-direction:column;gap:.3rem}
+  .tf-group label{font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .tf-group select{padding:.5rem .7rem;border:1px solid var(--border);background:var(--white);font-family:var(--fb);font-size:.78rem;min-width:150px}
+  .tf-clear{padding:.5rem .9rem;border:1px solid var(--border);background:var(--white);font-family:var(--fb);font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .3s}
+  .tf-clear:hover{border-color:var(--green);color:var(--green)}
   .crm-table td{padding:.65rem .9rem;border-bottom:1px solid var(--border);vertical-align:top}
   .crm-table td.wrap{white-space:normal;min-width:220px}
   .crm-table tbody tr{cursor:pointer;transition:background .2s}
@@ -155,6 +163,7 @@
   <div class="board-wrap">
     <div class="board-summary" id="summary"></div>
     <div class="board" id="board"></div>
+    <div class="table-filters" id="tableFilters" style="display:none"></div>
     <div class="table-wrap" id="tableWrap"></div>
   </div>
 </div>
@@ -182,6 +191,20 @@ const PRIORITIES = ['Alta', 'Média', 'Baixa'];
 let leads = [];
 let selectedId = null;
 let viewMode = localStorage.getItem('crm_view') === 'table' ? 'table' : 'kanban';
+let filters = {origem:'', priority:'', status:''};
+let sortState = {col:null, dir:1};
+
+const ORIGEM_CATEGORIES = ['Ex-aluno', 'Indicação', 'Instagram', 'Site', 'Club A'];
+
+function categorizeOrigem(source){
+  const s = (source||'').toLowerCase();
+  if(/indica/.test(s)) return 'Indicação';
+  if(/instagram/.test(s)) return 'Instagram';
+  if(/\bsite\b/.test(s)) return 'Site';
+  if(/club\s*a\b/.test(s)) return 'Club A';
+  if(/\bex[\s-]?alun/.test(s)) return 'Ex-aluno';
+  return 'Outros';
+}
 
 function escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -193,7 +216,43 @@ function setView(mode){
   document.querySelectorAll('.vt-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===mode));
   document.getElementById('board').style.display = mode==='kanban' ? '' : 'none';
   document.getElementById('tableWrap').style.display = mode==='table' ? 'block' : 'none';
+  document.getElementById('tableFilters').style.display = mode==='table' ? 'flex' : 'none';
   render();
+}
+
+function initFilters(){
+  const el = document.getElementById('tableFilters');
+  el.innerHTML = `
+    <div class="tf-group">
+      <label>Origem</label>
+      <select id="filterOrigem"><option value="">Todos</option>${ORIGEM_CATEGORIES.map(o=>`<option value="${o}">${o}</option>`).join('')}<option value="Outros">Outros</option></select>
+    </div>
+    <div class="tf-group">
+      <label>Prioridade</label>
+      <select id="filterPriority"><option value="">Todos</option>${PRIORITIES.map(p=>`<option value="${p}">${p}</option>`).join('')}</select>
+    </div>
+    <div class="tf-group">
+      <label>Status</label>
+      <select id="filterStatus"><option value="">Todos</option>${STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
+    </div>
+    <button class="tf-clear" id="clearFiltersBtn" type="button">Limpar filtros</button>
+  `;
+  const onChange = ()=>{
+    filters.origem = document.getElementById('filterOrigem').value;
+    filters.priority = document.getElementById('filterPriority').value;
+    filters.status = document.getElementById('filterStatus').value;
+    renderTable();
+  };
+  ['filterOrigem','filterPriority','filterStatus'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', onChange);
+  });
+  document.getElementById('clearFiltersBtn').addEventListener('click', ()=>{
+    filters = {origem:'', priority:'', status:''};
+    document.getElementById('filterOrigem').value = '';
+    document.getElementById('filterPriority').value = '';
+    document.getElementById('filterStatus').value = '';
+    renderTable();
+  });
 }
 
 function toast(msg){
@@ -288,6 +347,7 @@ document.getElementById('viewToggle').addEventListener('click', (e)=>{
   const btn = e.target.closest('.vt-btn');
   if(btn) setView(btn.dataset.view);
 });
+initFilters();
 setView(viewMode);
 
 async function loadLeads(){
@@ -308,7 +368,22 @@ function render(){
 function renderTable(){
   const wrap = document.getElementById('tableWrap');
   const statusLabel = key => (STATUSES.find(s=>s.key===key)||{}).label || key;
-  const rows = leads.slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+
+  let rows = leads.slice();
+  if(filters.origem) rows = rows.filter(l => categorizeOrigem(l.source) === filters.origem);
+  if(filters.priority) rows = rows.filter(l => (l.priority||'') === filters.priority);
+  if(filters.status) rows = rows.filter(l => l.status === filters.status);
+
+  const dir = sortState.dir;
+  const priorityRank = {Alta:3, 'Média':2, Baixa:1};
+  if(sortState.col === 'name') rows.sort((a,b)=> dir * (a.name||'').localeCompare(b.name||'', 'pt-BR'));
+  else if(sortState.col === 'instagram') rows.sort((a,b)=> dir * (a.instagram||'').localeCompare(b.instagram||'', 'pt-BR'));
+  else if(sortState.col === 'priority') rows.sort((a,b)=> dir * ((priorityRank[a.priority]||0) - (priorityRank[b.priority]||0)));
+  else if(sortState.col === 'phone') rows.sort((a,b)=> dir * onlyDigits(a.phone).localeCompare(onlyDigits(b.phone), undefined, {numeric:true}));
+  else rows.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+
+  const arrow = col => sortState.col===col ? (sortState.dir===1?'<span style="color:var(--green)">▲</span>':'<span style="color:var(--green)">▼</span>') : '<span style="opacity:.3">⇅</span>';
+
   const body = rows.length ? rows.map(l=>`
     <tr data-id="${l.id}">
       <td>${escapeHtml(l.name || '(sem nome)')}</td>
@@ -323,12 +398,16 @@ function renderTable(){
       <td>${fmtDate(l.next_contact_date)}</td>
       <td class="wrap">${escapeHtml(l.observations)}</td>
     </tr>
-  `).join('') : `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:2rem;cursor:default">Nenhum lead cadastrado</td></tr>`;
+  `).join('') : `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:2rem;cursor:default">Nenhum lead encontrado</td></tr>`;
 
   wrap.innerHTML = `
     <table class="crm-table">
       <thead><tr>
-        <th>Nome</th><th>Telefone</th><th>Instagram</th><th>Origem</th><th>Prioridade</th>
+        <th data-sort="name">Nome ${arrow('name')}</th>
+        <th data-sort="phone">Telefone ${arrow('phone')}</th>
+        <th data-sort="instagram">Instagram ${arrow('instagram')}</th>
+        <th>Origem</th>
+        <th data-sort="priority">Prioridade ${arrow('priority')}</th>
         <th>Status</th><th>Status / próximo passo</th><th>1º contato</th><th>Último contato</th><th>Próximo contato</th><th>Observações</th>
       </tr></thead>
       <tbody>${body}</tbody>
@@ -336,6 +415,14 @@ function renderTable(){
   `;
   wrap.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
     tr.addEventListener('click', ()=>openDrawer(Number(tr.dataset.id)));
+  });
+  wrap.querySelectorAll('th[data-sort]').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const col = th.dataset.sort;
+      if(sortState.col === col) sortState.dir *= -1;
+      else { sortState.col = col; sortState.dir = 1; }
+      renderTable();
+    });
   });
 }
 

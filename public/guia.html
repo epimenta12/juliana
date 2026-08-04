@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia do CRM — Juliana Carvalhaes</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#F7F6F4; --sand:#EDE6DA; --taupe:#C8B0B0;
+    --green:#205447; --petrol:#13434C; --wine:#4B1F2D;
+    --graphite:#333333; --muted:#6B6058;
+    --line:rgba(0,0,0,.09);
+    --fd:'Cormorant Garamond',Georgia,serif;
+    --fb:'Montserrat','Helvetica Neue',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;font-family:var(--fb);background:var(--white);color:var(--graphite);line-height:1.7;font-size:16px}
+  .wrap{max-width:960px;margin:0 auto;padding:3rem 1.5rem 6rem}
+  h1,h2,h3{font-family:var(--fd);font-weight:400;color:var(--graphite)}
+  a{color:var(--green)}
+
+  .masthead{padding-bottom:2rem;margin-bottom:2.5rem;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--fb);font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin:0 0 .75rem}
+  .masthead h1{font-size:clamp(1.9rem,4vw,2.6rem);margin:0 0 .6rem;font-style:italic}
+  .masthead p{color:var(--muted);max-width:560px;margin:0;font-size:1.02rem}
+  .masthead .links{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1.25rem}
+  .masthead .link{display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:1px solid var(--green);padding-bottom:2px}
+
+  .layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:3rem;align-items:start}
+  @media(max-width:760px){.layout{grid-template-columns:1fr}}
+
+  nav.toc{position:sticky;top:2rem}
+  nav.toc .ttl{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem}
+  nav.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc;display:flex;flex-direction:column;gap:.55rem}
+  nav.toc li{counter-increment:toc;font-size:.86rem}
+  nav.toc a{text-decoration:none;color:var(--graphite);display:flex;gap:.5rem}
+  nav.toc a::before{content:counter(toc, decimal-leading-zero);color:var(--taupe);font-family:var(--fd);font-style:italic;flex-shrink:0}
+  nav.toc a:hover{color:var(--green)}
+  @media(max-width:760px){nav.toc{position:static;border:1px solid var(--line);border-radius:10px;padding:1.1rem 1.3rem;background:#fff}nav.toc ol{display:grid;grid-template-columns:1fr 1fr;gap:.5rem .9rem}}
+
+  main section{padding-top:2.2rem;margin-top:2.2rem;border-top:1px solid var(--line)}
+  main section:first-child{padding-top:0;margin-top:0;border-top:0}
+  main h2{font-size:1.5rem;margin:0 0 .3rem;display:flex;align-items:baseline;gap:.6rem}
+  main h2 .num{font-family:var(--fd);font-style:italic;color:var(--taupe);font-size:1.1rem}
+  main h3{font-family:var(--fb);font-weight:600;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--petrol);margin:1.6rem 0 .6rem}
+  main p{margin:.6rem 0;max-width:66ch}
+  main p.lede{color:var(--muted);font-size:1rem;margin-top:.5rem}
+  main ul,main ol.steps{margin:.7rem 0;padding-left:1.3rem;max-width:66ch}
+  main li{margin:.4rem 0}
+  ol.steps{padding-left:0;list-style:none;counter-reset:step}
+  ol.steps li{counter-increment:step;position:relative;padding-left:2.1rem;margin:.75rem 0}
+  ol.steps li::before{content:counter(step);position:absolute;left:0;top:.05rem;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--sand);color:var(--petrol);font-size:.75rem;font-weight:600;display:flex;align-items:center;justify-content:center}
+
+  kbd.ui{font-family:var(--fb);font-size:.78rem;font-weight:600;letter-spacing:.03em;background:var(--green);color:#fff;padding:.28rem .65rem;border-radius:4px;display:inline-block}
+  kbd.ui.ghost{background:transparent;color:var(--petrol);border:1px solid var(--line)}
+  code.field{font-family:var(--fb);font-size:.85rem;font-weight:600;background:var(--sand);color:var(--petrol);padding:.1rem .45rem;border-radius:4px}
+
+  .callout{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem 1.25rem;margin:1rem 0;max-width:66ch}
+  .callout .lbl{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--taupe);margin-bottom:.4rem}
+  .callout p{margin:0}
+
+  table.fields{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem}
+  table.fields th{text-align:left;font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:.5rem .7rem;border-bottom:1px solid var(--line)}
+  table.fields td{padding:.65rem .7rem;border-bottom:1px solid var(--line);vertical-align:top}
+  table.fields td:first-child{white-space:nowrap;font-weight:600;color:var(--petrol)}
+  .tablewrap{overflow-x:auto}
+
+  .pipeline{display:flex;flex-direction:column;gap:.6rem;margin:1.2rem 0}
+  .stage{display:grid;grid-template-columns:2.4rem 1fr;gap:1rem;align-items:start;background:#fff;border:1px solid var(--line);border-left:3px solid var(--stage-c,var(--green));border-radius:8px;padding:.85rem 1.1rem}
+  .stage .n{font-family:var(--fd);font-style:italic;color:var(--stage-c,var(--green));font-size:1.3rem;line-height:1}
+  .stage h4{margin:0 0 .2rem;font-family:var(--fb);font-weight:600;font-size:.92rem}
+  .stage p{margin:0;color:var(--muted);font-size:.86rem}
+
+  .pillrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:.8rem 0}
+  .pill{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:.28rem .7rem;border-radius:3px;background:rgba(32,84,71,.12);color:var(--green)}
+  .pill.alta{background:rgba(75,31,45,.14);color:var(--wine)}
+  .pill.media{background:rgba(19,67,76,.14);color:var(--petrol)}
+  .pill.baixa{background:rgba(107,96,88,.14);color:var(--muted)}
+
+  .tips{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1rem 0}
+  @media(max-width:600px){.tips{grid-template-columns:1fr}}
+  .tip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem 1.2rem}
+  .tip h4{margin:0 0 .35rem;font-family:var(--fb);font-weight:600;font-size:.88rem;color:var(--petrol)}
+  .tip p{margin:0;font-size:.85rem;color:var(--muted)}
+
+  footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--line);color:var(--muted);font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <p class="eyebrow">Manual de uso</p>
+    <h1>Como usar o CRM do Instituto</h1>
+    <p>Guia de referência para cadastrar, acompanhar e conduzir os leads da Juliana Carvalhaes até o fechamento — da captura pelo site até o "ganho" ou "perda".</p>
+    <div class="links">
+      <a class="link" href="/crm">← Voltar para o CRM</a>
+    </div>
+  </div>
+
+  <div class="layout">
+    <nav class="toc">
+      <p class="ttl">Neste guia</p>
+      <ol>
+        <li><a href="#acesso">Acesso</a></li>
+        <li><a href="#painel">O painel</a></li>
+        <li><a href="#visoes">Kanban e Planilha</a></li>
+        <li><a href="#funil">O funil de vendas</a></li>
+        <li><a href="#novo">Cadastrar um lead</a></li>
+        <li><a href="#campos">Os campos de um lead</a></li>
+        <li><a href="#mover">Mover no funil</a></li>
+        <li><a href="#anotacoes">Anotações</a></li>
+        <li><a href="#filtros">Filtrar e ordenar</a></li>
+        <li><a href="#prioridade">Prioridade</a></li>
+        <li><a href="#dicas">Boas práticas</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section id="acesso">
+        <h2><span class="num">01</span> Acesso</h2>
+        <p class="lede">O CRM fica em <strong>julianacarvalhaes.com.br/crm</strong> — não aparece no menu do site, só quem tem o link chega lá.</p>
+        <p>Entre com o usuário e a senha combinados. A sessão fica salva por 7 dias no navegador; depois disso, ou ao clicar em <kbd class="ui ghost">Sair</kbd>, é preciso logar de novo.</p>
+      </section>
+
+      <section id="painel">
+        <h2><span class="num">02</span> O painel</h2>
+        <p class="lede">Assim que loga, quatro números resumem a carteira inteira:</p>
+        <div class="tablewrap">
+        <table class="fields">
+          <tr><th>Indicador</th><th>O que mostra</th></tr>
+          <tr><td>Total de leads</td><td>Todo mundo que já passou pelo funil, em qualquer etapa.</td></tr>
+          <tr><td>Ganho</td><td>Quantos compraram — e qual % isso representa do total.</td></tr>
+          <tr><td>Perda</td><td>Quantos não fecharam ou sumiram — e o %.</td></tr>
+          <tr><td>Contato futuro</td><td>Quantos têm interesse real mas não conseguem fechar agora.</td></tr>
+        </table>
+        </div>
+        <p>É a primeira coisa a olhar: dá o pulso do funil sem precisar abrir nada.</p>
+      </section>
+
+      <section id="visoes">
+        <h2><span class="num">03</span> Kanban e Planilha</h2>
+        <p class="lede">No canto superior esquerdo, dois botões trocam a forma de ver os mesmos leads.</p>
+        <h3>Kanban</h3>
+        <p>Um quadro com uma coluna por etapa do funil. Bom para ter a visão geral e mover leads de etapa rapidamente.</p>
+        <h3>Planilha</h3>
+        <p>Uma tabela com todos os leads e todos os campos lado a lado — nome, telefone, Instagram, origem, prioridade, status, datas e observações. Melhor para revisar em bloco, ordenar e filtrar.</p>
+        <div class="callout">
+          <p class="lbl">Fica salvo</p>
+          <p>A visualização escolhida é lembrada no navegador — da próxima vez que abrir o CRM, ele volta de onde parou.</p>
+        </div>
+      </section>
+
+      <section id="funil">
+        <h2><span class="num">04</span> O funil de vendas</h2>
+        <p class="lede">Todo lead passa, em teoria, por esta sequência. Passe o mouse sobre o nome de qualquer coluna no Kanban para ver a mesma descrição direto na tela.</p>
+        <div class="pipeline">
+          <div class="stage" style="--stage-c:var(--taupe)"><div class="n">01</div><div><h4>Novo lead</h4><p>Todos os dados estão cadastrados, mas ainda não houve nenhuma conversa.</p></div></div>
+          <div class="stage" style="--stage-c:var(--taupe)"><div class="n">02</div><div><h4>Primeiro contato</h4><p>Teve uma conversa inicial pelo WhatsApp ou Instagram.</p></div></div>
+          <div class="stage" style="--stage-c:var(--petrol)"><div class="n">03</div><div><h4>Aguardando retorno</h4><p>Conversamos, mas depois disso não veio mais retorno.</p></div></div>
+          <div class="stage" style="--stage-c:var(--petrol)"><div class="n">04</div><div><h4>Qualificação do lead</h4><p>Retornou as mensagens — estamos entendendo melhor o momento dela e apresentando o produto.</p></div></div>
+          <div class="stage" style="--stage-c:var(--petrol)"><div class="n">05</div><div><h4>Fechamento</h4><p>Está com uma call de vendas marcada.</p></div></div>
+          <div class="stage" style="--stage-c:var(--green)"><div class="n">06</div><div><h4>Ganho</h4><p>Comprou.</p></div></div>
+          <div class="stage" style="--stage-c:var(--wine)"><div class="n">07</div><div><h4>Perda</h4><p>Não comprou após a call, ou está há mais de 1 mês sem contato.</p></div></div>
+          <div class="stage" style="--stage-c:var(--taupe)"><div class="n">08</div><div><h4>Contato futuro</h4><p>Tem interesse e perfil, mas não consegue fechar no momento — vale retomar mais adiante.</p></div></div>
+        </div>
+        <p>Na prática ninguém obedece a ordem à risca: um lead pode ir direto de <em>Primeiro contato</em> para <em>Perda</em>, ou voltar de <em>Contato futuro</em> para <em>Qualificação</em> meses depois. A etapa deve refletir onde a conversa está <strong>hoje</strong>, não uma burocracia a seguir.</p>
+      </section>
+
+      <section id="novo">
+        <h2><span class="num">05</span> Cadastrar um lead</h2>
+        <p class="lede">Existem duas portas de entrada.</p>
+        <h3>Automática, pelo site</h3>
+        <p>Quando alguém clica em qualquer botão de WhatsApp no site (Agende uma conversa, Quero conhecer, Reserve...), aparece um mini-formulário pedindo nome e telefone antes de abrir a conversa. Isso já cria o lead como <code class="field">Novo lead</code>, com a origem preenchida automaticamente.</p>
+        <h3>Manual, direto no CRM</h3>
+        <ol class="steps">
+          <li>Clique em <kbd class="ui">+ Novo Lead</kbd>, no topo do painel.</li>
+          <li>Preencha o que tiver — só o nome é obrigatório. Telefone pode ficar em branco se você só tiver o Instagram, por exemplo.</li>
+          <li>Clique em <kbd class="ui">Criar lead</kbd>.</li>
+        </ol>
+      </section>
+
+      <section id="campos">
+        <h2><span class="num">06</span> Os campos de um lead</h2>
+        <p class="lede">Clique em qualquer card (Kanban) ou linha (Planilha) para abrir o painel completo.</p>
+        <div class="tablewrap">
+        <table class="fields">
+          <tr><th>Campo</th><th>Para que serve</th></tr>
+          <tr><td>Nome</td><td>Único campo obrigatório.</td></tr>
+          <tr><td>Telefone</td><td>Habilita o botão de abrir o WhatsApp direto do painel.</td></tr>
+          <tr><td>Instagram</td><td>@usuário, quando o telefone não está disponível.</td></tr>
+          <tr><td>E-mail</td><td>Opcional.</td></tr>
+          <tr><td>Programa de interesse</td><td>Qual oferta está em jogo (Mentoria, Treino, Retiro...).</td></tr>
+          <tr><td>Origem</td><td>Como o lead chegou — texto livre, mas alimenta o filtro de origem na Planilha.</td></tr>
+          <tr><td>Prioridade</td><td>Alta, Média ou Baixa — ver seção 10.</td></tr>
+          <tr><td>Pipeline</td><td>A etapa atual do funil (seção 04).</td></tr>
+          <tr><td>Status / próximo passo</td><td>Uma frase curta sobre a situação, tipo "Aguardando resposta sobre objeção de preço" — é isso que aparece resumido no card do Kanban.</td></tr>
+          <tr><td>1º contato, Último contato, Próximo contato</td><td>Datas para saber há quanto tempo a conversa está parada e quando retomar.</td></tr>
+          <tr><td>Observações</td><td>Espaço livre para contexto — detalhes sensíveis, combinados, histórico relevante.</td></tr>
+        </table>
+        </div>
+        <p>Depois de editar, clique em <kbd class="ui">Salvar</kbd>. O botão <kbd class="ui ghost">Excluir</kbd> remove o lead — sem volta, então é só para cadastros errados ou duplicados.</p>
+      </section>
+
+      <section id="mover">
+        <h2><span class="num">07</span> Mover um lead no funil</h2>
+        <p>Duas formas, mesmo resultado:</p>
+        <ul>
+          <li>No Kanban, cada card tem setas <kbd class="ui ghost">‹</kbd> <kbd class="ui ghost">›</kbd> para avançar ou voltar uma etapa sem abrir nada.</li>
+          <li>Dentro do painel do lead, o campo <code class="field">Pipeline</code> deixa pular direto para qualquer etapa, mesmo fora de ordem.</li>
+        </ul>
+      </section>
+
+      <section id="anotacoes">
+        <h2><span class="num">08</span> Anotações</h2>
+        <p>No painel de um lead já existente, a seção <strong>Anotações</strong> guarda um histórico com data e hora de cada entrada — a conversa de hoje não some quando amanhã tiver uma nova. Diferente do campo <code class="field">Observações</code> (que é um bloco único que se sobrescreve), aqui cada nota fica registrada separadamente, mais recente primeiro.</p>
+      </section>
+
+      <section id="filtros">
+        <h2><span class="num">09</span> Filtrar e ordenar (Planilha)</h2>
+        <p class="lede">Só na visualização em Planilha.</p>
+        <h3>Filtros</h3>
+        <p>Três menus no topo da tabela — <strong>Origem</strong>, <strong>Prioridade</strong> e <strong>Status</strong> — escondem tudo que não bater com o valor escolhido. <kbd class="ui ghost">Limpar filtros</kbd> volta a mostrar todo mundo.</p>
+        <h3>Ordenar</h3>
+        <p>Clique no título de qualquer coluna com uma seta (<strong>Nome</strong>, <strong>Telefone</strong>, <strong>Instagram</strong>, <strong>Prioridade</strong>) para ordenar por ela; clique de novo para inverter a direção.</p>
+      </section>
+
+      <section id="prioridade">
+        <h2><span class="num">10</span> Prioridade</h2>
+        <p class="lede">Um jeito rápido de sinalizar quem merece atenção primeiro, independente da etapa do funil.</p>
+        <div class="pillrow">
+          <span class="pill alta">Alta</span>
+          <span class="pill media">Média</span>
+          <span class="pill baixa">Baixa</span>
+        </div>
+        <p>É só uma etiqueta — não afeta em nada o funcionamento do CRM, mas aparece como uma faixa colorida no card e ajuda a decidir por onde começar o dia.</p>
+      </section>
+
+      <section id="dicas">
+        <h2><span class="num">11</span> Boas práticas</h2>
+        <div class="tips">
+          <div class="tip"><h4>Atualize o status/próximo passo</h4><p>É o que aparece resumido no card — vale mais que deixar em branco e confiar só na memória.</p></div>
+          <div class="tip"><h4>Preencha o próximo contato</h4><p>Sem essa data, fica mais fácil um lead "sumir" silenciosamente numa coluna.</p></div>
+          <div class="tip"><h4>Uma nota por conversa</h4><p>Em vez de reescrever as Observações toda vez, use Anotações para manter o histórico completo.</p></div>
+          <div class="tip"><h4>Revise "Perda" de vez em quando</h4><p>Um lead perdido hoje pode valer um novo contato daqui a alguns meses — mover de volta é só trocar o Pipeline.</p></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>Guia interno — Instituto Nacional de Meditação</footer>
+</div>
+</body>
+</html>

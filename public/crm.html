@@ -48,10 +48,12 @@
   .btn-ghost-top:hover{background:rgba(255,255,255,.1)}
 
   .board-wrap{padding:1.5rem}
-  .board-summary{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem}
-  .sum-card{background:var(--white);border:1px solid var(--border);padding:.9rem 1.3rem;min-width:110px}
-  .sum-card .n{font-family:var(--fd);font-size:1.9rem;color:var(--green);line-height:1}
-  .sum-card .l{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:.2rem}
+  .board-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+  .sum-card{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--accent,var(--green));padding:1.2rem 1.4rem;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+  .sum-card .n{font-family:var(--fd);font-size:2.6rem;font-weight:500;color:var(--accent,var(--green));line-height:1}
+  .sum-card .l{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:.4rem}
+  .sum-card .p{font-size:.72rem;color:var(--muted);margin-top:.15rem;opacity:.8}
+  @media(max-width:700px){.board-summary{grid-template-columns:repeat(2,1fr)}}
 
   .board{display:grid;grid-template-columns:repeat(8,minmax(220px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
   .col{background:var(--sand);display:flex;flex-direction:column;min-width:240px}
@@ -266,16 +268,23 @@ function render(){
 function renderSummary(){
   const el = document.getElementById('summary');
   el.innerHTML = '';
-  const total = document.createElement('div');
-  total.className = 'sum-card';
-  total.innerHTML = `<div class="n">${leads.length}</div><div class="l">Total de leads</div>`;
-  el.appendChild(total);
-  STATUSES.forEach(s=>{
-    const count = leads.filter(l=>l.status===s.key).length;
-    const c = document.createElement('div');
-    c.className = 'sum-card';
-    c.innerHTML = `<div class="n">${count}</div><div class="l">${s.label}</div>`;
-    el.appendChild(c);
+  const total = leads.length;
+  const pct = n => total ? Math.round(n/total*100)+'% do total' : '—';
+
+  const cards = [
+    {label:'Total de leads', value:total, accent:'var(--petrol)', sub:null},
+    {label:'Ganho', value:leads.filter(l=>l.status==='ganho').length, accent:'var(--green)'},
+    {label:'Perda', value:leads.filter(l=>l.status==='perda').length, accent:'var(--wine)'},
+    {label:'Contato futuro', value:leads.filter(l=>l.status==='contato_futuro').length, accent:'var(--taupe)'},
+  ];
+
+  cards.forEach(c=>{
+    const el2 = document.createElement('div');
+    el2.className = 'sum-card';
+    el2.style.setProperty('--accent', c.accent);
+    const sub = c.sub === null ? '' : `<div class="p">${pct(c.value)}</div>`;
+    el2.innerHTML = `<div class="n">${c.value}</div><div class="l">${c.label}</div>${sub}`;
+    el.appendChild(el2);
   });
 }
 

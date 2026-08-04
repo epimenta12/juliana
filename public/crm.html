@@ -44,6 +44,19 @@
   .topbar .logo{font-family:var(--fd);font-size:1.15rem}
   .topbar .logo em{font-style:italic;color:var(--sand)}
   .topbar-actions{display:flex;align-items:center;gap:1rem}
+  .topbar-left{display:flex;align-items:center;gap:1.5rem}
+  .view-toggle{display:flex;border:1px solid rgba(255,255,255,.3)}
+  .vt-btn{background:0;border:0;color:rgba(255,255,255,.7);padding:.45rem 1rem;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .3s;font-family:var(--fb)}
+  .vt-btn.active{background:var(--white);color:var(--petrol)}
+  .vt-btn:not(.active):hover{background:rgba(255,255,255,.12);color:var(--white)}
+  .table-wrap{overflow-x:auto;background:var(--white);border:1px solid var(--border)}
+  .crm-table{width:100%;border-collapse:collapse;font-size:.8rem;white-space:nowrap}
+  .crm-table th{background:var(--sand);text-align:left;padding:.7rem .9rem;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--graphite)}
+  .crm-table td{padding:.65rem .9rem;border-bottom:1px solid var(--border);vertical-align:top}
+  .crm-table td.wrap{white-space:normal;min-width:220px}
+  .crm-table tbody tr{cursor:pointer;transition:background .2s}
+  .crm-table tbody tr:hover{background:var(--green-soft,rgba(32,84,71,.06))}
+  .status-pill{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:.22rem .6rem;background:var(--green-soft,rgba(32,84,71,.1));color:var(--green);white-space:nowrap;display:inline-block}
   .btn-ghost-top{background:0;border:1px solid rgba(255,255,255,.3);color:var(--white);padding:.5rem 1rem;font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;transition:all .3s}
   .btn-ghost-top:hover{background:rgba(255,255,255,.1)}
 
@@ -125,7 +138,13 @@
 
 <div id="app">
   <div class="topbar">
-    <div class="logo">CRM · <em>Juliana Carvalhaes</em></div>
+    <div class="topbar-left">
+      <div class="logo">CRM · <em>Juliana Carvalhaes</em></div>
+      <div class="view-toggle" id="viewToggle">
+        <button class="vt-btn" data-view="kanban">Kanban</button>
+        <button class="vt-btn" data-view="table">Planilha</button>
+      </div>
+    </div>
     <div class="topbar-actions">
       <button class="btn-ghost-top" id="newLeadBtn" style="background:var(--green);border-color:var(--green)">+ Novo Lead</button>
       <button class="btn-ghost-top" id="refreshBtn">Atualizar</button>
@@ -136,6 +155,7 @@
   <div class="board-wrap">
     <div class="board-summary" id="summary"></div>
     <div class="board" id="board"></div>
+    <div class="table-wrap" id="tableWrap"></div>
   </div>
 </div>
 
@@ -161,6 +181,20 @@ const PRIORITIES = ['Alta', 'Média', 'Baixa'];
 
 let leads = [];
 let selectedId = null;
+let viewMode = localStorage.getItem('crm_view') === 'table' ? 'table' : 'kanban';
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function setView(mode){
+  viewMode = mode;
+  localStorage.setItem('crm_view', mode);
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===mode));
+  document.getElementById('board').style.display = mode==='kanban' ? '' : 'none';
+  document.getElementById('tableWrap').style.display = mode==='table' ? 'block' : 'none';
+  render();
+}
 
 function toast(msg){
   const t = document.getElementById('toast');
@@ -250,6 +284,11 @@ document.getElementById('logoutBtn').addEventListener('click', async ()=>{
 });
 document.getElementById('refreshBtn').addEventListener('click', loadLeads);
 document.getElementById('newLeadBtn').addEventListener('click', ()=>openDrawer(null));
+document.getElementById('viewToggle').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.vt-btn');
+  if(btn) setView(btn.dataset.view);
+});
+setView(viewMode);
 
 async function loadLeads(){
   try{
@@ -262,7 +301,42 @@ async function loadLeads(){
 
 function render(){
   renderSummary();
-  renderBoard();
+  if(viewMode === 'table') renderTable();
+  else renderBoard();
+}
+
+function renderTable(){
+  const wrap = document.getElementById('tableWrap');
+  const statusLabel = key => (STATUSES.find(s=>s.key===key)||{}).label || key;
+  const rows = leads.slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+  const body = rows.length ? rows.map(l=>`
+    <tr data-id="${l.id}">
+      <td>${escapeHtml(l.name || '(sem nome)')}</td>
+      <td>${escapeHtml(l.phone)}</td>
+      <td>${escapeHtml(l.instagram)}</td>
+      <td>${escapeHtml(l.source)}</td>
+      <td>${escapeHtml(l.priority)}</td>
+      <td><span class="status-pill">${escapeHtml(statusLabel(l.status))}</span></td>
+      <td class="wrap">${escapeHtml(l.status_note)}</td>
+      <td>${fmtDate(l.first_contact_date)}</td>
+      <td>${fmtDate(l.last_contact_date)}</td>
+      <td>${fmtDate(l.next_contact_date)}</td>
+      <td class="wrap">${escapeHtml(l.observations)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:2rem;cursor:default">Nenhum lead cadastrado</td></tr>`;
+
+  wrap.innerHTML = `
+    <table class="crm-table">
+      <thead><tr>
+        <th>Nome</th><th>Telefone</th><th>Instagram</th><th>Origem</th><th>Prioridade</th>
+        <th>Status</th><th>Status / próximo passo</th><th>1º contato</th><th>Último contato</th><th>Próximo contato</th><th>Observações</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+  `;
+  wrap.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
+    tr.addEventListener('click', ()=>openDrawer(Number(tr.dataset.id)));
+  });
 }
 
 function renderSummary(){

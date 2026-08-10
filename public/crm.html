@@ -76,7 +76,7 @@
   .sum-card .p{font-size:.72rem;color:var(--muted);margin-top:.15rem;opacity:.8}
   @media(max-width:700px){.board-summary{grid-template-columns:repeat(2,1fr)}}
 
-  .board{display:grid;grid-template-columns:repeat(8,minmax(220px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
+  .board{display:grid;grid-template-columns:repeat(9,minmax(220px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
   .col{background:var(--sand);display:flex;flex-direction:column;min-width:240px}
   .col-head{padding:.9rem 1rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.08);cursor:help}
   .col-head .count{background:var(--green);color:var(--white);border-radius:20px;font-size:.65rem;padding:.1rem .55rem}
@@ -185,6 +185,7 @@ const STATUSES = [
   {key:'ganho', label:'Ganho', desc:'Comprou.'},
   {key:'perda', label:'Perda', desc:'Não comprou após a call, ou está há mais de 1 mês sem contato.'},
   {key:'contato_futuro', label:'Contato futuro', desc:'Tem interesse e perfil, mas não consegue fechar no momento.'},
+  {key:'leads_antigos_sem_telefone', label:'Leads antigos — sem telefone', desc:'Aplicações antigas (formulários, Instagram) sem telefone cadastrado. Precisa achar um contato antes de seguir no funil.'},
 ];
 
 const PRIORITIES = ['Alta', 'Média', 'Baixa'];

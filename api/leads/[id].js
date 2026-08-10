@@ -1,7 +1,7 @@
 const { sql, ensureSchema } = require('../_db');
 const { isAuthed } = require('../_auth');
 
-const ALLOWED_STATUS = ['novo_lead', 'primeiro_contato', 'aguardando_retorno', 'qualificacao', 'fechamento', 'ganho', 'perda', 'contato_futuro'];
+const ALLOWED_STATUS = ['novo_lead', 'primeiro_contato', 'aguardando_retorno', 'qualificacao', 'fechamento', 'ganho', 'perda', 'contato_futuro', 'leads_antigos_sem_telefone'];
 
 function parseBody(req) {
   if (!req.body) return {};

@@ -104,6 +104,8 @@
 
   /* ---- Dashboard ---- */
   .dash-hero{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2.5rem}
+  .dash-hero-3{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:700px){.dash-hero-3{grid-template-columns:1fr 1fr}}
   @media(max-width:600px){.dash-hero{grid-template-columns:1fr}}
   .dash-hero-card{background:var(--petrol);color:var(--white);padding:2rem}
   .dash-hero-card .n{font-family:var(--fd);font-size:3.4rem;line-height:1}
@@ -567,7 +569,6 @@ function renderDashboard(){
   const pendingCount = leadsAtencao.length + clientesRenovando.length;
 
   const totalLeads = leads.length, totalClientes = clientes.length;
-  const conversionRate = (totalLeads+totalClientes) ? Math.round(totalClientes/(totalLeads+totalClientes)*100) : 0;
 
   const funnelData = FUNNEL_STAGES.map(s => ({...s, count: leads.filter(l=>l.status===s.key).length}));
   const funnelMax = Math.max(1, ...funnelData.map(s=>s.count));
@@ -586,7 +587,7 @@ function renderDashboard(){
   wrap.innerHTML = `
     <h1 class="page-title">Olá, Juliana</h1>
 
-    <div class="dash-hero">
+    <div class="dash-hero dash-hero-3">
       <div class="dash-hero-card">
         <div class="n">${totalLeads}</div>
         <div class="l">Leads no funil</div>
@@ -597,11 +598,10 @@ function renderDashboard(){
         <div class="l">Clientes</div>
         <button class="dash-link" data-goto="clientes">Ver Clientes →</button>
       </div>
-    </div>
-
-    <div class="board-summary" style="grid-template-columns:repeat(2,1fr);margin-bottom:1.5rem">
-      ${miniCard('Taxa de conversão', conversionRate+'%', 'var(--green)')}
-      ${miniCard('Ações pendentes hoje', pendingCount, 'var(--wine)')}
+      <div class="dash-hero-card">
+        <div class="n">${pendingCount}</div>
+        <div class="l">Ações pendentes hoje</div>
+      </div>
     </div>
 
     <div class="dash-grid">

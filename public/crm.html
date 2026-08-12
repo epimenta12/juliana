@@ -40,11 +40,11 @@
   /* ---- App shell ---- */
   #app{display:none}
   #app.show{display:block}
-  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--petrol);color:var(--white)}
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--petrol);color:var(--white);flex-wrap:wrap;gap:.75rem}
   .topbar .logo{font-family:var(--fd);font-size:1.15rem}
   .topbar .logo em{font-style:italic;color:var(--sand)}
-  .topbar-actions{display:flex;align-items:center;gap:1rem}
-  .topbar-left{display:flex;align-items:center;gap:1.5rem}
+  .topbar-actions{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .topbar-left{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap}
   .view-toggle{display:flex;border:1px solid rgba(255,255,255,.3)}
   .vt-btn{background:0;border:0;color:rgba(255,255,255,.7);padding:.45rem 1rem;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .3s;font-family:var(--fb)}
   .vt-btn.active{background:var(--white);color:var(--petrol)}
@@ -76,8 +76,8 @@
   .sum-card .p{font-size:.72rem;color:var(--muted);margin-top:.15rem;opacity:.8}
   @media(max-width:700px){.board-summary{grid-template-columns:repeat(2,1fr)}}
 
-  .board{display:grid;grid-template-columns:repeat(9,minmax(220px,1fr));gap:1rem;overflow-x:auto;padding-bottom:1rem}
-  .col{background:var(--sand);display:flex;flex-direction:column;min-width:240px}
+  .board{display:grid;gap:1rem;overflow-x:auto;padding-bottom:1rem}
+  .col{background:var(--sand);display:flex;flex-direction:column;min-width:230px}
   .col-head{padding:.9rem 1rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.08);cursor:help}
   .col-head .count{background:var(--green);color:var(--white);border-radius:20px;font-size:.65rem;padding:.1rem .55rem}
   .col-body{padding:.7rem;display:flex;flex-direction:column;gap:.6rem;min-height:80px;flex:1}
@@ -94,17 +94,19 @@
   .mv:hover{border-color:var(--green);color:var(--green)}
   .empty-col{font-size:.75rem;color:var(--muted);opacity:.6;padding:1rem;text-align:center}
 
-  /* ---- Drawer ---- */
+  /* ---- Drawer / modais ---- */
   .overlay{position:fixed;inset:0;background:rgba(19,67,76,.55);z-index:100;display:none;align-items:stretch;justify-content:flex-end}
   .overlay.show{display:flex}
+  .overlay.modal-center{align-items:center;justify-content:center;z-index:150}
   .drawer{background:var(--white);width:100%;max-width:440px;height:100%;overflow-y:auto;padding:2rem;position:relative}
+  .drawer.modal-card{height:auto;max-height:90vh}
   .drawer-close{position:absolute;top:1.2rem;right:1.2rem;background:0;border:0;font-size:1.4rem;color:var(--muted);line-height:1}
   .drawer h2{font-family:var(--fd);font-size:1.5rem;font-weight:500;margin-bottom:1.5rem;padding-right:2rem}
   .drawer .field input,.drawer .field select{width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none}
   .drawer .field input:focus,.drawer .field select:focus{border-color:var(--green)}
   .drawer-row{display:flex;gap:1rem}
   .drawer-row .field{flex:1}
-  .save-row{display:flex;gap:.6rem;margin:1rem 0 1.5rem}
+  .save-row{display:flex;gap:.6rem;margin:1rem 0 1.5rem;flex-wrap:wrap}
   .btn-small{padding:.6rem 1.1rem;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:0;transition:all .3s}
   .btn-small.save{background:var(--green);color:var(--white)}
   .btn-small.save:hover{background:var(--petrol)}
@@ -118,11 +120,14 @@
   .note-form{display:flex;gap:.5rem;margin-top:.8rem}
   .note-form textarea{flex:1;padding:.6rem .8rem;border:1px solid var(--border);resize:vertical;min-height:44px}
   .note-form button{background:var(--green);color:var(--white);border:0;padding:0 1rem;font-size:.7rem;font-weight:600;text-transform:uppercase}
+  .hist-form{display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap}
+  .hist-form input{flex:1;min-width:140px;padding:.6rem .8rem;border:1px solid var(--border)}
+  .hist-form button{background:var(--green);color:var(--white);border:0;padding:0 1rem;font-size:.7rem;font-weight:600;text-transform:uppercase}
 
   .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--graphite);color:var(--white);padding:.7rem 1.3rem;font-size:.78rem;z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
   .toast.show{opacity:1}
 
-  @media(max-width:900px){.board{grid-template-columns:1fr;}}
+  @media(max-width:900px){.board{grid-template-columns:1fr !important;}}
 </style>
 </head>
 <body>
@@ -148,13 +153,17 @@
   <div class="topbar">
     <div class="topbar-left">
       <div class="logo">CRM · <em>Juliana Carvalhaes</em></div>
+      <div class="view-toggle" id="sectionToggle">
+        <button class="vt-btn" data-section="leads">Leads</button>
+        <button class="vt-btn" data-section="clientes">Clientes</button>
+      </div>
       <div class="view-toggle" id="viewToggle">
         <button class="vt-btn" data-view="kanban">Kanban</button>
         <button class="vt-btn" data-view="table">Planilha</button>
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="btn-ghost-top" id="newLeadBtn" style="background:var(--green);border-color:var(--green)">+ Novo Lead</button>
+      <button class="btn-ghost-top" id="newItemBtn" style="background:var(--green);border-color:var(--green)">+ Novo Lead</button>
       <a class="btn-ghost-top" href="/guia" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Guia do CRM</a>
       <button class="btn-ghost-top" id="refreshBtn">Atualizar</button>
       <button class="btn-ghost-top" id="logoutBtn">Sair</button>
@@ -163,9 +172,9 @@
 
   <div class="board-wrap">
     <div class="board-summary" id="summary"></div>
-    <div class="board" id="board"></div>
     <div class="table-filters" id="tableFilters" style="display:none"></div>
-    <div class="table-wrap" id="tableWrap"></div>
+    <div class="board" id="board"></div>
+    <div class="table-wrap" id="tableWrap" style="display:none"></div>
   </div>
 </div>
 
@@ -182,21 +191,31 @@ const STATUSES = [
   {key:'aguardando_retorno', label:'Aguardando retorno', desc:'Conversamos, mas depois disso não veio mais retorno.'},
   {key:'qualificacao', label:'Qualificação do lead', desc:'Retornou as mensagens — estamos entendendo melhor o momento dela e apresentando o produto.'},
   {key:'fechamento', label:'Fechamento', desc:'Está com uma call de vendas marcada.'},
-  {key:'ganho', label:'Ganho', desc:'Comprou.'},
+  {key:'ganho', label:'Ganho', desc:'Comprou — vira Cliente automaticamente.'},
   {key:'perda', label:'Perda', desc:'Não comprou após a call, ou está há mais de 1 mês sem contato.'},
   {key:'contato_futuro', label:'Contato futuro', desc:'Tem interesse e perfil, mas não consegue fechar no momento.'},
   {key:'leads_antigos_sem_telefone', label:'Leads antigos — sem telefone', desc:'Aplicações antigas (formulários, Instagram) sem telefone cadastrado. Precisa achar um contato antes de seguir no funil.'},
 ];
 
-const PRIORITIES = ['Alta', 'Média', 'Baixa'];
-
-let leads = [];
-let selectedId = null;
-let viewMode = localStorage.getItem('crm_view') === 'table' ? 'table' : 'kanban';
-let filters = {origem:'', priority:'', status:''};
-let sortState = {col:null, dir:1};
+const CLIENT_STATUSES = [
+  {key:'ativo', label:'Ativo', desc:'Cliente cursando ou usando o produto atual.'},
+  {key:'renovacao', label:'Renovação em aberto', desc:'Perto de terminar o produto atual — hora de oferecer o próximo.'},
+  {key:'pausado', label:'Pausado', desc:'Sem próximo passo agendado no momento.'},
+  {key:'encerrado', label:'Encerrado', desc:'Não pretende continuar por enquanto.'},
+];
 
 const ORIGEM_CATEGORIES = ['Ex-aluno', 'Indicação', 'Instagram', 'Site', 'Club A'];
+
+let leads = [];
+let clientes = [];
+let selectedId = null;
+let section = localStorage.getItem('crm_section') === 'clientes' ? 'clientes' : 'leads';
+let viewMode = localStorage.getItem('crm_view') === 'table' ? 'table' : 'kanban';
+let filters = {origem:'', status:''};
+let clientFilters = {status:''};
+let sortState = {col:null, dir:1};
+let clientSortState = {col:null, dir:1};
+let filtersBuiltFor = null;
 
 function categorizeOrigem(source){
   const s = (source||'').toLowerCase();
@@ -210,58 +229,6 @@ function categorizeOrigem(source){
 
 function escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-function setView(mode){
-  viewMode = mode;
-  localStorage.setItem('crm_view', mode);
-  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===mode));
-  document.getElementById('board').style.display = mode==='kanban' ? '' : 'none';
-  document.getElementById('tableWrap').style.display = mode==='table' ? 'block' : 'none';
-  document.getElementById('tableFilters').style.display = mode==='table' ? 'flex' : 'none';
-  render();
-}
-
-function initFilters(){
-  const el = document.getElementById('tableFilters');
-  el.innerHTML = `
-    <div class="tf-group">
-      <label>Origem</label>
-      <select id="filterOrigem"><option value="">Todos</option>${ORIGEM_CATEGORIES.map(o=>`<option value="${o}">${o}</option>`).join('')}<option value="Outros">Outros</option></select>
-    </div>
-    <div class="tf-group">
-      <label>Prioridade</label>
-      <select id="filterPriority"><option value="">Todos</option>${PRIORITIES.map(p=>`<option value="${p}">${p}</option>`).join('')}</select>
-    </div>
-    <div class="tf-group">
-      <label>Status</label>
-      <select id="filterStatus"><option value="">Todos</option>${STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
-    </div>
-    <button class="tf-clear" id="clearFiltersBtn" type="button">Limpar filtros</button>
-  `;
-  const onChange = ()=>{
-    filters.origem = document.getElementById('filterOrigem').value;
-    filters.priority = document.getElementById('filterPriority').value;
-    filters.status = document.getElementById('filterStatus').value;
-    renderTable();
-  };
-  ['filterOrigem','filterPriority','filterStatus'].forEach(id=>{
-    document.getElementById(id).addEventListener('change', onChange);
-  });
-  document.getElementById('clearFiltersBtn').addEventListener('click', ()=>{
-    filters = {origem:'', priority:'', status:''};
-    document.getElementById('filterOrigem').value = '';
-    document.getElementById('filterPriority').value = '';
-    document.getElementById('filterStatus').value = '';
-    renderTable();
-  });
-}
-
-function toast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
 function onlyDigits(s){ return (s||'').replace(/\D/g,''); }
@@ -281,6 +248,24 @@ function relTime(iso){
   if(diff < 86400) return `há ${Math.floor(diff/3600)}h`;
   if(diff < 86400*7) return `há ${Math.floor(diff/86400)}d`;
   return d.toLocaleDateString('pt-BR');
+}
+
+function toDateInputValue(iso){
+  if(!iso) return '';
+  return String(iso).slice(0,10);
+}
+
+function fmtDate(iso){
+  if(!iso) return '';
+  const d = new Date(toDateInputValue(iso)+'T00:00:00');
+  return d.toLocaleDateString('pt-BR');
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
 async function api(path, opts){
@@ -308,7 +293,7 @@ function showApp(){
 async function checkAuth(){
   try{
     const r = await api('/api/auth/me');
-    if(r.authenticated){ showApp(); await loadLeads(); }
+    if(r.authenticated){ showApp(); await loadAll(); }
     else showLogin();
   }catch{ showLogin(); }
 }
@@ -330,7 +315,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
     const data = await res.json().catch(()=>({}));
     if(!res.ok){ throw new Error(data.error || 'Falha no login'); }
     showApp();
-    await loadLeads();
+    await loadAll();
   }catch(err){
     errEl.textContent = err.message;
     errEl.classList.add('show');
@@ -343,14 +328,91 @@ document.getElementById('logoutBtn').addEventListener('click', async ()=>{
   await fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'});
   showLogin();
 });
-document.getElementById('refreshBtn').addEventListener('click', loadLeads);
-document.getElementById('newLeadBtn').addEventListener('click', ()=>openDrawer(null));
+document.getElementById('refreshBtn').addEventListener('click', loadAll);
+document.getElementById('newItemBtn').addEventListener('click', ()=>{
+  if(section === 'leads') openDrawer(null);
+  else openClienteDrawer(null);
+});
+document.getElementById('sectionToggle').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.vt-btn');
+  if(btn) setSection(btn.dataset.section);
+});
 document.getElementById('viewToggle').addEventListener('click', (e)=>{
   const btn = e.target.closest('.vt-btn');
   if(btn) setView(btn.dataset.view);
 });
-initFilters();
-setView(viewMode);
+
+function setSection(s){
+  section = s;
+  localStorage.setItem('crm_section', s);
+  document.querySelectorAll('#sectionToggle .vt-btn').forEach(b=>b.classList.toggle('active', b.dataset.section===s));
+  document.getElementById('newItemBtn').textContent = s==='leads' ? '+ Novo Lead' : '+ Novo Cliente';
+  render();
+}
+
+function setView(mode){
+  viewMode = mode;
+  localStorage.setItem('crm_view', mode);
+  document.querySelectorAll('#viewToggle .vt-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===mode));
+  document.getElementById('board').style.display = mode==='kanban' ? 'grid' : 'none';
+  document.getElementById('tableWrap').style.display = mode==='table' ? 'block' : 'none';
+  document.getElementById('tableFilters').style.display = mode==='table' ? 'flex' : 'none';
+  render();
+}
+
+function ensureFiltersUI(){
+  if(filtersBuiltFor === section) return;
+  filtersBuiltFor = section;
+  const el = document.getElementById('tableFilters');
+  if(section === 'leads'){
+    filters = {origem:'', status:''};
+    el.innerHTML = `
+      <div class="tf-group">
+        <label>Origem</label>
+        <select id="filterOrigem"><option value="">Todos</option>${ORIGEM_CATEGORIES.map(o=>`<option value="${o}">${o}</option>`).join('')}<option value="Outros">Outros</option></select>
+      </div>
+      <div class="tf-group">
+        <label>Status</label>
+        <select id="filterStatus"><option value="">Todos</option>${STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
+      </div>
+      <button class="tf-clear" id="clearFiltersBtn" type="button">Limpar filtros</button>
+    `;
+    const onChange = ()=>{
+      filters.origem = document.getElementById('filterOrigem').value;
+      filters.status = document.getElementById('filterStatus').value;
+      renderLeadsTable();
+    };
+    ['filterOrigem','filterStatus'].forEach(id=> document.getElementById(id).addEventListener('change', onChange));
+    document.getElementById('clearFiltersBtn').addEventListener('click', ()=>{
+      filters = {origem:'', status:''};
+      document.getElementById('filterOrigem').value = '';
+      document.getElementById('filterStatus').value = '';
+      renderLeadsTable();
+    });
+  } else {
+    clientFilters = {status:''};
+    el.innerHTML = `
+      <div class="tf-group">
+        <label>Status</label>
+        <select id="filterClientStatus"><option value="">Todos</option>${CLIENT_STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
+      </div>
+      <button class="tf-clear" id="clearClientFiltersBtn" type="button">Limpar filtros</button>
+    `;
+    document.getElementById('filterClientStatus').addEventListener('change', ()=>{
+      clientFilters.status = document.getElementById('filterClientStatus').value;
+      renderClientTable();
+    });
+    document.getElementById('clearClientFiltersBtn').addEventListener('click', ()=>{
+      clientFilters = {status:''};
+      document.getElementById('filterClientStatus').value = '';
+      renderClientTable();
+    });
+  }
+}
+
+async function loadAll(){
+  await Promise.all([loadLeads(), loadClientes()]);
+}
 
 async function loadLeads(){
   try{
@@ -361,86 +423,39 @@ async function loadLeads(){
   }
 }
 
+async function loadClientes(){
+  try{
+    clientes = await api('/api/clientes');
+    render();
+  }catch(err){
+    if(err.message !== 'unauthorized') toast('Erro ao carregar clientes: '+err.message);
+  }
+}
+
 function render(){
-  renderSummary();
-  if(viewMode === 'table') renderTable();
-  else renderBoard();
+  ensureFiltersUI();
+  if(section === 'leads'){
+    renderLeadsSummary();
+    if(viewMode === 'table') renderLeadsTable(); else renderLeadsBoard();
+  } else {
+    renderClientSummary();
+    if(viewMode === 'table') renderClientTable(); else renderClientBoard();
+  }
 }
 
-function renderTable(){
-  const wrap = document.getElementById('tableWrap');
-  const statusLabel = key => (STATUSES.find(s=>s.key===key)||{}).label || key;
+/* ===================== LEADS ===================== */
 
-  let rows = leads.slice();
-  if(filters.origem) rows = rows.filter(l => categorizeOrigem(l.source) === filters.origem);
-  if(filters.priority) rows = rows.filter(l => (l.priority||'') === filters.priority);
-  if(filters.status) rows = rows.filter(l => l.status === filters.status);
-
-  const dir = sortState.dir;
-  const priorityRank = {Alta:3, 'Média':2, Baixa:1};
-  if(sortState.col === 'name') rows.sort((a,b)=> dir * (a.name||'').localeCompare(b.name||'', 'pt-BR'));
-  else if(sortState.col === 'instagram') rows.sort((a,b)=> dir * (a.instagram||'').localeCompare(b.instagram||'', 'pt-BR'));
-  else if(sortState.col === 'priority') rows.sort((a,b)=> dir * ((priorityRank[a.priority]||0) - (priorityRank[b.priority]||0)));
-  else if(sortState.col === 'phone') rows.sort((a,b)=> dir * onlyDigits(a.phone).localeCompare(onlyDigits(b.phone), undefined, {numeric:true}));
-  else rows.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
-
-  const arrow = col => sortState.col===col ? (sortState.dir===1?'<span style="color:var(--green)">▲</span>':'<span style="color:var(--green)">▼</span>') : '<span style="opacity:.3">⇅</span>';
-
-  const body = rows.length ? rows.map(l=>`
-    <tr data-id="${l.id}">
-      <td>${escapeHtml(l.name || '(sem nome)')}</td>
-      <td>${escapeHtml(l.phone)}</td>
-      <td>${escapeHtml(l.instagram)}</td>
-      <td>${escapeHtml(l.source)}</td>
-      <td>${escapeHtml(l.priority)}</td>
-      <td><span class="status-pill">${escapeHtml(statusLabel(l.status))}</span></td>
-      <td class="wrap">${escapeHtml(l.status_note)}</td>
-      <td>${fmtDate(l.first_contact_date)}</td>
-      <td>${fmtDate(l.last_contact_date)}</td>
-      <td>${fmtDate(l.next_contact_date)}</td>
-      <td class="wrap">${escapeHtml(l.observations)}</td>
-    </tr>
-  `).join('') : `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:2rem;cursor:default">Nenhum lead encontrado</td></tr>`;
-
-  wrap.innerHTML = `
-    <table class="crm-table">
-      <thead><tr>
-        <th data-sort="name">Nome ${arrow('name')}</th>
-        <th data-sort="phone">Telefone ${arrow('phone')}</th>
-        <th data-sort="instagram">Instagram ${arrow('instagram')}</th>
-        <th>Origem</th>
-        <th data-sort="priority">Prioridade ${arrow('priority')}</th>
-        <th>Status</th><th>Status / próximo passo</th><th>1º contato</th><th>Último contato</th><th>Próximo contato</th><th>Observações</th>
-      </tr></thead>
-      <tbody>${body}</tbody>
-    </table>
-  `;
-  wrap.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
-    tr.addEventListener('click', ()=>openDrawer(Number(tr.dataset.id)));
-  });
-  wrap.querySelectorAll('th[data-sort]').forEach(th=>{
-    th.addEventListener('click', ()=>{
-      const col = th.dataset.sort;
-      if(sortState.col === col) sortState.dir *= -1;
-      else { sortState.col = col; sortState.dir = 1; }
-      renderTable();
-    });
-  });
-}
-
-function renderSummary(){
+function renderLeadsSummary(){
   const el = document.getElementById('summary');
   el.innerHTML = '';
   const total = leads.length;
   const pct = n => total ? Math.round(n/total*100)+'% do total' : '—';
-
   const cards = [
     {label:'Total de leads', value:total, accent:'var(--petrol)', sub:null},
-    {label:'Ganho', value:leads.filter(l=>l.status==='ganho').length, accent:'var(--green)'},
     {label:'Perda', value:leads.filter(l=>l.status==='perda').length, accent:'var(--wine)'},
     {label:'Contato futuro', value:leads.filter(l=>l.status==='contato_futuro').length, accent:'var(--taupe)'},
+    {label:'Aguardando retorno', value:leads.filter(l=>l.status==='aguardando_retorno').length, accent:'var(--green)'},
   ];
-
   cards.forEach(c=>{
     const el2 = document.createElement('div');
     el2.className = 'sum-card';
@@ -451,8 +466,9 @@ function renderSummary(){
   });
 }
 
-function renderBoard(){
+function renderLeadsBoard(){
   const board = document.getElementById('board');
+  board.style.gridTemplateColumns = `repeat(${STATUSES.length}, minmax(220px,1fr))`;
   board.innerHTML = '';
   STATUSES.forEach((s, idx)=>{
     const col = document.createElement('div');
@@ -464,23 +480,10 @@ function renderBoard(){
     if(colLeads.length===0){
       body.innerHTML = '<div class="empty-col">Nenhum lead aqui</div>';
     }
-    colLeads.forEach(lead=>{
-      body.appendChild(renderCard(lead, idx));
-    });
+    colLeads.forEach(lead=> body.appendChild(renderCard(lead, idx)));
     col.appendChild(body);
     board.appendChild(col);
   });
-}
-
-function toDateInputValue(iso){
-  if(!iso) return '';
-  return String(iso).slice(0,10);
-}
-
-function fmtDate(iso){
-  if(!iso) return '';
-  const d = new Date(toDateInputValue(iso)+'T00:00:00');
-  return d.toLocaleDateString('pt-BR');
 }
 
 function renderCard(lead, statusIdx){
@@ -504,19 +507,10 @@ function renderCard(lead, statusIdx){
 
   const badges = document.createElement('div');
   badges.className = 'badges';
-  if(lead.priority){
+  if(lead.source){
     const b = document.createElement('span');
     b.className = 'badge';
-    const colors = {Alta:'var(--wine)', 'Média':'var(--petrol)', Baixa:'var(--muted)'};
-    b.style.background = colors[lead.priority] || 'var(--green)';
-    b.style.color = 'var(--white)';
-    b.textContent = lead.priority;
-    badges.appendChild(b);
-  }
-  if(lead.program){
-    const b = document.createElement('span');
-    b.className = 'badge';
-    b.textContent = lead.program;
+    b.textContent = categorizeOrigem(lead.source);
     badges.appendChild(b);
   }
   if(lead.next_contact_date){
@@ -555,12 +549,70 @@ function renderCard(lead, statusIdx){
 }
 
 async function changeStatus(id, status){
+  const lead = leads.find(l=>l.id===id);
+  if(!lead) return;
+  if(status === 'ganho'){
+    await promoteLeadToCliente(lead);
+    return;
+  }
   try{
     await api(`/api/leads/${id}`, {method:'PATCH', body: JSON.stringify({status})});
-    const lead = leads.find(l=>l.id===id);
-    if(lead) lead.status = status;
+    lead.status = status;
     render();
   }catch(err){ toast('Erro: '+err.message); }
+}
+
+function renderLeadsTable(){
+  const wrap = document.getElementById('tableWrap');
+  const statusLabel = key => (STATUSES.find(s=>s.key===key)||{}).label || key;
+
+  let rows = leads.slice();
+  if(filters.origem) rows = rows.filter(l => categorizeOrigem(l.source) === filters.origem);
+  if(filters.status) rows = rows.filter(l => l.status === filters.status);
+
+  const dir = sortState.dir;
+  if(sortState.col === 'name') rows.sort((a,b)=> dir * (a.name||'').localeCompare(b.name||'', 'pt-BR'));
+  else if(sortState.col === 'phone') rows.sort((a,b)=> dir * onlyDigits(a.phone).localeCompare(onlyDigits(b.phone), undefined, {numeric:true}));
+  else rows.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+
+  const arrow = col => sortState.col===col ? (sortState.dir===1?'<span style="color:var(--green)">▲</span>':'<span style="color:var(--green)">▼</span>') : '<span style="opacity:.3">⇅</span>';
+
+  const body = rows.length ? rows.map(l=>`
+    <tr data-id="${l.id}">
+      <td>${escapeHtml(l.name || '(sem nome)')}</td>
+      <td>${escapeHtml(l.phone)}</td>
+      <td>${escapeHtml(l.source)}</td>
+      <td><span class="status-pill">${escapeHtml(statusLabel(l.status))}</span></td>
+      <td class="wrap">${escapeHtml(l.status_note)}</td>
+      <td>${fmtDate(l.first_contact_date)}</td>
+      <td>${fmtDate(l.last_contact_date)}</td>
+      <td>${fmtDate(l.next_contact_date)}</td>
+      <td class="wrap">${escapeHtml(l.observations)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:2rem;cursor:default">Nenhum lead encontrado</td></tr>`;
+
+  wrap.innerHTML = `
+    <table class="crm-table">
+      <thead><tr>
+        <th data-sort="name">Nome ${arrow('name')}</th>
+        <th data-sort="phone">Telefone ${arrow('phone')}</th>
+        <th>Origem</th>
+        <th>Status</th><th>Próximo passo</th><th>1º contato</th><th>Último contato</th><th>Próximo contato</th><th>Observação</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+  `;
+  wrap.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
+    tr.addEventListener('click', ()=>openDrawer(Number(tr.dataset.id)));
+  });
+  wrap.querySelectorAll('th[data-sort]').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const col = th.dataset.sort;
+      if(sortState.col === col) sortState.dir *= -1;
+      else { sortState.col = col; sortState.dir = 1; }
+      renderLeadsTable();
+    });
+  });
 }
 
 function openDrawer(id){
@@ -589,17 +641,7 @@ function openDrawer(id){
     </div>
     <div class="drawer-row">
       <div class="field"><label>Telefone</label><input id="fPhone"></div>
-      <div class="field"><label>Instagram</label><input id="fInstagram" placeholder="@usuario"></div>
-    </div>
-    <div class="drawer-row">
-      <div class="field"><label>E-mail</label><input id="fEmail"></div>
-      <div class="field"><label>Programa de interesse</label><input id="fProgram"></div>
-    </div>
-    <div class="drawer-row">
       <div class="field"><label>Origem</label><input id="fSource"></div>
-      <div class="field"><label>Prioridade</label>
-        <select id="fPriority"><option value="">—</option>${PRIORITIES.map(p=>`<option value="${p}">${p}</option>`).join('')}</select>
-      </div>
     </div>
     <div class="drawer-row">
       <div class="field"><label>Pipeline</label>
@@ -607,7 +649,7 @@ function openDrawer(id){
       </div>
     </div>
     <div class="drawer-row">
-      <div class="field"><label>Status / próximo passo</label><input id="fStatusNote" placeholder="Ex: Fechou o Treino, oferecer Retiro depois"></div>
+      <div class="field"><label>Próximo passo</label><input id="fStatusNote" placeholder="Ex: Aguardando resposta sobre objeção de preço"></div>
     </div>
     <div class="drawer-row">
       <div class="field"><label>1º contato</label><input id="fFirstContact" type="date"></div>
@@ -615,17 +657,13 @@ function openDrawer(id){
       <div class="field"><label>Próximo contato</label><input id="fNextContact" type="date"></div>
     </div>
     <div class="drawer-row">
-      <div class="field" style="flex:1"><label>Observações</label><textarea id="fObservations" rows="3" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);resize:vertical"></textarea></div>
+      <div class="field" style="flex:1"><label>Observação</label><textarea id="fObservations" rows="3" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);resize:vertical"></textarea></div>
     </div>
   `;
   drawer.appendChild(form);
   drawer.querySelector('#fName').value = lead.name || '';
   drawer.querySelector('#fPhone').value = lead.phone || '';
-  drawer.querySelector('#fInstagram').value = lead.instagram || '';
-  drawer.querySelector('#fEmail').value = lead.email || '';
-  drawer.querySelector('#fProgram').value = lead.program || '';
   drawer.querySelector('#fSource').value = lead.source || '';
-  drawer.querySelector('#fPriority').value = lead.priority || '';
   drawer.querySelector('#fStatus').value = lead.status;
   drawer.querySelector('#fStatusNote').value = lead.status_note || '';
   drawer.querySelector('#fFirstContact').value = toDateInputValue(lead.first_contact_date);
@@ -648,11 +686,7 @@ function openDrawer(id){
     const fields = {
       name: drawer.querySelector('#fName').value.trim(),
       phone: drawer.querySelector('#fPhone').value.trim(),
-      instagram: drawer.querySelector('#fInstagram').value.trim(),
-      email: drawer.querySelector('#fEmail').value.trim(),
-      program: drawer.querySelector('#fProgram').value.trim(),
       source: drawer.querySelector('#fSource').value.trim(),
-      priority: drawer.querySelector('#fPriority').value,
       status: drawer.querySelector('#fStatus').value,
       status_note: drawer.querySelector('#fStatusNote').value.trim(),
       first_contact_date: drawer.querySelector('#fFirstContact').value || '',
@@ -661,10 +695,15 @@ function openDrawer(id){
       observations: drawer.querySelector('#fObservations').value.trim(),
     };
     if(!fields.name){ toast('Informe ao menos o nome'); return; }
+    if(!isNew && fields.status === 'ganho' && lead.status !== 'ganho'){
+      const ok = await promoteLeadToCliente(Object.assign({}, lead, fields));
+      if(ok) closeDrawer();
+      return;
+    }
     try{
       if(isNew){
         const created = await api('/api/leads', {method:'POST', body: JSON.stringify({
-          name: fields.name, phone: fields.phone, program: fields.program, source: fields.source,
+          name: fields.name, phone: fields.phone, source: fields.source,
         })});
         await api(`/api/leads/${created.id}`, {method:'PATCH', body: JSON.stringify(fields)});
         toast('Lead criado');
@@ -731,6 +770,369 @@ function openDrawer(id){
   document.getElementById('overlay').classList.add('show');
 }
 
+/* ============ Ganho -> Cliente ============ */
+
+function openPromoteModal(lead){
+  return new Promise((resolve)=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay show modal-center';
+    overlay.innerHTML = `
+      <div class="drawer modal-card" style="max-width:400px">
+        <button class="drawer-close" id="promoClose">×</button>
+        <h2>${escapeHtml(lead.name)} comprou 🎉</h2>
+        <p style="color:var(--muted);font-size:.85rem;margin:-1rem 0 1.3rem">Esse lead vai virar Cliente. O que ela comprou?</p>
+        <div class="field"><label>Produto</label><input id="promoProduct" placeholder="Ex: Mentoria Individual Reprograme-se"></div>
+        <div class="field" style="margin-top:1rem"><label>Data da compra</label><input id="promoDate" type="date"></div>
+        <div class="save-row">
+          <button class="btn-small save" id="promoConfirm">Confirmar e criar Cliente</button>
+          <button class="btn-small del" id="promoCancel">Cancelar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#promoDate').value = new Date().toISOString().slice(0,10);
+    overlay.querySelector('#promoProduct').focus();
+    const cleanup = (val) => { overlay.remove(); resolve(val); };
+    overlay.querySelector('#promoClose').addEventListener('click', ()=>cleanup(null));
+    overlay.querySelector('#promoCancel').addEventListener('click', ()=>cleanup(null));
+    overlay.addEventListener('click', (e)=>{ if(e.target===overlay) cleanup(null); });
+    overlay.querySelector('#promoConfirm').addEventListener('click', ()=>{
+      const product = overlay.querySelector('#promoProduct').value.trim();
+      const date = overlay.querySelector('#promoDate').value;
+      if(!product){ overlay.querySelector('#promoProduct').focus(); return; }
+      cleanup({product, date});
+    });
+  });
+}
+
+async function promoteLeadToCliente(lead){
+  const result = await openPromoteModal(lead);
+  if(!result) return false;
+  try{
+    const created = await api('/api/clientes', {method:'POST', body: JSON.stringify({name: lead.name, phone: lead.phone, product: result.product})});
+    const patchBody = {};
+    if(result.date) patchBody.purchase_date = result.date;
+    if(Object.keys(patchBody).length) await api(`/api/clientes/${created.id}`, {method:'PATCH', body: JSON.stringify(patchBody)});
+    if(result.product) await api(`/api/clientes/${created.id}/historico`, {method:'POST', body: JSON.stringify({produto: result.product, data: result.date || ''})});
+    await api(`/api/leads/${lead.id}`, {method:'DELETE'});
+    toast(`${lead.name} agora é Cliente`);
+    await loadAll();
+    return true;
+  }catch(err){
+    toast('Erro ao converter em cliente: '+err.message);
+    return false;
+  }
+}
+
+/* ===================== CLIENTES ===================== */
+
+function renderClientSummary(){
+  const el = document.getElementById('summary');
+  el.innerHTML = '';
+  const total = clientes.length;
+  const pct = n => total ? Math.round(n/total*100)+'% do total' : '—';
+  const cards = [
+    {label:'Total de clientes', value:total, accent:'var(--petrol)', sub:null},
+    {label:'Ativos', value:clientes.filter(c=>c.status==='ativo').length, accent:'var(--green)'},
+    {label:'Renovação em aberto', value:clientes.filter(c=>c.status==='renovacao').length, accent:'var(--taupe)'},
+    {label:'Encerrados', value:clientes.filter(c=>c.status==='encerrado').length, accent:'var(--wine)'},
+  ];
+  cards.forEach(c=>{
+    const el2 = document.createElement('div');
+    el2.className = 'sum-card';
+    el2.style.setProperty('--accent', c.accent);
+    const sub = c.sub === null ? '' : `<div class="p">${pct(c.value)}</div>`;
+    el2.innerHTML = `<div class="n">${c.value}</div><div class="l">${c.label}</div>${sub}`;
+    el.appendChild(el2);
+  });
+}
+
+function renderClientBoard(){
+  const board = document.getElementById('board');
+  board.style.gridTemplateColumns = `repeat(${CLIENT_STATUSES.length}, minmax(220px,1fr))`;
+  board.innerHTML = '';
+  CLIENT_STATUSES.forEach((s, idx)=>{
+    const col = document.createElement('div');
+    col.className = 'col';
+    const colClientes = clientes.filter(c=>c.status===s.key);
+    col.innerHTML = `<div class="col-head" title="${s.desc}"><span>${s.label}</span><span class="count">${colClientes.length}</span></div>`;
+    const body = document.createElement('div');
+    body.className = 'col-body';
+    if(colClientes.length===0){
+      body.innerHTML = '<div class="empty-col">Nenhum cliente aqui</div>';
+    }
+    colClientes.forEach(c=> body.appendChild(renderClientCard(c, idx)));
+    col.appendChild(body);
+    board.appendChild(col);
+  });
+}
+
+function renderClientCard(cliente, statusIdx){
+  const card = document.createElement('div');
+  card.className = 'card';
+  const nameEl = document.createElement('div');
+  nameEl.className = 'name';
+  nameEl.textContent = cliente.name || '(sem nome)';
+  const phoneEl = document.createElement('div');
+  phoneEl.className = 'meta';
+  phoneEl.textContent = cliente.phone || '';
+  card.appendChild(nameEl);
+  card.appendChild(phoneEl);
+  if(cliente.product){
+    const p = document.createElement('div');
+    p.className = 'meta';
+    p.style.marginTop = '.3rem';
+    p.textContent = cliente.product;
+    card.appendChild(p);
+  }
+
+  const badges = document.createElement('div');
+  badges.className = 'badges';
+  if(cliente.next_product){
+    const b = document.createElement('span');
+    b.className = 'badge';
+    b.textContent = 'Próximo: '+cliente.next_product;
+    badges.appendChild(b);
+  }
+  if(cliente.end_date){
+    const b = document.createElement('span');
+    b.className = 'badge';
+    b.textContent = 'Término: '+fmtDate(cliente.end_date);
+    badges.appendChild(b);
+  }
+  card.appendChild(badges);
+
+  const time = document.createElement('div');
+  time.className = 'time';
+  time.textContent = relTime(cliente.created_at);
+  card.appendChild(time);
+
+  const moveWrap = document.createElement('div');
+  moveWrap.className = 'movebtns';
+  if(statusIdx > 0){
+    const prev = document.createElement('button');
+    prev.className = 'mv'; prev.type='button'; prev.textContent = '‹';
+    prev.addEventListener('click', (e)=>{ e.stopPropagation(); changeClientStatus(cliente.id, CLIENT_STATUSES[statusIdx-1].key); });
+    moveWrap.appendChild(prev);
+  }
+  if(statusIdx < CLIENT_STATUSES.length-1){
+    const next = document.createElement('button');
+    next.className = 'mv'; next.type='button'; next.textContent = '›';
+    next.addEventListener('click', (e)=>{ e.stopPropagation(); changeClientStatus(cliente.id, CLIENT_STATUSES[statusIdx+1].key); });
+    moveWrap.appendChild(next);
+  }
+  card.appendChild(moveWrap);
+
+  card.addEventListener('click', ()=>openClienteDrawer(cliente.id));
+  return card;
+}
+
+async function changeClientStatus(id, status){
+  try{
+    await api(`/api/clientes/${id}`, {method:'PATCH', body: JSON.stringify({status})});
+    const c = clientes.find(x=>x.id===id);
+    if(c) c.status = status;
+    render();
+  }catch(err){ toast('Erro: '+err.message); }
+}
+
+function renderClientTable(){
+  const wrap = document.getElementById('tableWrap');
+  const statusLabel = key => (CLIENT_STATUSES.find(s=>s.key===key)||{}).label || key;
+
+  let rows = clientes.slice();
+  if(clientFilters.status) rows = rows.filter(c => c.status === clientFilters.status);
+
+  const dir = clientSortState.dir;
+  if(clientSortState.col === 'name') rows.sort((a,b)=> dir * (a.name||'').localeCompare(b.name||'', 'pt-BR'));
+  else if(clientSortState.col === 'phone') rows.sort((a,b)=> dir * onlyDigits(a.phone).localeCompare(onlyDigits(b.phone), undefined, {numeric:true}));
+  else rows.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+
+  const arrow = col => clientSortState.col===col ? (clientSortState.dir===1?'<span style="color:var(--green)">▲</span>':'<span style="color:var(--green)">▼</span>') : '<span style="opacity:.3">⇅</span>';
+
+  const body = rows.length ? rows.map(c=>`
+    <tr data-id="${c.id}">
+      <td>${escapeHtml(c.name || '(sem nome)')}</td>
+      <td>${escapeHtml(c.phone)}</td>
+      <td>${escapeHtml(c.product)}</td>
+      <td>${fmtDate(c.purchase_date)}</td>
+      <td>${fmtDate(c.end_date)}</td>
+      <td>${escapeHtml(c.next_product)}</td>
+      <td><span class="status-pill">${escapeHtml(statusLabel(c.status))}</span></td>
+      <td class="wrap">${escapeHtml(c.observations)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem;cursor:default">Nenhum cliente encontrado</td></tr>`;
+
+  wrap.innerHTML = `
+    <table class="crm-table">
+      <thead><tr>
+        <th data-sort="name">Nome ${arrow('name')}</th>
+        <th data-sort="phone">Telefone ${arrow('phone')}</th>
+        <th>Produto</th><th>Data de compra</th><th>Data de término/evento</th><th>Próximo produto</th><th>Status</th><th>Observação</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+  `;
+  wrap.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
+    tr.addEventListener('click', ()=>openClienteDrawer(Number(tr.dataset.id)));
+  });
+  wrap.querySelectorAll('th[data-sort]').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const col = th.dataset.sort;
+      if(clientSortState.col === col) clientSortState.dir *= -1;
+      else { clientSortState.col = col; clientSortState.dir = 1; }
+      renderClientTable();
+    });
+  });
+}
+
+function openClienteDrawer(id){
+  const isNew = !id;
+  selectedId = id || null;
+  const cliente = isNew ? {status:'ativo', purchase_history:[]} : clientes.find(c=>c.id===id);
+  if(!isNew && !cliente) return;
+  const drawer = document.getElementById('drawer');
+  const wa = !isNew && waLink(cliente.phone);
+
+  drawer.innerHTML = '';
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'drawer-close';
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', closeDrawer);
+  drawer.appendChild(closeBtn);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = isNew ? 'Novo cliente' : (cliente.name || '(sem nome)');
+  drawer.appendChild(h2);
+
+  const form = document.createElement('div');
+  form.innerHTML = `
+    <div class="drawer-row">
+      <div class="field"><label>Nome</label><input id="cName"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field"><label>Telefone</label><input id="cPhone"></div>
+      <div class="field"><label>Produto</label><input id="cProduct" placeholder="Ex: Retiro 360°"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field"><label>Data de compra</label><input id="cPurchaseDate" type="date"></div>
+      <div class="field"><label>Data de término/evento</label><input id="cEndDate" type="date"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field"><label>Próximo produto</label><input id="cNextProduct" placeholder="Ex: Treino de Liderança Mental"></div>
+      <div class="field"><label>Status</label>
+        <select id="cStatus">${CLIENT_STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="drawer-row">
+      <div class="field" style="flex:1"><label>Observação</label><textarea id="cObservations" rows="3" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);resize:vertical"></textarea></div>
+    </div>
+  `;
+  drawer.appendChild(form);
+  drawer.querySelector('#cName').value = cliente.name || '';
+  drawer.querySelector('#cPhone').value = cliente.phone || '';
+  drawer.querySelector('#cProduct').value = cliente.product || '';
+  drawer.querySelector('#cPurchaseDate').value = toDateInputValue(cliente.purchase_date);
+  drawer.querySelector('#cEndDate').value = toDateInputValue(cliente.end_date);
+  drawer.querySelector('#cNextProduct').value = cliente.next_product || '';
+  drawer.querySelector('#cStatus').value = cliente.status;
+  drawer.querySelector('#cObservations').value = cliente.observations || '';
+
+  const saveRow = document.createElement('div');
+  saveRow.className = 'save-row';
+  saveRow.innerHTML = isNew
+    ? `<button class="btn-small save" id="cSaveBtn">Criar cliente</button>`
+    : `
+    <button class="btn-small save" id="cSaveBtn">Salvar</button>
+    ${wa ? `<a class="btn-small wa" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
+    <button class="btn-small del" id="cDelBtn">Excluir</button>
+  `;
+  drawer.appendChild(saveRow);
+
+  drawer.querySelector('#cSaveBtn').addEventListener('click', async ()=>{
+    const fields = {
+      name: drawer.querySelector('#cName').value.trim(),
+      phone: drawer.querySelector('#cPhone').value.trim(),
+      product: drawer.querySelector('#cProduct').value.trim(),
+      purchase_date: drawer.querySelector('#cPurchaseDate').value || '',
+      end_date: drawer.querySelector('#cEndDate').value || '',
+      next_product: drawer.querySelector('#cNextProduct').value.trim(),
+      status: drawer.querySelector('#cStatus').value,
+      observations: drawer.querySelector('#cObservations').value.trim(),
+    };
+    if(!fields.name){ toast('Informe ao menos o nome'); return; }
+    try{
+      if(isNew){
+        const created = await api('/api/clientes', {method:'POST', body: JSON.stringify({
+          name: fields.name, phone: fields.phone, product: fields.product,
+        })});
+        await api(`/api/clientes/${created.id}`, {method:'PATCH', body: JSON.stringify(fields)});
+        if(fields.product) await api(`/api/clientes/${created.id}/historico`, {method:'POST', body: JSON.stringify({produto: fields.product, data: fields.purchase_date})});
+        toast('Cliente criado');
+        await loadClientes();
+        openClienteDrawer(created.id);
+      }else{
+        await api(`/api/clientes/${id}`, {method:'PATCH', body: JSON.stringify(fields)});
+        toast('Cliente atualizado');
+        await loadClientes();
+        openClienteDrawer(id);
+      }
+    }catch(err){ toast('Erro: '+err.message); }
+  });
+
+  if(!isNew){
+    drawer.querySelector('#cDelBtn').addEventListener('click', async ()=>{
+      if(!confirm('Excluir este cliente? Essa ação não pode ser desfeita.')) return;
+      try{
+        await api(`/api/clientes/${id}`, {method:'DELETE'});
+        toast('Cliente excluído');
+        closeDrawer();
+        await loadClientes();
+      }catch(err){ toast('Erro: '+err.message); }
+    });
+
+    const histTitle = document.createElement('div');
+    histTitle.className = 'notes-title';
+    histTitle.textContent = 'Histórico de compra';
+    drawer.appendChild(histTitle);
+
+    const histList = document.createElement('div');
+    (cliente.purchase_history||[]).slice().reverse().forEach(h=>{
+      const note = document.createElement('div');
+      note.className = 'note';
+      const textSpan = document.createElement('span');
+      textSpan.textContent = h.produto + (h.data ? ' — '+fmtDate(h.data) : '');
+      note.appendChild(textSpan);
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'note-time';
+      timeSpan.textContent = 'registrado em '+new Date(h.at).toLocaleString('pt-BR');
+      note.appendChild(timeSpan);
+      histList.appendChild(note);
+    });
+    if(!cliente.purchase_history || cliente.purchase_history.length===0){
+      histList.innerHTML = '<p style="font-size:.8rem;color:var(--muted)">Nenhuma compra anterior registrada.</p>';
+    }
+    drawer.appendChild(histList);
+
+    const histForm = document.createElement('div');
+    histForm.className = 'hist-form';
+    histForm.innerHTML = `<input id="histProduct" placeholder="Produto"><input id="histDate" type="date"><button id="histBtn" type="button">Add</button>`;
+    drawer.appendChild(histForm);
+    histForm.querySelector('#histBtn').addEventListener('click', async ()=>{
+      const produto = histForm.querySelector('#histProduct').value.trim();
+      const data = histForm.querySelector('#histDate').value;
+      if(!produto) return;
+      try{
+        await api(`/api/clientes/${id}/historico`, {method:'POST', body: JSON.stringify({produto, data})});
+        await loadClientes();
+        openClienteDrawer(id);
+      }catch(err){ toast('Erro: '+err.message); }
+    });
+  }
+
+  document.getElementById('overlay').classList.add('show');
+}
+
 function closeDrawer(){
   document.getElementById('overlay').classList.remove('show');
   selectedId = null;
@@ -739,6 +1141,9 @@ document.getElementById('overlay').addEventListener('click', (e)=>{
   if(e.target.id === 'overlay') closeDrawer();
 });
 
+document.querySelectorAll('#sectionToggle .vt-btn').forEach(b=>b.classList.toggle('active', b.dataset.section===section));
+document.getElementById('newItemBtn').textContent = section==='leads' ? '+ Novo Lead' : '+ Novo Cliente';
+setView(viewMode);
 checkAuth();
 </script>
 </body>

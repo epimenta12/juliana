@@ -262,7 +262,6 @@ const STATUSES = [
   {key:'ganho', label:'Ganho', desc:'Comprou — vira Cliente automaticamente.'},
   {key:'perda', label:'Perda', desc:'Não comprou após a call, ou está há mais de 1 mês sem contato.'},
   {key:'contato_futuro', label:'Contato futuro', desc:'Tem interesse e perfil, mas não consegue fechar no momento.'},
-  {key:'leads_antigos_sem_telefone', label:'Leads antigos — sem telefone', desc:'Aplicações antigas (formulários, Instagram) sem telefone cadastrado. Precisa achar um contato antes de seguir no funil.'},
 ];
 
 const CLIENT_STATUSES = [
@@ -574,7 +573,6 @@ function renderDashboard(){
   const funnelMax = Math.max(1, ...funnelData.map(s=>s.count));
   const leadsPerda = leads.filter(l=>l.status==='perda').length;
   const leadsContatoFuturo = leads.filter(l=>l.status==='contato_futuro').length;
-  const leadsAntigos = leads.filter(l=>l.status==='leads_antigos_sem_telefone').length;
 
   const origemCounts = {};
   leads.forEach(l => { const cat = categorizeOrigem(l.source); origemCounts[cat] = (origemCounts[cat]||0)+1; });
@@ -618,7 +616,6 @@ function renderDashboard(){
         <div class="funnel-outcomes">
           <div class="outcome-chip"><span class="dot" style="background:var(--wine)"></span>Perda: ${leadsPerda}</div>
           <div class="outcome-chip"><span class="dot" style="background:var(--taupe)"></span>Contato futuro: ${leadsContatoFuturo}</div>
-          <div class="outcome-chip"><span class="dot" style="background:var(--muted)"></span>Antigos sem telefone: ${leadsAntigos}</div>
         </div>
       </div>
 

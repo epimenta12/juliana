@@ -129,12 +129,16 @@
   .outcome-chip{padding:.45rem .8rem;border:1px solid var(--border);font-size:.7rem;font-weight:600;display:flex;align-items:center;gap:.5rem;color:var(--graphite)}
   .outcome-chip .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
-  .attn-list{display:flex;flex-direction:column;gap:.5rem;max-height:280px;overflow-y:auto}
-  .attn-item{display:flex;align-items:center;gap:.7rem;background:var(--sand);padding:.7rem .9rem;cursor:pointer;transition:box-shadow .2s}
+  .attn-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.5rem;height:1.5rem;padding:0 .4rem;background:var(--wine);color:var(--white);border-radius:20px;font-family:var(--fb);font-size:.72rem;font-weight:700;vertical-align:middle;margin-left:.4rem}
+  .attn-list{display:flex;flex-direction:column;gap:.5rem;max-height:320px;overflow-y:auto}
+  .attn-item{display:flex;align-items:center;gap:.7rem;background:var(--sand);padding:.6rem .6rem .6rem .9rem;transition:box-shadow .2s}
   .attn-item:hover{box-shadow:0 4px 14px rgba(0,0,0,.06)}
   .attn-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .attn-body{flex:1;min-width:0;cursor:pointer}
   .attn-item strong{display:block;font-size:.82rem;font-weight:600}
   .attn-sub{display:block;font-size:.72rem;color:var(--muted);margin-top:.1rem}
+  .attn-verify{flex-shrink:0;background:var(--white);border:1px solid var(--border);color:var(--petrol);padding:.4rem .7rem;font-size:.66rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+  .attn-verify:hover{border-color:var(--green);color:var(--green)}
 
   .donut-wrap{display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap}
   .donut-legend{display:flex;flex-direction:column;gap:.5rem;flex:1;min-width:140px}
@@ -587,7 +591,7 @@ function renderDashboard(){
   wrap.innerHTML = `
     <h1 class="page-title">Olá, Juliana</h1>
 
-    <div class="dash-hero dash-hero-3">
+    <div class="dash-hero">
       <div class="dash-hero-card">
         <div class="n">${totalLeads}</div>
         <div class="l">Leads no funil</div>
@@ -597,10 +601,6 @@ function renderDashboard(){
         <div class="n">${totalClientes}</div>
         <div class="l">Clientes</div>
         <button class="dash-link" data-goto="clientes">Ver Clientes →</button>
-      </div>
-      <div class="dash-hero-card">
-        <div class="n">${pendingCount}</div>
-        <div class="l">Ações pendentes hoje</div>
       </div>
     </div>
 
@@ -620,10 +620,22 @@ function renderDashboard(){
       </div>
 
       <div class="dash-panel">
-        <h3>Precisa de atenção</h3>
+        <h3>Precisa de atenção ${pendingCount ? `<span class="attn-count">${pendingCount}</span>` : ''}</h3>
         <div class="attn-list">
-          ${leadsAtencao.map(l=>`<div class="attn-item" data-type="lead" data-id="${l.id}"><span class="attn-dot" style="background:var(--wine)"></span><div><strong>${escapeHtml(l.name)}</strong><span class="attn-sub">Retomar contato — ${fmtDate(l.next_contact_date)}</span></div></div>`).join('')}
-          ${clientesRenovando.map(c=>`<div class="attn-item" data-type="cliente" data-id="${c.id}"><span class="attn-dot" style="background:var(--taupe)"></span><div><strong>${escapeHtml(c.name)}</strong><span class="attn-sub">Renovação perto — termina ${fmtDate(c.end_date)}</span></div></div>`).join('')}
+          ${leadsAtencao.map(l=>`
+            <div class="attn-item">
+              <span class="attn-dot" style="background:var(--wine)"></span>
+              <div class="attn-body" data-type="lead" data-id="${l.id}"><strong>${escapeHtml(l.name)}</strong><span class="attn-sub">Retomar contato — ${fmtDate(l.next_contact_date)}</span></div>
+              <button class="attn-verify" type="button" data-type="lead" data-id="${l.id}">Verificar</button>
+            </div>
+          `).join('')}
+          ${clientesRenovando.map(c=>`
+            <div class="attn-item">
+              <span class="attn-dot" style="background:var(--taupe)"></span>
+              <div class="attn-body" data-type="cliente" data-id="${c.id}"><strong>${escapeHtml(c.name)}</strong><span class="attn-sub">Renovação perto — termina ${fmtDate(c.end_date)}</span></div>
+              <button class="attn-verify" type="button" data-type="cliente" data-id="${c.id}">Verificar</button>
+            </div>
+          `).join('')}
           ${pendingCount===0 ? '<p style="color:var(--muted);font-size:.85rem">Nada urgente por enquanto.</p>' : ''}
         </div>
       </div>
@@ -647,11 +659,98 @@ function renderDashboard(){
     </div>
   `;
   wrap.querySelectorAll('[data-goto]').forEach(b=> b.addEventListener('click', ()=> setPage(b.dataset.goto)));
-  wrap.querySelectorAll('.attn-item').forEach(el=>{
+  wrap.querySelectorAll('.attn-body').forEach(el=>{
     el.addEventListener('click', ()=>{
       const id = Number(el.dataset.id);
       if(el.dataset.type==='lead') openDrawer(id); else openClienteDrawer(id);
     });
+  });
+  wrap.querySelectorAll('.attn-verify').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const id = Number(btn.dataset.id);
+      openQuickUpdateModal(btn.dataset.type, id);
+    });
+  });
+}
+
+function openQuickUpdateModal(type, id){
+  const isLead = type === 'lead';
+  const item = isLead ? leads.find(l=>l.id===id) : clientes.find(c=>c.id===id);
+  if(!item) return;
+  const statusList = isLead ? STATUSES : CLIENT_STATUSES;
+  const currentStatus = item.status;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay show modal-center';
+  overlay.innerHTML = `
+    <div class="drawer modal-card" style="max-width:380px">
+      <button class="drawer-close" id="quClose">×</button>
+      <h2>${escapeHtml(item.name)}</h2>
+      <div class="field">
+        <label>Status</label>
+        <select id="quStatus">${statusList.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
+      </div>
+      ${isLead ? `
+        <div class="drawer-row" style="margin-top:1rem">
+          <div class="field"><label>Último contato</label><input id="quLast" type="date"></div>
+          <div class="field"><label>Próximo contato</label><input id="quNext" type="date"></div>
+        </div>
+      ` : `
+        <div class="drawer-row" style="margin-top:1rem">
+          <div class="field"><label>Data de término/evento</label><input id="quEnd" type="date"></div>
+          <div class="field"><label>Próximo produto</label><input id="quNextProduct" placeholder="Ex: Retiro 360°"></div>
+        </div>
+      `}
+      <div class="save-row">
+        <button class="btn-small save" id="quSave">Salvar</button>
+        <button class="btn-small del" id="quCancel">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#quStatus').value = currentStatus;
+  if(isLead){
+    overlay.querySelector('#quLast').value = new Date().toISOString().slice(0,10);
+    overlay.querySelector('#quNext').value = '';
+  }else{
+    overlay.querySelector('#quEnd').value = toDateInputValue(item.end_date);
+    overlay.querySelector('#quNextProduct').value = item.next_product || '';
+  }
+
+  const cleanup = () => overlay.remove();
+  overlay.querySelector('#quClose').addEventListener('click', cleanup);
+  overlay.querySelector('#quCancel').addEventListener('click', cleanup);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) cleanup(); });
+
+  overlay.querySelector('#quSave').addEventListener('click', async ()=>{
+    const newStatus = overlay.querySelector('#quStatus').value;
+
+    if(isLead && newStatus === 'ganho' && currentStatus !== 'ganho'){
+      cleanup();
+      await promoteLeadToCliente(item);
+      return;
+    }
+
+    try{
+      if(isLead){
+        await api(`/api/leads/${id}`, {method:'PATCH', body: JSON.stringify({
+          status: newStatus,
+          last_contact_date: overlay.querySelector('#quLast').value || '',
+          next_contact_date: overlay.querySelector('#quNext').value || '',
+        })});
+        await loadLeads();
+      }else{
+        await api(`/api/clientes/${id}`, {method:'PATCH', body: JSON.stringify({
+          status: newStatus,
+          end_date: overlay.querySelector('#quEnd').value || '',
+          next_product: overlay.querySelector('#quNextProduct').value.trim(),
+        })});
+        await loadClientes();
+      }
+      toast('Atualizado');
+      cleanup();
+    }catch(err){ toast('Erro: '+err.message); }
   });
 }
 

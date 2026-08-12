@@ -112,8 +112,33 @@
   .dash-link:hover{background:rgba(255,255,255,.12)}
   .dash-section{margin-bottom:2.2rem}
   .dash-section h3{font-family:var(--fd);font-weight:500;font-size:1.25rem;margin-bottom:1rem}
-  .dash-3{grid-template-columns:repeat(3,1fr) !important}
-  @media(max-width:700px){.dash-3{grid-template-columns:repeat(2,1fr) !important}}
+
+  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;align-items:start}
+  @media(max-width:800px){.dash-grid{grid-template-columns:1fr}}
+  .dash-panel{background:var(--white);border:1px solid var(--border);padding:1.6rem}
+  .dash-panel h3{font-family:var(--fd);font-weight:500;font-size:1.15rem;margin-bottom:1.2rem}
+
+  .funnel{display:flex;flex-direction:column;gap:.55rem}
+  .funnel-row{display:flex;align-items:center;gap:1rem}
+  .funnel-label{width:135px;font-size:.72rem;color:var(--muted);text-align:right;flex-shrink:0}
+  .funnel-bar-wrap{flex:1;display:flex;justify-content:center}
+  .funnel-bar{background:var(--green);color:var(--white);font-size:.75rem;font-weight:600;padding:.5rem .7rem;text-align:center;transition:width .5s var(--ease);min-width:2.4rem}
+  .funnel-outcomes{display:flex;gap:.6rem;margin-top:1.3rem;flex-wrap:wrap}
+  .outcome-chip{padding:.45rem .8rem;border:1px solid var(--border);font-size:.7rem;font-weight:600;display:flex;align-items:center;gap:.5rem;color:var(--graphite)}
+  .outcome-chip .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+  .attn-list{display:flex;flex-direction:column;gap:.5rem;max-height:280px;overflow-y:auto}
+  .attn-item{display:flex;align-items:center;gap:.7rem;background:var(--sand);padding:.7rem .9rem;cursor:pointer;transition:box-shadow .2s}
+  .attn-item:hover{box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .attn-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .attn-item strong{display:block;font-size:.82rem;font-weight:600}
+  .attn-sub{display:block;font-size:.72rem;color:var(--muted);margin-top:.1rem}
+
+  .donut-wrap{display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap}
+  .donut-legend{display:flex;flex-direction:column;gap:.5rem;flex:1;min-width:140px}
+  .legend-row{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--graphite)}
+  .legend-row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .legend-val{margin-left:auto;font-weight:600;color:var(--muted)}
 
   .board{display:grid;gap:1rem;overflow-x:auto;padding-bottom:1rem}
   .col{background:var(--sand);display:flex;flex-direction:column;min-width:230px}
@@ -214,7 +239,6 @@
   <main class="main-content">
     <div class="board-wrap">
       <div id="dashboardWrap" style="display:none"></div>
-      <div class="board-summary" id="summary"></div>
       <div class="table-filters" id="tableFilters" style="display:none"></div>
       <div class="board" id="board"></div>
       <div class="table-wrap" id="tableWrap" style="display:none"></div>
@@ -480,7 +504,6 @@ async function loadClientes(){
 function render(){
   const isListPage = page === 'leads' || page === 'clientes';
   document.getElementById('dashboardWrap').style.display = page === 'dashboard' ? 'block' : 'none';
-  document.getElementById('summary').style.display = isListPage ? '' : 'none';
   document.getElementById('tableFilters').style.display = (isListPage && viewMode==='table') ? 'flex' : 'none';
   document.getElementById('board').style.display = (isListPage && viewMode==='kanban') ? 'grid' : 'none';
   document.getElementById('tableWrap').style.display = (isListPage && viewMode==='table') ? 'block' : 'none';
@@ -489,11 +512,9 @@ function render(){
     renderDashboard();
   } else if(page === 'leads'){
     ensureFiltersUI();
-    renderLeadsSummary();
     if(viewMode === 'table') renderLeadsTable(); else renderLeadsBoard();
   } else if(page === 'clientes'){
     ensureFiltersUI();
-    renderClientSummary();
     if(viewMode === 'table') renderClientTable(); else renderClientBoard();
   }
 }
@@ -504,71 +525,141 @@ function miniCard(label, value, accent){
   return `<div class="sum-card" style="--accent:${accent}"><div class="n">${value}</div><div class="l">${label}</div></div>`;
 }
 
+const FUNNEL_STAGES = [
+  {key:'novo_lead', label:'Novo lead'},
+  {key:'primeiro_contato', label:'Primeiro contato'},
+  {key:'aguardando_retorno', label:'Aguardando retorno'},
+  {key:'qualificacao', label:'Qualificação'},
+  {key:'fechamento', label:'Fechamento'},
+];
+const CLIENT_STATUS_COLORS = {ativo:'var(--green)', renovacao:'var(--taupe)', pausado:'var(--petrol)', encerrado:'var(--wine)'};
+const DONUT_COLORS = ['var(--green)','var(--petrol)','var(--taupe)','var(--wine)','#8B7355','#5C7A80'];
+
+function donutChart(segments, size, thickness){
+  size = size || 130; thickness = thickness || 16;
+  const total = segments.reduce((s,x)=>s+x.value,0);
+  const c = size/2, r = (size - thickness)/2;
+  if(!total){
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${thickness}"/></svg>`;
+  }
+  const circumference = 2*Math.PI*r;
+  let offset = 0;
+  const arcs = segments.map(seg=>{
+    const frac = seg.value/total;
+    const len = frac*circumference;
+    const gap = segments.length>1 ? 2 : 0;
+    const dasharray = `${Math.max(len-gap,0)} ${circumference-Math.max(len-gap,0)}`;
+    const dashoffset = -offset;
+    offset += len;
+    return `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${thickness}" stroke-dasharray="${dasharray}" stroke-dashoffset="${dashoffset}" transform="rotate(-90 ${c} ${c})" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${arcs}<text x="${c}" y="${c}" text-anchor="middle" dominant-baseline="central" style="font-family:var(--fd);font-size:1.5rem;fill:var(--graphite)">${total}</text></svg>`;
+}
+
 function renderDashboard(){
   const wrap = document.getElementById('dashboardWrap');
-  const leadsAguardando = leads.filter(l=>l.status==='aguardando_retorno').length;
-  const leadsContatoFuturo = leads.filter(l=>l.status==='contato_futuro').length;
+  const todayStr = new Date().toISOString().slice(0,10);
+  const in14Str = new Date(Date.now() + 14*86400000).toISOString().slice(0,10);
+
+  const leadsAtencao = leads.filter(l => l.next_contact_date && toDateInputValue(l.next_contact_date) <= todayStr)
+    .sort((a,b)=> toDateInputValue(a.next_contact_date).localeCompare(toDateInputValue(b.next_contact_date)));
+  const clientesRenovando = clientes.filter(c => c.end_date && toDateInputValue(c.end_date) >= todayStr && toDateInputValue(c.end_date) <= in14Str)
+    .sort((a,b)=> toDateInputValue(a.end_date).localeCompare(toDateInputValue(b.end_date)));
+  const pendingCount = leadsAtencao.length + clientesRenovando.length;
+
+  const totalLeads = leads.length, totalClientes = clientes.length;
+  const conversionRate = (totalLeads+totalClientes) ? Math.round(totalClientes/(totalLeads+totalClientes)*100) : 0;
+
+  const funnelData = FUNNEL_STAGES.map(s => ({...s, count: leads.filter(l=>l.status===s.key).length}));
+  const funnelMax = Math.max(1, ...funnelData.map(s=>s.count));
   const leadsPerda = leads.filter(l=>l.status==='perda').length;
-  const clientesAtivos = clientes.filter(c=>c.status==='ativo').length;
-  const clientesRenovacao = clientes.filter(c=>c.status==='renovacao').length;
-  const clientesEncerrados = clientes.filter(c=>c.status==='encerrado').length;
+  const leadsContatoFuturo = leads.filter(l=>l.status==='contato_futuro').length;
+  const leadsAntigos = leads.filter(l=>l.status==='leads_antigos_sem_telefone').length;
+
+  const origemCounts = {};
+  leads.forEach(l => { const cat = categorizeOrigem(l.source); origemCounts[cat] = (origemCounts[cat]||0)+1; });
+  const origemSegments = Object.entries(origemCounts).filter(([,v])=>v>0)
+    .map(([label,value],i)=>({label, value, color: DONUT_COLORS[i % DONUT_COLORS.length]}));
+
+  const clienteSegments = CLIENT_STATUSES
+    .map(s => ({label:s.label, value: clientes.filter(c=>c.status===s.key).length, color: CLIENT_STATUS_COLORS[s.key]}))
+    .filter(s=>s.value>0);
 
   wrap.innerHTML = `
     <h1 class="page-title">Olá, Juliana</h1>
+
     <div class="dash-hero">
       <div class="dash-hero-card">
-        <div class="n">${leads.length}</div>
+        <div class="n">${totalLeads}</div>
         <div class="l">Leads no funil</div>
         <button class="dash-link" data-goto="leads">Ver Leads →</button>
       </div>
       <div class="dash-hero-card">
-        <div class="n">${clientes.length}</div>
+        <div class="n">${totalClientes}</div>
         <div class="l">Clientes</div>
         <button class="dash-link" data-goto="clientes">Ver Clientes →</button>
       </div>
     </div>
-    <div class="dash-section">
-      <h3>Leads</h3>
-      <div class="board-summary dash-3">
-        ${miniCard('Aguardando retorno', leadsAguardando, 'var(--green)')}
-        ${miniCard('Contato futuro', leadsContatoFuturo, 'var(--taupe)')}
-        ${miniCard('Perda', leadsPerda, 'var(--wine)')}
+
+    <div class="board-summary" style="grid-template-columns:repeat(2,1fr);margin-bottom:1.5rem">
+      ${miniCard('Taxa de conversão', conversionRate+'%', 'var(--green)')}
+      ${miniCard('Ações pendentes hoje', pendingCount, 'var(--wine)')}
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-panel">
+        <h3>Funil de vendas</h3>
+        <div class="funnel">
+          ${funnelData.map(s=>{
+            const pct = Math.max(12, Math.round(s.count/funnelMax*100));
+            return `<div class="funnel-row"><div class="funnel-label">${s.label}</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pct}%">${s.count}</div></div></div>`;
+          }).join('')}
+        </div>
+        <div class="funnel-outcomes">
+          <div class="outcome-chip"><span class="dot" style="background:var(--wine)"></span>Perda: ${leadsPerda}</div>
+          <div class="outcome-chip"><span class="dot" style="background:var(--taupe)"></span>Contato futuro: ${leadsContatoFuturo}</div>
+          <div class="outcome-chip"><span class="dot" style="background:var(--muted)"></span>Antigos sem telefone: ${leadsAntigos}</div>
+        </div>
+      </div>
+
+      <div class="dash-panel">
+        <h3>Precisa de atenção</h3>
+        <div class="attn-list">
+          ${leadsAtencao.map(l=>`<div class="attn-item" data-type="lead" data-id="${l.id}"><span class="attn-dot" style="background:var(--wine)"></span><div><strong>${escapeHtml(l.name)}</strong><span class="attn-sub">Retomar contato — ${fmtDate(l.next_contact_date)}</span></div></div>`).join('')}
+          ${clientesRenovando.map(c=>`<div class="attn-item" data-type="cliente" data-id="${c.id}"><span class="attn-dot" style="background:var(--taupe)"></span><div><strong>${escapeHtml(c.name)}</strong><span class="attn-sub">Renovação perto — termina ${fmtDate(c.end_date)}</span></div></div>`).join('')}
+          ${pendingCount===0 ? '<p style="color:var(--muted);font-size:.85rem">Nada urgente por enquanto.</p>' : ''}
+        </div>
       </div>
     </div>
-    <div class="dash-section">
-      <h3>Clientes</h3>
-      <div class="board-summary dash-3">
-        ${miniCard('Ativos', clientesAtivos, 'var(--green)')}
-        ${miniCard('Renovação em aberto', clientesRenovacao, 'var(--taupe)')}
-        ${miniCard('Encerrados', clientesEncerrados, 'var(--wine)')}
+
+    <div class="dash-grid">
+      <div class="dash-panel">
+        <h3>Clientes por status</h3>
+        <div class="donut-wrap">
+          ${donutChart(clienteSegments)}
+          <div class="donut-legend">${clienteSegments.map(s=>`<div class="legend-row"><span class="dot" style="background:${s.color}"></span>${s.label}<span class="legend-val">${s.value}</span></div>`).join('') || '<p style="color:var(--muted);font-size:.85rem">Sem clientes ainda.</p>'}</div>
+        </div>
+      </div>
+      <div class="dash-panel">
+        <h3>Leads por origem</h3>
+        <div class="donut-wrap">
+          ${donutChart(origemSegments)}
+          <div class="donut-legend">${origemSegments.map(s=>`<div class="legend-row"><span class="dot" style="background:${s.color}"></span>${s.label}<span class="legend-val">${s.value}</span></div>`).join('') || '<p style="color:var(--muted);font-size:.85rem">Sem leads ainda.</p>'}</div>
+        </div>
       </div>
     </div>
   `;
   wrap.querySelectorAll('[data-goto]').forEach(b=> b.addEventListener('click', ()=> setPage(b.dataset.goto)));
+  wrap.querySelectorAll('.attn-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = Number(el.dataset.id);
+      if(el.dataset.type==='lead') openDrawer(id); else openClienteDrawer(id);
+    });
+  });
 }
 
 /* ===================== LEADS ===================== */
 
-function renderLeadsSummary(){
-  const el = document.getElementById('summary');
-  el.innerHTML = '';
-  const total = leads.length;
-  const pct = n => total ? Math.round(n/total*100)+'% do total' : '—';
-  const cards = [
-    {label:'Total de leads', value:total, accent:'var(--petrol)', sub:null},
-    {label:'Perda', value:leads.filter(l=>l.status==='perda').length, accent:'var(--wine)'},
-    {label:'Contato futuro', value:leads.filter(l=>l.status==='contato_futuro').length, accent:'var(--taupe)'},
-    {label:'Aguardando retorno', value:leads.filter(l=>l.status==='aguardando_retorno').length, accent:'var(--green)'},
-  ];
-  cards.forEach(c=>{
-    const el2 = document.createElement('div');
-    el2.className = 'sum-card';
-    el2.style.setProperty('--accent', c.accent);
-    const sub = c.sub === null ? '' : `<div class="p">${pct(c.value)}</div>`;
-    el2.innerHTML = `<div class="n">${c.value}</div><div class="l">${c.label}</div>${sub}`;
-    el.appendChild(el2);
-  });
-}
 
 function renderLeadsBoard(){
   const board = document.getElementById('board');
@@ -930,26 +1021,6 @@ async function promoteLeadToCliente(lead){
 
 /* ===================== CLIENTES ===================== */
 
-function renderClientSummary(){
-  const el = document.getElementById('summary');
-  el.innerHTML = '';
-  const total = clientes.length;
-  const pct = n => total ? Math.round(n/total*100)+'% do total' : '—';
-  const cards = [
-    {label:'Total de clientes', value:total, accent:'var(--petrol)', sub:null},
-    {label:'Ativos', value:clientes.filter(c=>c.status==='ativo').length, accent:'var(--green)'},
-    {label:'Renovação em aberto', value:clientes.filter(c=>c.status==='renovacao').length, accent:'var(--taupe)'},
-    {label:'Encerrados', value:clientes.filter(c=>c.status==='encerrado').length, accent:'var(--wine)'},
-  ];
-  cards.forEach(c=>{
-    const el2 = document.createElement('div');
-    el2.className = 'sum-card';
-    el2.style.setProperty('--accent', c.accent);
-    const sub = c.sub === null ? '' : `<div class="p">${pct(c.value)}</div>`;
-    el2.innerHTML = `<div class="n">${c.value}</div><div class="l">${c.label}</div>${sub}`;
-    el.appendChild(el2);
-  });
-}
 
 function renderClientBoard(){
   const board = document.getElementById('board');

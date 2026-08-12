@@ -45,6 +45,6 @@ module.exports = async (req, res) => {
 
     res.status(405).json({ error: 'method not allowed' });
   } catch (err) {
-    res.status(500).json({ error: 'debug: ' + (err && err.message), stack: err && err.stack });
+    res.status(500).json({ error: (err && err.message) || 'erro interno' });
   }
 };

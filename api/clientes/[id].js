@@ -19,6 +19,7 @@ function toDateOrNull(v) {
 }
 
 module.exports = async (req, res) => {
+  try {
   if (!isAuthed(req)) {
     res.status(401).json({ error: 'unauthorized' });
     return;
@@ -66,4 +67,7 @@ module.exports = async (req, res) => {
   }
 
   res.status(405).json({ error: 'method not allowed' });
+  } catch (err) {
+    res.status(500).json({ error: (err && err.message) || 'erro interno' });
+  }
 };

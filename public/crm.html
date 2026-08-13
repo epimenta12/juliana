@@ -156,17 +156,16 @@
   .col-body{padding:.7rem;display:flex;flex-direction:column;gap:.6rem;min-height:56px}
   .col-body.col-scroll{overflow-y:auto;padding-right:.5rem}
 
-  .card{background:var(--white);padding:.9rem;border:1px solid var(--border);cursor:pointer;transition:box-shadow .25s,transform .25s;border-radius:var(--radius-sm);box-shadow:var(--shadow-card)}
+  .card{background:var(--white);padding:.9rem;border:1px solid var(--border);cursor:grab;transition:box-shadow .25s,transform .25s,opacity .2s;border-radius:var(--radius-sm);box-shadow:var(--shadow-card)}
   .card:hover{box-shadow:var(--shadow-card-hover);transform:translateY(-1px)}
+  .card.dragging{opacity:.4}
   .card .name{font-weight:600;font-size:.88rem;margin-bottom:.25rem}
   .card .meta{font-size:.75rem;color:var(--muted);margin-bottom:.15rem}
   .card .badges{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem}
   .badge{font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.22rem .55rem;background:var(--green-soft,rgba(32,84,71,.08));color:var(--green);border-radius:var(--radius-pill)}
   .card .time{font-size:.65rem;color:var(--muted);opacity:.75;margin-top:.5rem}
-  .card .movebtns{display:flex;gap:.3rem;margin-top:.6rem}
-  .mv{border:1px solid var(--border);background:var(--white);font-size:.7rem;padding:.25rem .5rem;flex:1;transition:all .2s;border-radius:var(--radius-sm)}
-  .mv:hover{border-color:var(--green);color:var(--green)}
   .empty-col{font-size:.75rem;color:var(--muted);opacity:.6;padding:1rem;text-align:center}
+  .col-body.drag-over{background:rgba(32,84,71,.08);outline:2px dashed var(--green);outline-offset:-6px;border-radius:var(--radius-sm)}
 
   /* ---- Drawer / modais ---- */
   .overlay{position:fixed;inset:0;background:rgba(19,67,76,.55);z-index:100;display:none;align-items:stretch;justify-content:flex-end}
@@ -873,8 +872,33 @@ function limitColumnHeight(body, cap){
   const gap = parseFloat(cs.rowGap) || 0;
   let h = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
   for(let i=0;i<cap;i++){ h += cards[i].offsetHeight; if(i<cap-1) h += gap; }
+  // não deixa a coluna empurrar a página: limita ao espaço visível na tela
+  const viewportLimit = window.innerHeight - body.getBoundingClientRect().top - 60;
+  h = Math.min(h, Math.max(viewportLimit, 160));
   body.style.maxHeight = h + 'px';
   body.classList.add('col-scroll');
+}
+
+function makeCardDraggable(card, id){
+  card.draggable = true;
+  card.addEventListener('dragstart', (e)=>{
+    e.dataTransfer.setData('text/plain', String(id));
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(()=> card.classList.add('dragging'), 0);
+  });
+  card.addEventListener('dragend', ()=> card.classList.remove('dragging'));
+}
+
+function setupColumnDrop(body, statusKey, onDrop){
+  body.dataset.status = statusKey;
+  body.addEventListener('dragover', (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect = 'move'; body.classList.add('drag-over'); });
+  body.addEventListener('dragleave', ()=> body.classList.remove('drag-over'));
+  body.addEventListener('drop', (e)=>{
+    e.preventDefault();
+    body.classList.remove('drag-over');
+    const id = Number(e.dataTransfer.getData('text/plain'));
+    if(id) onDrop(id, statusKey);
+  });
 }
 
 function renderLeadsBoard(){
@@ -892,6 +916,7 @@ function renderLeadsBoard(){
       body.innerHTML = '<div class="empty-col">Nenhum lead aqui</div>';
     }
     colLeads.forEach(lead=> body.appendChild(renderCard(lead, idx)));
+    setupColumnDrop(body, s.key, (id, status)=> changeStatus(id, status));
     col.appendChild(body);
     board.appendChild(col);
     limitColumnHeight(body);
@@ -940,22 +965,7 @@ function renderCard(lead, statusIdx){
   time.textContent = relTime(lead.created_at);
   card.appendChild(time);
 
-  const moveWrap = document.createElement('div');
-  moveWrap.className = 'movebtns';
-  if(statusIdx > 0){
-    const prev = document.createElement('button');
-    prev.className = 'mv'; prev.type='button'; prev.textContent = '‹';
-    prev.addEventListener('click', (e)=>{ e.stopPropagation(); changeStatus(lead.id, STATUSES[statusIdx-1].key); });
-    moveWrap.appendChild(prev);
-  }
-  if(statusIdx < STATUSES.length-1){
-    const next = document.createElement('button');
-    next.className = 'mv'; next.type='button'; next.textContent = '›';
-    next.addEventListener('click', (e)=>{ e.stopPropagation(); changeStatus(lead.id, STATUSES[statusIdx+1].key); });
-    moveWrap.appendChild(next);
-  }
-  card.appendChild(moveWrap);
-
+  makeCardDraggable(card, lead.id);
   card.addEventListener('click', ()=>openDrawer(lead.id));
   return card;
 }
@@ -1255,6 +1265,7 @@ function renderClientBoard(){
       body.innerHTML = '<div class="empty-col">Nenhum cliente aqui</div>';
     }
     colClientes.forEach(c=> body.appendChild(renderClientCard(c, idx)));
+    setupColumnDrop(body, s.key, (id, status)=> changeClientStatus(id, status));
     col.appendChild(body);
     board.appendChild(col);
     limitColumnHeight(body);
@@ -1301,22 +1312,7 @@ function renderClientCard(cliente, statusIdx){
   time.textContent = relTime(cliente.created_at);
   card.appendChild(time);
 
-  const moveWrap = document.createElement('div');
-  moveWrap.className = 'movebtns';
-  if(statusIdx > 0){
-    const prev = document.createElement('button');
-    prev.className = 'mv'; prev.type='button'; prev.textContent = '‹';
-    prev.addEventListener('click', (e)=>{ e.stopPropagation(); changeClientStatus(cliente.id, CLIENT_STATUSES[statusIdx-1].key); });
-    moveWrap.appendChild(prev);
-  }
-  if(statusIdx < CLIENT_STATUSES.length-1){
-    const next = document.createElement('button');
-    next.className = 'mv'; next.type='button'; next.textContent = '›';
-    next.addEventListener('click', (e)=>{ e.stopPropagation(); changeClientStatus(cliente.id, CLIENT_STATUSES[statusIdx+1].key); });
-    moveWrap.appendChild(next);
-  }
-  card.appendChild(moveWrap);
-
+  makeCardDraggable(card, cliente.id);
   card.addEventListener('click', ()=>openClienteDrawer(cliente.id));
   return card;
 }

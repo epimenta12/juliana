@@ -111,11 +111,10 @@
   .dash-hero-3{grid-template-columns:1fr 1fr 1fr}
   @media(max-width:700px){.dash-hero-3{grid-template-columns:1fr 1fr}}
   @media(max-width:600px){.dash-hero{grid-template-columns:1fr}}
-  .dash-hero-card{background:var(--petrol);color:var(--white);padding:1.2rem 1.4rem;border-radius:var(--radius);box-shadow:var(--shadow-card)}
+  .dash-hero-card{background:var(--petrol);color:var(--white);padding:1.2rem 1.4rem;border-radius:var(--radius);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;transition:box-shadow .25s}
+  .dash-hero-card:hover{box-shadow:var(--shadow-card-hover)}
   .dash-hero-card .n{font-family:var(--fd);font-size:2.2rem;line-height:1}
-  .dash-hero-card .l{font-size:.7rem;color:rgba(255,255,255,.7);margin:.3rem 0 .8rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
-  .dash-link{background:0;border:1px solid rgba(255,255,255,.4);color:var(--white);padding:.35rem .8rem;font-size:.66rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .25s;border-radius:var(--radius-sm)}
-  .dash-link:hover{background:rgba(255,255,255,.12)}
+  .dash-hero-card .l{font-size:.7rem;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
   .dash-section{margin-bottom:2.2rem}
   .dash-section h3{font-family:var(--fd);font-weight:500;font-size:1.25rem;margin-bottom:1rem}
 
@@ -705,15 +704,13 @@ function renderDashboard(){
     <p class="dash-date">${fmtLongDate(new Date())}</p>
 
     <div class="dash-hero">
-      <div class="dash-hero-card">
-        <div class="n">${totalLeads}</div>
+      <div class="dash-hero-card" data-goto="leads">
         <div class="l">Leads no funil</div>
-        <button class="dash-link" data-goto="leads">Ver Leads →</button>
+        <div class="n">${totalLeads}</div>
       </div>
-      <div class="dash-hero-card">
-        <div class="n">${totalClientes}</div>
+      <div class="dash-hero-card" data-goto="clientes">
         <div class="l">Clientes</div>
-        <button class="dash-link" data-goto="clientes">Ver Clientes →</button>
+        <div class="n">${totalClientes}</div>
       </div>
     </div>
 

@@ -124,12 +124,9 @@
   .dash-panel{background:var(--white);border:1px solid var(--border);padding:1.6rem;border-radius:var(--radius);box-shadow:var(--shadow-card)}
   .dash-panel h3{font-family:var(--fd);font-weight:500;font-size:1.15rem;margin-bottom:1.2rem}
 
-  .funnel{display:flex;flex-direction:column;gap:.55rem}
-  .funnel-row{display:flex;align-items:center;gap:1rem}
-  .funnel-label{width:135px;font-size:.72rem;color:var(--muted);text-align:right;flex-shrink:0}
-  .funnel-bar-wrap{flex:1;display:flex;justify-content:center}
-  .funnel-bar{background:var(--green);color:var(--white);font-size:.75rem;font-weight:600;padding:.5rem .7rem;text-align:center;transition:width .5s var(--ease);min-width:2.4rem;border-radius:var(--radius-sm)}
-  .funnel-outcomes{display:flex;gap:.6rem;margin-top:1.3rem;flex-wrap:wrap}
+  .funnel-line{width:100%}
+  .funnel-line svg{display:block}
+  .funnel-outcomes{display:flex;gap:.6rem;margin-top:1.1rem;flex-wrap:wrap}
   .outcome-chip{padding:.45rem .8rem;border:1px solid var(--border);font-size:.7rem;font-weight:600;display:flex;align-items:center;gap:.5rem;color:var(--graphite);border-radius:var(--radius-pill)}
   .outcome-chip .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
@@ -608,6 +605,53 @@ function getProductValue(selectEl, customEl){
   return selectEl.value === PRODUCT_OTHER ? customEl.value.trim() : selectEl.value;
 }
 
+const FUNNEL_SHORT_LABEL = {
+  novo_lead: 'Novo lead',
+  primeiro_contato: '1º contato',
+  aguardando_retorno: 'Aguardando',
+  qualificacao: 'Qualificação',
+  fechamento: 'Fechamento'
+};
+
+function funnelLineChart(stages){
+  const w = 560, h = 190;
+  const padX = 46, padTop = 30, padBottom = 42;
+  const chartW = w - padX*2, chartH = h - padTop - padBottom;
+  const maxCount = Math.max(1, ...stages.map(s=>s.count));
+  const n = stages.length;
+  const stepX = n > 1 ? chartW/(n-1) : 0;
+  const pts = stages.map((s,i)=>{
+    const x = padX + i*stepX;
+    const y = padTop + (1 - s.count/maxCount) * chartH;
+    return {...s, x, y};
+  });
+  const linePath = pts.map((p,i)=> (i===0?'M':'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ');
+  const baseY = (padTop+chartH).toFixed(1);
+  const areaPath = `${linePath} L ${pts[pts.length-1].x.toFixed(1)} ${baseY} L ${pts[0].x.toFixed(1)} ${baseY} Z`;
+
+  return `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;overflow:visible">
+      <defs>
+        <linearGradient id="funnelLineFade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="var(--green)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <line x1="${padX}" y1="${baseY}" x2="${w-padX}" y2="${baseY}" stroke="var(--border)" stroke-width="1"/>
+      <path d="${areaPath}" fill="url(#funnelLineFade)"/>
+      <path d="${linePath}" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${pts.map(p=>`
+        <g>
+          <title>${p.label}: ${p.count}</title>
+          <circle cx="${p.x}" cy="${p.y}" r="5.5" fill="${p.color}" stroke="var(--white)" stroke-width="2"/>
+          <text x="${p.x}" y="${p.y-14}" text-anchor="middle" style="font-family:var(--fb);font-size:.74rem;font-weight:700;fill:var(--graphite)">${p.count}</text>
+        </g>
+        <text x="${p.x}" y="${h-22}" text-anchor="middle" style="font-family:var(--fb);font-size:.62rem;fill:var(--muted)">${FUNNEL_SHORT_LABEL[p.key] || p.label}</text>
+      `).join('')}
+    </svg>
+  `;
+}
+
 function donutChart(segments, size, thickness){
   size = size || 130; thickness = thickness || 16;
   const total = segments.reduce((s,x)=>s+x.value,0);
@@ -676,11 +720,8 @@ function renderDashboard(){
     <div class="dash-grid">
       <div class="dash-panel">
         <h3>Funil de vendas</h3>
-        <div class="funnel">
-          ${funnelData.map(s=>{
-            const pct = Math.max(12, Math.round(s.count/funnelMax*100));
-            return `<div class="funnel-row"><div class="funnel-label">${s.label}</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pct}%;background:${s.color}">${s.count}</div></div></div>`;
-          }).join('')}
+        <div class="funnel-line">
+          ${funnelLineChart(funnelData)}
         </div>
         <div class="funnel-outcomes">
           <div class="outcome-chip"><span class="dot" style="background:${STATUSES.find(s=>s.key==='perda').color}"></span>Perda: ${leadsPerda}</div>

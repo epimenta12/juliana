@@ -146,14 +146,15 @@
   .legend-row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
   .legend-val{margin-left:auto;font-weight:600;color:var(--muted)}
 
-  .board{display:grid;gap:1rem;overflow-x:auto;padding-bottom:1rem}
+  .board{display:grid;gap:1rem;overflow-x:auto;padding-bottom:1rem;align-items:start}
   .col{background:var(--sand);display:flex;flex-direction:column;min-width:230px;border-radius:var(--radius);overflow:hidden}
   .col-head{padding:.9rem 1rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,0,0,.08);cursor:help}
   .col-head .head-left{display:flex;align-items:center;gap:.5rem;min-width:0}
   .col-head .stage-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
   .col-head span:not(.count):not(.stage-dot){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .col-head .count{background:var(--green);color:var(--white);border-radius:var(--radius-pill);font-size:.65rem;padding:.1rem .55rem;flex-shrink:0}
-  .col-body{padding:.7rem;display:flex;flex-direction:column;gap:.6rem;min-height:80px;flex:1}
+  .col-body{padding:.7rem;display:flex;flex-direction:column;gap:.6rem;min-height:56px}
+  .col-body.col-scroll{overflow-y:auto;padding-right:.5rem}
 
   .card{background:var(--white);padding:.9rem;border:1px solid var(--border);cursor:pointer;transition:box-shadow .25s,transform .25s;border-radius:var(--radius-sm);box-shadow:var(--shadow-card)}
   .card:hover{box-shadow:var(--shadow-card-hover);transform:translateY(-1px)}
@@ -864,6 +865,18 @@ function openQuickUpdateModal(type, id){
 /* ===================== LEADS ===================== */
 
 
+function limitColumnHeight(body, cap){
+  cap = cap || 5;
+  const cards = [...body.children].filter(c=>c.classList.contains('card'));
+  if(cards.length <= cap) return;
+  const cs = getComputedStyle(body);
+  const gap = parseFloat(cs.rowGap) || 0;
+  let h = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  for(let i=0;i<cap;i++){ h += cards[i].offsetHeight; if(i<cap-1) h += gap; }
+  body.style.maxHeight = h + 'px';
+  body.classList.add('col-scroll');
+}
+
 function renderLeadsBoard(){
   const board = document.getElementById('board');
   board.style.gridTemplateColumns = `repeat(${STATUSES.length}, minmax(220px,1fr))`;
@@ -881,6 +894,7 @@ function renderLeadsBoard(){
     colLeads.forEach(lead=> body.appendChild(renderCard(lead, idx)));
     col.appendChild(body);
     board.appendChild(col);
+    limitColumnHeight(body);
   });
 }
 
@@ -1243,6 +1257,7 @@ function renderClientBoard(){
     colClientes.forEach(c=> body.appendChild(renderClientCard(c, idx)));
     col.appendChild(body);
     board.appendChild(col);
+    limitColumnHeight(body);
   });
 }
 

@@ -190,9 +190,9 @@
   .note-form{display:flex;gap:.5rem;margin-top:.8rem}
   .note-form textarea{flex:1;padding:.6rem .8rem;border:1px solid var(--border);resize:vertical;min-height:44px}
   .note-form button{background:var(--green);color:var(--white);border:0;padding:0 1rem;font-size:.7rem;font-weight:600;text-transform:uppercase}
-  .hist-form{display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap}
-  .hist-form input{flex:1;min-width:140px;padding:.6rem .8rem;border:1px solid var(--border)}
-  .hist-form button{background:var(--green);color:var(--white);border:0;padding:0 1rem;font-size:.7rem;font-weight:600;text-transform:uppercase}
+  .hist-form{display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap;align-items:flex-start}
+  .hist-form input,.hist-form select{flex:1;min-width:140px;padding:.6rem .8rem;border:1px solid var(--border);font-family:var(--fb);font-size:.85rem}
+  .hist-form button{background:var(--green);color:var(--white);border:0;padding:0 1rem;height:2.4rem;font-size:.7rem;font-weight:600;text-transform:uppercase}
 
   .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--graphite);color:var(--white);padding:.7rem 1.3rem;font-size:.78rem;z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
   .toast.show{opacity:1}
@@ -572,6 +572,40 @@ const FUNNEL_STAGES = [
 ];
 const CLIENT_STATUS_COLORS = {ativo:'var(--green)', renovacao:'var(--taupe)', pausado:'var(--petrol)', encerrado:'var(--wine)'};
 const DONUT_COLORS = ['var(--green)','var(--petrol)','var(--taupe)','var(--wine)','#8B7355','#5C7A80'];
+const PRODUCTS = ['Mentoria', 'Retiro 360°', 'Retiro Pausa', 'Treino', 'App'];
+const PRODUCT_OTHER = '__outro__';
+
+function productSelectHTML(id, placeholder){
+  return `
+    <select id="${id}">
+      <option value="">—</option>
+      ${PRODUCTS.map(p=>`<option value="${p}">${p}</option>`).join('')}
+      <option value="${PRODUCT_OTHER}">Outro...</option>
+    </select>
+    <input id="${id}Custom" placeholder="${placeholder || 'Especifique o produto'}" style="display:none;margin-top:.5rem">
+  `;
+}
+
+function setupProductSelect(selectEl, customEl, currentValue){
+  const isKnown = !currentValue || PRODUCTS.includes(currentValue);
+  if(currentValue && !isKnown){
+    selectEl.value = PRODUCT_OTHER;
+    customEl.style.display = 'block';
+    customEl.value = currentValue;
+  } else {
+    selectEl.value = currentValue || '';
+    customEl.style.display = 'none';
+  }
+  selectEl.addEventListener('change', ()=>{
+    const isOther = selectEl.value === PRODUCT_OTHER;
+    customEl.style.display = isOther ? 'block' : 'none';
+    if(isOther) customEl.focus();
+  });
+}
+
+function getProductValue(selectEl, customEl){
+  return selectEl.value === PRODUCT_OTHER ? customEl.value.trim() : selectEl.value;
+}
 
 function donutChart(segments, size, thickness){
   size = size || 130; thickness = thickness || 16;
@@ -733,7 +767,7 @@ function openQuickUpdateModal(type, id){
       ` : `
         <div class="drawer-row" style="margin-top:1rem">
           <div class="field"><label>Data de término/evento</label><input id="quEnd" type="date"></div>
-          <div class="field"><label>Próximo produto</label><input id="quNextProduct" placeholder="Ex: Retiro 360°"></div>
+          <div class="field"><label>Próximo produto</label>${productSelectHTML('quNextProduct')}</div>
         </div>
       `}
       <div class="save-row">
@@ -749,7 +783,7 @@ function openQuickUpdateModal(type, id){
     overlay.querySelector('#quNext').value = '';
   }else{
     overlay.querySelector('#quEnd').value = toDateInputValue(item.end_date);
-    overlay.querySelector('#quNextProduct').value = item.next_product || '';
+    setupProductSelect(overlay.querySelector('#quNextProduct'), overlay.querySelector('#quNextProductCustom'), item.next_product || '');
   }
 
   const cleanup = () => overlay.remove();
@@ -778,7 +812,7 @@ function openQuickUpdateModal(type, id){
         await api(`/api/clientes/${id}`, {method:'PATCH', body: JSON.stringify({
           status: newStatus,
           end_date: overlay.querySelector('#quEnd').value || '',
-          next_product: overlay.querySelector('#quNextProduct').value.trim(),
+          next_product: getProductValue(overlay.querySelector('#quNextProduct'), overlay.querySelector('#quNextProductCustom')),
         })});
         await loadClientes();
       }
@@ -1106,7 +1140,7 @@ function openPromoteModal(lead){
         <button class="drawer-close" id="promoClose">×</button>
         <h2>${escapeHtml(lead.name)} comprou 🎉</h2>
         <p style="color:var(--muted);font-size:.85rem;margin:-1rem 0 1.3rem">Esse lead vai virar Cliente. O que ela comprou?</p>
-        <div class="field"><label>Produto</label><input id="promoProduct" placeholder="Ex: Mentoria Individual Reprograme-se"></div>
+        <div class="field"><label>Produto</label>${productSelectHTML('promoProduct')}</div>
         <div class="field" style="margin-top:1rem"><label>Data da compra</label><input id="promoDate" type="date"></div>
         <div class="save-row">
           <button class="btn-small save" id="promoConfirm">Confirmar e criar Cliente</button>
@@ -1116,13 +1150,13 @@ function openPromoteModal(lead){
     `;
     document.body.appendChild(overlay);
     overlay.querySelector('#promoDate').value = new Date().toISOString().slice(0,10);
-    overlay.querySelector('#promoProduct').focus();
+    setupProductSelect(overlay.querySelector('#promoProduct'), overlay.querySelector('#promoProductCustom'), '');
     const cleanup = (val) => { overlay.remove(); resolve(val); };
     overlay.querySelector('#promoClose').addEventListener('click', ()=>cleanup(null));
     overlay.querySelector('#promoCancel').addEventListener('click', ()=>cleanup(null));
     overlay.addEventListener('click', (e)=>{ if(e.target===overlay) cleanup(null); });
     overlay.querySelector('#promoConfirm').addEventListener('click', ()=>{
-      const product = overlay.querySelector('#promoProduct').value.trim();
+      const product = getProductValue(overlay.querySelector('#promoProduct'), overlay.querySelector('#promoProductCustom'));
       const date = overlay.querySelector('#promoDate').value;
       if(!product){ overlay.querySelector('#promoProduct').focus(); return; }
       cleanup({product, date});
@@ -1317,14 +1351,14 @@ function openClienteDrawer(id){
     </div>
     <div class="drawer-row">
       <div class="field"><label>Telefone</label><input id="cPhone"></div>
-      <div class="field"><label>Produto</label><input id="cProduct" placeholder="Ex: Retiro 360°"></div>
+      <div class="field"><label>Produto</label>${productSelectHTML('cProduct')}</div>
     </div>
     <div class="drawer-row">
       <div class="field"><label>Data de compra</label><input id="cPurchaseDate" type="date"></div>
       <div class="field"><label>Data de término/evento</label><input id="cEndDate" type="date"></div>
     </div>
     <div class="drawer-row">
-      <div class="field"><label>Próximo produto</label><input id="cNextProduct" placeholder="Ex: Treino de Liderança Mental"></div>
+      <div class="field"><label>Próximo produto</label>${productSelectHTML('cNextProduct')}</div>
       <div class="field"><label>Status</label>
         <select id="cStatus">${CLIENT_STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>
       </div>
@@ -1336,10 +1370,10 @@ function openClienteDrawer(id){
   drawer.appendChild(form);
   drawer.querySelector('#cName').value = cliente.name || '';
   drawer.querySelector('#cPhone').value = cliente.phone || '';
-  drawer.querySelector('#cProduct').value = cliente.product || '';
+  setupProductSelect(drawer.querySelector('#cProduct'), drawer.querySelector('#cProductCustom'), cliente.product || '');
   drawer.querySelector('#cPurchaseDate').value = toDateInputValue(cliente.purchase_date);
   drawer.querySelector('#cEndDate').value = toDateInputValue(cliente.end_date);
-  drawer.querySelector('#cNextProduct').value = cliente.next_product || '';
+  setupProductSelect(drawer.querySelector('#cNextProduct'), drawer.querySelector('#cNextProductCustom'), cliente.next_product || '');
   drawer.querySelector('#cStatus').value = cliente.status;
   drawer.querySelector('#cObservations').value = cliente.observations || '';
 
@@ -1358,10 +1392,10 @@ function openClienteDrawer(id){
     const fields = {
       name: drawer.querySelector('#cName').value.trim(),
       phone: drawer.querySelector('#cPhone').value.trim(),
-      product: drawer.querySelector('#cProduct').value.trim(),
+      product: getProductValue(drawer.querySelector('#cProduct'), drawer.querySelector('#cProductCustom')),
       purchase_date: drawer.querySelector('#cPurchaseDate').value || '',
       end_date: drawer.querySelector('#cEndDate').value || '',
-      next_product: drawer.querySelector('#cNextProduct').value.trim(),
+      next_product: getProductValue(drawer.querySelector('#cNextProduct'), drawer.querySelector('#cNextProductCustom')),
       status: drawer.querySelector('#cStatus').value,
       observations: drawer.querySelector('#cObservations').value.trim(),
     };
@@ -1421,10 +1455,11 @@ function openClienteDrawer(id){
 
     const histForm = document.createElement('div');
     histForm.className = 'hist-form';
-    histForm.innerHTML = `<input id="histProduct" placeholder="Produto"><input id="histDate" type="date"><button id="histBtn" type="button">Add</button>`;
+    histForm.innerHTML = `${productSelectHTML('histProduct')}<input id="histDate" type="date"><button id="histBtn" type="button">Add</button>`;
     drawer.appendChild(histForm);
+    setupProductSelect(histForm.querySelector('#histProduct'), histForm.querySelector('#histProductCustom'), '');
     histForm.querySelector('#histBtn').addEventListener('click', async ()=>{
-      const produto = histForm.querySelector('#histProduct').value.trim();
+      const produto = getProductValue(histForm.querySelector('#histProduct'), histForm.querySelector('#histProductCustom'));
       const data = histForm.querySelector('#histDate').value;
       if(!produto) return;
       try{

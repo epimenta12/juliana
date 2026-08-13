@@ -275,21 +275,21 @@
 
 <script>
 const STATUSES = [
-  {key:'novo_lead', label:'Novo lead', desc:'Todos os dados estão cadastrados, mas ainda não houve nenhuma conversa.', color:'var(--muted)'},
-  {key:'primeiro_contato', label:'Primeiro contato', desc:'Teve uma conversa inicial pelo WhatsApp ou Instagram.', color:'var(--petrol)'},
-  {key:'aguardando_retorno', label:'Aguardando retorno', desc:'Conversamos, mas depois disso não veio mais retorno.', color:'var(--taupe)'},
-  {key:'qualificacao', label:'Qualificação do lead', desc:'Retornou as mensagens — estamos entendendo melhor o momento dela e apresentando o produto.', color:'#8B7355'},
-  {key:'fechamento', label:'Fechamento', desc:'Está com uma call de vendas marcada.', color:'#5C7A80'},
-  {key:'ganho', label:'Ganho', desc:'Comprou — vira Cliente automaticamente.', color:'var(--green)'},
-  {key:'perda', label:'Perda', desc:'Não comprou após a call, ou está há mais de 1 mês sem contato.', color:'var(--wine)'},
-  {key:'contato_futuro', label:'Contato futuro', desc:'Tem interesse e perfil, mas não consegue fechar no momento.', color:'var(--taupe)'},
+  {key:'novo_lead', label:'Novo lead', desc:'Todos os dados estão cadastrados, mas ainda não houve nenhuma conversa.', color:'#6B7280'},
+  {key:'primeiro_contato', label:'Primeiro contato', desc:'Teve uma conversa inicial pelo WhatsApp ou Instagram.', color:'#2563EB'},
+  {key:'aguardando_retorno', label:'Aguardando retorno', desc:'Conversamos, mas depois disso não veio mais retorno.', color:'#D97706'},
+  {key:'qualificacao', label:'Qualificação do lead', desc:'Retornou as mensagens — estamos entendendo melhor o momento dela e apresentando o produto.', color:'#EA580C'},
+  {key:'fechamento', label:'Fechamento', desc:'Está com uma call de vendas marcada.', color:'#9333EA'},
+  {key:'ganho', label:'Ganho', desc:'Comprou — vira Cliente automaticamente.', color:'#16A34A'},
+  {key:'perda', label:'Perda', desc:'Não comprou após a call, ou está há mais de 1 mês sem contato.', color:'#DC2626'},
+  {key:'contato_futuro', label:'Contato futuro', desc:'Tem interesse e perfil, mas não consegue fechar no momento.', color:'#0891B2'},
 ];
 
 const CLIENT_STATUSES = [
-  {key:'ativo', label:'Ativo', desc:'Cliente cursando ou usando o produto atual.', color:'var(--green)'},
-  {key:'renovacao', label:'Renovação em aberto', desc:'Perto de terminar o produto atual — hora de oferecer o próximo.', color:'var(--taupe)'},
-  {key:'pausado', label:'Pausado', desc:'Sem próximo passo agendado no momento.', color:'var(--petrol)'},
-  {key:'encerrado', label:'Encerrado', desc:'Não pretende continuar por enquanto.', color:'var(--wine)'},
+  {key:'ativo', label:'Ativo', desc:'Cliente cursando ou usando o produto atual.', color:'#16A34A'},
+  {key:'renovacao', label:'Renovação em aberto', desc:'Perto de terminar o produto atual — hora de oferecer o próximo.', color:'#D97706'},
+  {key:'pausado', label:'Pausado', desc:'Sem próximo passo agendado no momento.', color:'#2563EB'},
+  {key:'encerrado', label:'Encerrado', desc:'Não pretende continuar por enquanto.', color:'#DC2626'},
 ];
 
 const ORIGEM_CATEGORIES = ['Ex-aluno', 'Indicação', 'Instagram', 'Site', 'Club A'];
@@ -570,15 +570,9 @@ function miniCard(label, value, accent){
   return `<div class="sum-card" style="--accent:${accent}"><div class="n">${value}</div><div class="l">${label}</div></div>`;
 }
 
-const FUNNEL_STAGES = [
-  {key:'novo_lead', label:'Novo lead'},
-  {key:'primeiro_contato', label:'Primeiro contato'},
-  {key:'aguardando_retorno', label:'Aguardando retorno'},
-  {key:'qualificacao', label:'Qualificação'},
-  {key:'fechamento', label:'Fechamento'},
-];
-const CLIENT_STATUS_COLORS = {ativo:'var(--green)', renovacao:'var(--taupe)', pausado:'var(--petrol)', encerrado:'var(--wine)'};
-const DONUT_COLORS = ['var(--green)','var(--petrol)','var(--taupe)','var(--wine)','#8B7355','#5C7A80'];
+const FUNNEL_STAGE_KEYS = ['novo_lead', 'primeiro_contato', 'aguardando_retorno', 'qualificacao', 'fechamento'];
+const FUNNEL_STAGES = FUNNEL_STAGE_KEYS.map(k => STATUSES.find(s=>s.key===k));
+const DONUT_COLORS = ['#2563EB','#EA580C','#16A34A','#DC2626','#D97706','#9333EA'];
 const PRODUCTS = ['Mentoria', 'Retiro 360°', 'Retiro Pausa', 'Treino', 'App'];
 const PRODUCT_OTHER = '__outro__';
 
@@ -659,7 +653,7 @@ function renderDashboard(){
     .map(([label,value],i)=>({label, value, color: DONUT_COLORS[i % DONUT_COLORS.length]}));
 
   const clienteSegments = CLIENT_STATUSES
-    .map(s => ({label:s.label, value: clientes.filter(c=>c.status===s.key).length, color: CLIENT_STATUS_COLORS[s.key]}))
+    .map(s => ({label:s.label, value: clientes.filter(c=>c.status===s.key).length, color: s.color}))
     .filter(s=>s.value>0);
 
   wrap.innerHTML = `
@@ -685,12 +679,12 @@ function renderDashboard(){
         <div class="funnel">
           ${funnelData.map(s=>{
             const pct = Math.max(12, Math.round(s.count/funnelMax*100));
-            return `<div class="funnel-row"><div class="funnel-label">${s.label}</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pct}%">${s.count}</div></div></div>`;
+            return `<div class="funnel-row"><div class="funnel-label">${s.label}</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pct}%;background:${s.color}">${s.count}</div></div></div>`;
           }).join('')}
         </div>
         <div class="funnel-outcomes">
-          <div class="outcome-chip"><span class="dot" style="background:var(--wine)"></span>Perda: ${leadsPerda}</div>
-          <div class="outcome-chip"><span class="dot" style="background:var(--taupe)"></span>Contato futuro: ${leadsContatoFuturo}</div>
+          <div class="outcome-chip"><span class="dot" style="background:${STATUSES.find(s=>s.key==='perda').color}"></span>Perda: ${leadsPerda}</div>
+          <div class="outcome-chip"><span class="dot" style="background:${STATUSES.find(s=>s.key==='contato_futuro').color}"></span>Contato futuro: ${leadsContatoFuturo}</div>
         </div>
       </div>
 

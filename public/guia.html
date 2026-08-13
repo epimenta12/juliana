@@ -30,7 +30,7 @@
   .masthead .links{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1.25rem}
   .masthead .link{display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:600;text-decoration:none;border-bottom:1px solid var(--green);padding-bottom:2px}
 
-  .layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:3rem;align-items:start}
+  .layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:3rem;align-items:start}
   @media(max-width:760px){.layout{grid-template-columns:1fr}}
 
   nav.toc{position:sticky;top:2rem}
@@ -77,15 +77,14 @@
 
   .pillrow{display:flex;gap:.5rem;flex-wrap:wrap;margin:.8rem 0}
   .pill{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:.28rem .7rem;border-radius:3px;background:rgba(32,84,71,.12);color:var(--green)}
-  .pill.alta{background:rgba(75,31,45,.14);color:var(--wine)}
-  .pill.media{background:rgba(19,67,76,.14);color:var(--petrol)}
-  .pill.baixa{background:rgba(107,96,88,.14);color:var(--muted)}
 
   .tips{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1rem 0}
   @media(max-width:600px){.tips{grid-template-columns:1fr}}
   .tip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem 1.2rem}
   .tip h4{margin:0 0 .35rem;font-family:var(--fb);font-weight:600;font-size:.88rem;color:var(--petrol)}
   .tip p{margin:0;font-size:.85rem;color:var(--muted)}
+
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:.4rem;vertical-align:middle}
 
   footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--line);color:var(--muted);font-size:.82rem}
 </style>
@@ -96,7 +95,7 @@
   <div class="masthead">
     <p class="eyebrow">Manual de uso</p>
     <h1>Como usar o CRM do Instituto</h1>
-    <p>Guia de referência para cadastrar, acompanhar e conduzir os leads da Juliana Carvalhaes até o fechamento — da captura pelo site até o "ganho" ou "perda".</p>
+    <p>Guia de referência para cadastrar, acompanhar e conduzir os leads da Juliana Carvalhaes até a compra — e, depois disso, acompanhar a jornada como Cliente.</p>
     <div class="links">
       <a class="link" href="/crm">← Voltar para o CRM</a>
     </div>
@@ -107,15 +106,16 @@
       <p class="ttl">Neste guia</p>
       <ol>
         <li><a href="#acesso">Acesso</a></li>
-        <li><a href="#painel">O painel</a></li>
-        <li><a href="#visoes">Kanban e Planilha</a></li>
+        <li><a href="#dashboard">O Dashboard</a></li>
+        <li><a href="#navegacao">Leads e Clientes</a></li>
         <li><a href="#funil">O funil de vendas</a></li>
         <li><a href="#novo">Cadastrar um lead</a></li>
         <li><a href="#campos">Os campos de um lead</a></li>
-        <li><a href="#mover">Mover no funil</a></li>
-        <li><a href="#anotacoes">Anotações</a></li>
-        <li><a href="#filtros">Filtrar e ordenar</a></li>
-        <li><a href="#prioridade">Prioridade</a></li>
+        <li><a href="#mover">Mover no Kanban</a></li>
+        <li><a href="#lead-cliente">De Lead a Cliente</a></li>
+        <li><a href="#clientes">O quadro de Clientes</a></li>
+        <li><a href="#anotacoes">Anotações e histórico</a></li>
+        <li><a href="#filtros">Buscar, filtrar e ordenar</a></li>
         <li><a href="#dicas">Boas práticas</a></li>
       </ol>
     </nav>
@@ -125,49 +125,64 @@
       <section id="acesso">
         <h2><span class="num">01</span> Acesso</h2>
         <p class="lede">O CRM fica em <strong>julianacarvalhaes.com.br/crm</strong> — não aparece no menu do site, só quem tem o link chega lá.</p>
-        <p>Entre com o usuário e a senha combinados. A sessão fica salva por 7 dias no navegador; depois disso, ou ao clicar em <kbd class="ui ghost">Sair</kbd>, é preciso logar de novo.</p>
+        <p>Entre com o usuário e a senha combinados. A sessão fica salva por alguns dias no navegador; depois disso, ou ao clicar em <kbd class="ui ghost">Sair</kbd>, é preciso logar de novo.</p>
       </section>
 
-      <section id="painel">
-        <h2><span class="num">02</span> O painel</h2>
-        <p class="lede">Assim que loga, quatro números resumem a carteira inteira:</p>
-        <div class="tablewrap">
-        <table class="fields">
-          <tr><th>Indicador</th><th>O que mostra</th></tr>
-          <tr><td>Total de leads</td><td>Todo mundo que já passou pelo funil, em qualquer etapa.</td></tr>
-          <tr><td>Ganho</td><td>Quantos compraram — e qual % isso representa do total.</td></tr>
-          <tr><td>Perda</td><td>Quantos não fecharam ou sumiram — e o %.</td></tr>
-          <tr><td>Contato futuro</td><td>Quantos têm interesse real mas não conseguem fechar agora.</td></tr>
-        </table>
+      <section id="dashboard">
+        <h2><span class="num">02</span> O Dashboard</h2>
+        <p class="lede">É a primeira tela depois do login — um resumo de tudo, sem precisar abrir nada.</p>
+
+        <h3>Cards do topo</h3>
+        <p>Dois blocos lado a lado mostram o total de <strong>Leads no funil</strong> e o total de <strong>Clientes</strong>. Clicar em qualquer um dos dois leva direto para aquela lista.</p>
+
+        <h3>Funil de vendas</h3>
+        <p>Um gráfico de linha horizontal com um ponto para cada uma das cinco primeiras etapas do funil (de <em>Novo lead</em> até <em>Fechamento</em>), ligados por uma linha — a altura de cada ponto mostra quantos leads estão parados ali agora. Passe o mouse sobre um ponto para ver o nome completo da etapa. Logo abaixo, dois indicadores separados mostram quantos leads estão em <strong>Perda</strong> e em <strong>Contato futuro</strong> (essas duas etapas ficam fora da linha porque não fazem parte do caminho "para frente" do funil).</p>
+
+        <h3>Precisa de atenção</h3>
+        <p>Uma lista automática com quem está pedindo uma ação agora:</p>
+        <ul>
+          <li><strong>Leads</strong> cujo <em>Próximo contato</em> já venceu ou vence hoje.</li>
+          <li><strong>Clientes</strong> cuja <em>Data de término/evento</em> cai nos próximos 14 dias.</li>
+        </ul>
+        <p>Cada item tem um botão <kbd class="ui ghost">Verificar</kbd> que abre um mini-formulário — dá para atualizar o status, as datas ou o próximo produto ali mesmo, sem sair do Dashboard.</p>
+
+        <h3>Gráficos de composição</h3>
+        <p>Dois gráficos de rosca fecham o painel: <strong>Clientes por status</strong> (Ativo, Renovação em aberto, Pausado, Encerrado) e <strong>Leads por origem</strong> (Instagram, Site, Indicação, Ex-aluno, Club A, Outros).</p>
+        <div class="callout">
+          <p class="lbl">Sobre a taxa de conversão</p>
+          <p>Os números do Dashboard refletem só o que já está cadastrado no CRM — enquanto a base de leads antigos ainda estiver sendo completada, esses percentuais não representam a conversão real do negócio.</p>
         </div>
-        <p>É a primeira coisa a olhar: dá o pulso do funil sem precisar abrir nada.</p>
       </section>
 
-      <section id="visoes">
-        <h2><span class="num">03</span> Kanban e Planilha</h2>
-        <p class="lede">No canto superior esquerdo, dois botões trocam a forma de ver os mesmos leads.</p>
+      <section id="navegacao">
+        <h2><span class="num">03</span> Leads e Clientes</h2>
+        <p class="lede">Na barra lateral esquerda ficam as três áreas do CRM: <strong>Dashboard</strong>, <strong>Leads</strong> e <strong>Clientes</strong>. Ao entrar em Leads ou Clientes, aparecem dois botões extras para trocar a forma de ver a lista.</p>
+        <h3>Leads</h3>
+        <p>Todo mundo que ainda não comprou — do primeiro contato até o "ganho" ou "perda".</p>
+        <h3>Clientes</h3>
+        <p>Todo mundo que já comprou pelo menos uma vez. Um lead vira Cliente automaticamente assim que é marcado como <em>Ganho</em> (seção 08).</p>
         <h3>Kanban</h3>
-        <p>Um quadro com uma coluna por etapa do funil. Bom para ter a visão geral e mover leads de etapa rapidamente.</p>
+        <p>Um quadro com uma coluna por etapa. Bom para ter a visão geral e mover leads ou clientes de etapa rapidamente arrastando os cards.</p>
         <h3>Planilha</h3>
-        <p>Uma tabela com todos os leads e todos os campos lado a lado — nome, telefone, Instagram, origem, prioridade, status, datas e observações. Melhor para revisar em bloco, ordenar e filtrar.</p>
+        <p>Uma tabela com todos os registros e todos os campos lado a lado. Melhor para revisar em bloco, ordenar e filtrar.</p>
         <div class="callout">
           <p class="lbl">Fica salvo</p>
-          <p>A visualização escolhida é lembrada no navegador — da próxima vez que abrir o CRM, ele volta de onde parou.</p>
+          <p>A área e a visualização escolhidas ficam lembradas no navegador — da próxima vez que abrir o CRM, ele volta de onde parou.</p>
         </div>
       </section>
 
       <section id="funil">
         <h2><span class="num">04</span> O funil de vendas</h2>
-        <p class="lede">Todo lead passa, em teoria, por esta sequência. Passe o mouse sobre o nome de qualquer coluna no Kanban para ver a mesma descrição direto na tela.</p>
+        <p class="lede">Todo lead passa, em teoria, por esta sequência de 8 etapas. Passe o mouse sobre o nome de qualquer coluna no Kanban para ver a mesma descrição direto na tela.</p>
         <div class="pipeline">
-          <div class="stage" style="--stage-c:var(--taupe)"><div class="n">01</div><div><h4>Novo lead</h4><p>Todos os dados estão cadastrados, mas ainda não houve nenhuma conversa.</p></div></div>
-          <div class="stage" style="--stage-c:var(--taupe)"><div class="n">02</div><div><h4>Primeiro contato</h4><p>Teve uma conversa inicial pelo WhatsApp ou Instagram.</p></div></div>
-          <div class="stage" style="--stage-c:var(--petrol)"><div class="n">03</div><div><h4>Aguardando retorno</h4><p>Conversamos, mas depois disso não veio mais retorno.</p></div></div>
-          <div class="stage" style="--stage-c:var(--petrol)"><div class="n">04</div><div><h4>Qualificação do lead</h4><p>Retornou as mensagens — estamos entendendo melhor o momento dela e apresentando o produto.</p></div></div>
-          <div class="stage" style="--stage-c:var(--petrol)"><div class="n">05</div><div><h4>Fechamento</h4><p>Está com uma call de vendas marcada.</p></div></div>
-          <div class="stage" style="--stage-c:var(--green)"><div class="n">06</div><div><h4>Ganho</h4><p>Comprou.</p></div></div>
-          <div class="stage" style="--stage-c:var(--wine)"><div class="n">07</div><div><h4>Perda</h4><p>Não comprou após a call, ou está há mais de 1 mês sem contato.</p></div></div>
-          <div class="stage" style="--stage-c:var(--taupe)"><div class="n">08</div><div><h4>Contato futuro</h4><p>Tem interesse e perfil, mas não consegue fechar no momento — vale retomar mais adiante.</p></div></div>
+          <div class="stage" style="--stage-c:#6B7280"><div class="n">01</div><div><h4>Novo lead</h4><p>Todos os dados estão cadastrados, mas ainda não houve nenhuma conversa.</p></div></div>
+          <div class="stage" style="--stage-c:#2563EB"><div class="n">02</div><div><h4>Primeiro contato</h4><p>Teve uma conversa inicial pelo WhatsApp ou Instagram.</p></div></div>
+          <div class="stage" style="--stage-c:#D97706"><div class="n">03</div><div><h4>Aguardando retorno</h4><p>Conversamos, mas depois disso não veio mais retorno.</p></div></div>
+          <div class="stage" style="--stage-c:#EA580C"><div class="n">04</div><div><h4>Qualificação do lead</h4><p>Retornou as mensagens — estamos entendendo melhor o momento dela e apresentando o produto.</p></div></div>
+          <div class="stage" style="--stage-c:#9333EA"><div class="n">05</div><div><h4>Fechamento</h4><p>Está com uma call de vendas marcada.</p></div></div>
+          <div class="stage" style="--stage-c:#16A34A"><div class="n">06</div><div><h4>Ganho</h4><p>Comprou — vira Cliente automaticamente (seção 08).</p></div></div>
+          <div class="stage" style="--stage-c:#DC2626"><div class="n">07</div><div><h4>Perda</h4><p>Não comprou após a call, ou está há mais de 1 mês sem contato.</p></div></div>
+          <div class="stage" style="--stage-c:#0891B2"><div class="n">08</div><div><h4>Contato futuro</h4><p>Tem interesse e perfil, mas não consegue fechar no momento — vale retomar mais adiante.</p></div></div>
         </div>
         <p>Na prática ninguém obedece a ordem à risca: um lead pode ir direto de <em>Primeiro contato</em> para <em>Perda</em>, ou voltar de <em>Contato futuro</em> para <em>Qualificação</em> meses depois. A etapa deve refletir onde a conversa está <strong>hoje</strong>, não uma burocracia a seguir.</p>
       </section>
@@ -179,8 +194,8 @@
         <p>Quando alguém clica em qualquer botão de WhatsApp no site (Agende uma conversa, Quero conhecer, Reserve...), aparece um mini-formulário pedindo nome e telefone antes de abrir a conversa. Isso já cria o lead como <code class="field">Novo lead</code>, com a origem preenchida automaticamente.</p>
         <h3>Manual, direto no CRM</h3>
         <ol class="steps">
-          <li>Clique em <kbd class="ui">+ Novo Lead</kbd>, no topo do painel.</li>
-          <li>Preencha o que tiver — só o nome é obrigatório. Telefone pode ficar em branco se você só tiver o Instagram, por exemplo.</li>
+          <li>Na área Leads, clique em <kbd class="ui">+ Novo Lead</kbd>, no menu lateral.</li>
+          <li>Preencha o que tiver — só o nome é obrigatório.</li>
           <li>Clique em <kbd class="ui">Criar lead</kbd>.</li>
         </ol>
       </section>
@@ -193,61 +208,85 @@
           <tr><th>Campo</th><th>Para que serve</th></tr>
           <tr><td>Nome</td><td>Único campo obrigatório.</td></tr>
           <tr><td>Telefone</td><td>Habilita o botão de abrir o WhatsApp direto do painel.</td></tr>
-          <tr><td>Instagram</td><td>@usuário, quando o telefone não está disponível.</td></tr>
-          <tr><td>E-mail</td><td>Opcional.</td></tr>
-          <tr><td>Programa de interesse</td><td>Qual oferta está em jogo (Mentoria, Treino, Retiro...).</td></tr>
-          <tr><td>Origem</td><td>Como o lead chegou — texto livre, mas alimenta o filtro de origem na Planilha.</td></tr>
-          <tr><td>Prioridade</td><td>Alta, Média ou Baixa — ver seção 10.</td></tr>
+          <tr><td>Origem</td><td>Como o lead chegou — texto livre, mas alimenta o filtro de origem na Planilha e o gráfico do Dashboard.</td></tr>
           <tr><td>Pipeline</td><td>A etapa atual do funil (seção 04).</td></tr>
-          <tr><td>Status / próximo passo</td><td>Uma frase curta sobre a situação, tipo "Aguardando resposta sobre objeção de preço" — é isso que aparece resumido no card do Kanban.</td></tr>
-          <tr><td>1º contato, Último contato, Próximo contato</td><td>Datas para saber há quanto tempo a conversa está parada e quando retomar.</td></tr>
-          <tr><td>Observações</td><td>Espaço livre para contexto — detalhes sensíveis, combinados, histórico relevante.</td></tr>
+          <tr><td>Próximo passo</td><td>Uma frase curta sobre a situação, tipo "Aguardando resposta sobre objeção de preço" — é isso que aparece resumido no card do Kanban.</td></tr>
+          <tr><td>1º contato, Último contato, Próximo contato</td><td>Datas para saber há quanto tempo a conversa está parada e quando retomar. O <em>Próximo contato</em> é o que alimenta o painel "Precisa de atenção" do Dashboard.</td></tr>
+          <tr><td>Observação</td><td>Espaço livre para contexto — detalhes sensíveis, combinados, histórico relevante.</td></tr>
         </table>
         </div>
         <p>Depois de editar, clique em <kbd class="ui">Salvar</kbd>. O botão <kbd class="ui ghost">Excluir</kbd> remove o lead — sem volta, então é só para cadastros errados ou duplicados.</p>
       </section>
 
       <section id="mover">
-        <h2><span class="num">07</span> Mover um lead no funil</h2>
+        <h2><span class="num">07</span> Mover um lead no Kanban</h2>
         <p>Duas formas, mesmo resultado:</p>
         <ul>
-          <li>No Kanban, cada card tem setas <kbd class="ui ghost">‹</kbd> <kbd class="ui ghost">›</kbd> para avançar ou voltar uma etapa sem abrir nada.</li>
-          <li>Dentro do painel do lead, o campo <code class="field">Pipeline</code> deixa pular direto para qualquer etapa, mesmo fora de ordem.</li>
+          <li><strong>Arrastar e soltar</strong> — clique e segure em qualquer card e arraste para a coluna da etapa desejada. A coluna de destino fica destacada em verde enquanto o card passa por cima; soltar já salva a mudança.</li>
+          <li>Dentro do painel do lead (clicando no card em vez de arrastar), o campo <code class="field">Pipeline</code> deixa pular direto para qualquer etapa, mesmo fora de ordem.</li>
         </ul>
+        <div class="callout">
+          <p class="lbl">Colunas do Kanban</p>
+          <p>Uma coluna sem nenhum card fica pequena, sem ocupar espaço à toa. Quando uma coluna passa de 5 cards, ela ganha uma barra de rolagem própria — assim os primeiros cards continuam visíveis sem precisar rolar a tela inteira.</p>
+        </div>
+      </section>
+
+      <section id="lead-cliente">
+        <h2><span class="num">08</span> De Lead a Cliente</h2>
+        <p class="lede">Assim que um lead é marcado como <strong>Ganho</strong> — arrastando o card, pelo campo Pipeline no painel, ou pelo botão "Verificar" do Dashboard — abre uma janela perguntando o <strong>Produto</strong> comprado e a <strong>Data de compra</strong>.</p>
+        <p>Ao confirmar, o CRM cria o Cliente automaticamente com esses dados e remove o registro da lista de Leads. Não é preciso cadastrar a pessoa de novo.</p>
+      </section>
+
+      <section id="clientes">
+        <h2><span class="num">09</span> O quadro de Clientes</h2>
+        <p class="lede">Depois da compra, o acompanhamento passa a girar em torno do status abaixo — não mais do funil de vendas.</p>
+        <div class="pipeline">
+          <div class="stage" style="--stage-c:#16A34A"><div class="n">01</div><div><h4>Ativo</h4><p>Cliente cursando ou usando o produto atual.</p></div></div>
+          <div class="stage" style="--stage-c:#D97706"><div class="n">02</div><div><h4>Renovação em aberto</h4><p>Perto de terminar o produto atual — hora de oferecer o próximo.</p></div></div>
+          <div class="stage" style="--stage-c:#2563EB"><div class="n">03</div><div><h4>Pausado</h4><p>Sem próximo passo agendado no momento.</p></div></div>
+          <div class="stage" style="--stage-c:#DC2626"><div class="n">04</div><div><h4>Encerrado</h4><p>Não pretende continuar por enquanto.</p></div></div>
+        </div>
+        <p>Os cards se movem exatamente como no quadro de Leads: <strong>arrastar e soltar</strong> entre colunas, ou pelo campo <code class="field">Status</code> dentro do painel.</p>
+        <h3>Campos de um cliente</h3>
+        <div class="tablewrap">
+        <table class="fields">
+          <tr><th>Campo</th><th>Para que serve</th></tr>
+          <tr><td>Nome / Telefone</td><td>Iguais ao lead — o telefone também habilita o WhatsApp.</td></tr>
+          <tr><td>Produto</td><td>Lista fixa (Mentoria, Retiro 360°, Retiro Pausa, Treino, App) com opção <em>Outro</em> para digitar um valor livre.</td></tr>
+          <tr><td>Data de compra</td><td>Quando fechou o produto atual.</td></tr>
+          <tr><td>Data de término/evento</td><td>Quando o produto atual termina ou acontece — alimenta o "Precisa de atenção" do Dashboard.</td></tr>
+          <tr><td>Próximo produto</td><td>O que faz sentido oferecer em seguida, mesma lista de produtos.</td></tr>
+          <tr><td>Status</td><td>A etapa atual da jornada como cliente (acima).</td></tr>
+          <tr><td>Observação</td><td>Espaço livre para contexto.</td></tr>
+        </table>
+        </div>
       </section>
 
       <section id="anotacoes">
-        <h2><span class="num">08</span> Anotações</h2>
-        <p>No painel de um lead já existente, a seção <strong>Anotações</strong> guarda um histórico com data e hora de cada entrada — a conversa de hoje não some quando amanhã tiver uma nova. Diferente do campo <code class="field">Observações</code> (que é um bloco único que se sobrescreve), aqui cada nota fica registrada separadamente, mais recente primeiro.</p>
+        <h2><span class="num">10</span> Anotações e histórico de compra</h2>
+        <h3>Anotações (Leads)</h3>
+        <p>No painel de um lead já existente, a seção <strong>Anotações</strong> guarda um histórico com data e hora de cada entrada — a conversa de hoje não some quando amanhã tiver uma nova. Diferente do campo <code class="field">Observação</code> (que é um bloco único que se sobrescreve), aqui cada nota fica registrada separadamente, mais recente primeiro.</p>
+        <h3>Histórico de compra (Clientes)</h3>
+        <p>No painel de um cliente, a seção <strong>Histórico de compra</strong> guarda todos os produtos já comprados por ele, com data — inclusive o que gerou a conversão inicial de lead para cliente. Cada vez que um Produto e uma Data de compra são salvos, uma nova entrada é somada à lista, sem apagar as anteriores.</p>
       </section>
 
       <section id="filtros">
-        <h2><span class="num">09</span> Filtrar e ordenar (Planilha)</h2>
-        <p class="lede">Só na visualização em Planilha.</p>
-        <h3>Filtros</h3>
-        <p>Três menus no topo da tabela — <strong>Origem</strong>, <strong>Prioridade</strong> e <strong>Status</strong> — escondem tudo que não bater com o valor escolhido. <kbd class="ui ghost">Limpar filtros</kbd> volta a mostrar todo mundo.</p>
-        <h3>Ordenar</h3>
-        <p>Clique no título de qualquer coluna com uma seta (<strong>Nome</strong>, <strong>Telefone</strong>, <strong>Instagram</strong>, <strong>Prioridade</strong>) para ordenar por ela; clique de novo para inverter a direção.</p>
-      </section>
-
-      <section id="prioridade">
-        <h2><span class="num">10</span> Prioridade</h2>
-        <p class="lede">Um jeito rápido de sinalizar quem merece atenção primeiro, independente da etapa do funil.</p>
-        <div class="pillrow">
-          <span class="pill alta">Alta</span>
-          <span class="pill media">Média</span>
-          <span class="pill baixa">Baixa</span>
-        </div>
-        <p>É só uma etiqueta — não afeta em nada o funcionamento do CRM, mas aparece como uma faixa colorida no card e ajuda a decidir por onde começar o dia.</p>
+        <h2><span class="num">11</span> Buscar, filtrar e ordenar</h2>
+        <h3>Busca</h3>
+        <p>No topo das áreas Leads e Clientes (Kanban ou Planilha), o campo de busca filtra por <strong>nome ou telefone</strong> em tempo real, nas duas visualizações.</p>
+        <h3>Filtros (Planilha)</h3>
+        <p>Em Leads: <strong>Origem</strong> e <strong>Status</strong>. Em Clientes: <strong>Status</strong>. <kbd class="ui ghost">Limpar filtros</kbd> volta a mostrar todo mundo.</p>
+        <h3>Ordenar (Planilha)</h3>
+        <p>Clique no título de uma coluna para ordenar por ela; clique de novo para inverter a direção.</p>
       </section>
 
       <section id="dicas">
-        <h2><span class="num">11</span> Boas práticas</h2>
+        <h2><span class="num">12</span> Boas práticas</h2>
         <div class="tips">
-          <div class="tip"><h4>Atualize o status/próximo passo</h4><p>É o que aparece resumido no card — vale mais que deixar em branco e confiar só na memória.</p></div>
-          <div class="tip"><h4>Preencha o próximo contato</h4><p>Sem essa data, fica mais fácil um lead "sumir" silenciosamente numa coluna.</p></div>
-          <div class="tip"><h4>Uma nota por conversa</h4><p>Em vez de reescrever as Observações toda vez, use Anotações para manter o histórico completo.</p></div>
-          <div class="tip"><h4>Revise "Perda" de vez em quando</h4><p>Um lead perdido hoje pode valer um novo contato daqui a alguns meses — mover de volta é só trocar o Pipeline.</p></div>
+          <div class="tip"><h4>Atualize o próximo passo</h4><p>É o que aparece resumido no card — vale mais que deixar em branco e confiar só na memória.</p></div>
+          <div class="tip"><h4>Preencha o próximo contato</h4><p>Sem essa data, um lead não aparece no "Precisa de atenção" e pode "sumir" silenciosamente numa coluna.</p></div>
+          <div class="tip"><h4>Use o Dashboard todo dia</h4><p>O painel "Precisa de atenção" já reúne quem exige uma ação — comece o dia por ali antes de abrir o Kanban.</p></div>
+          <div class="tip"><h4>Revise "Perda" de vez em quando</h4><p>Um lead perdido hoje pode valer um novo contato daqui a alguns meses — arraste o card de volta para outra coluna quando fizer sentido.</p></div>
         </div>
       </section>
 

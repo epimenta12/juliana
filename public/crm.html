@@ -205,6 +205,28 @@
   .search-bar input:focus{border-color:var(--green)}
   .dash-date{color:var(--muted);font-size:.9rem;margin:-.8rem 0 2rem}
 
+  /* ---- Formulários ---- */
+  .forms-list{display:flex;flex-direction:column;gap:.8rem}
+  .form-card{background:var(--white);border:1px solid var(--border);padding:1.2rem 1.4rem;border-radius:var(--radius);box-shadow:var(--shadow-card);cursor:pointer;transition:box-shadow .25s;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+  .form-card:hover{box-shadow:var(--shadow-card-hover)}
+  .form-card h4{font-family:var(--fd);font-weight:500;font-size:1.15rem;margin-bottom:.25rem}
+  .form-card p{font-size:.78rem;color:var(--muted)}
+  .form-card .fc-count{background:var(--sand);color:var(--petrol);padding:.35rem .8rem;border-radius:var(--radius-pill);font-size:.72rem;font-weight:700;flex-shrink:0;white-space:nowrap}
+  .forms-empty{color:var(--muted);font-size:.85rem;padding:2rem;text-align:center;background:var(--white);border:1px dashed var(--border);border-radius:var(--radius)}
+  .form-back{background:0;border:0;color:var(--green);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;margin-bottom:1rem;padding:0}
+  .form-back:hover{text-decoration:underline}
+  .link-row{display:flex;gap:.6rem;margin:.8rem 0 1.6rem;flex-wrap:wrap}
+  .link-row input{flex:1;min-width:220px;padding:.65rem .9rem;border:1px solid var(--border);background:var(--sand);font-family:var(--fb);font-size:.82rem;border-radius:var(--radius-sm);color:var(--graphite)}
+  .nps-summary{display:flex;gap:1.6rem;flex-wrap:wrap;margin:1.2rem 0 1.8rem;padding:1.1rem 1.4rem;background:var(--sand);border-radius:var(--radius)}
+  .nps-summary .stat .n{font-family:var(--fd);font-size:1.8rem;color:var(--petrol);line-height:1}
+  .nps-summary .stat .l{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:.25rem}
+  .qbuilder-row{background:var(--sand);border-radius:var(--radius-sm);padding:1rem;margin-bottom:.8rem;position:relative}
+  .qbuilder-row .qb-remove{position:absolute;top:.6rem;right:.6rem;background:0;border:0;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1}
+  .qbuilder-row .qb-remove:hover{color:var(--wine)}
+  .qbuilder-row .drawer-row{margin-bottom:.6rem}
+  .qb-add{width:100%;padding:.7rem;border:1px dashed var(--border);background:0;color:var(--green);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s}
+  .qb-add:hover{border-color:var(--green);background:rgba(32,84,71,.05)}
+
   @media(max-width:900px){.board{grid-template-columns:1fr !important;}}
 </style>
 </head>
@@ -235,6 +257,7 @@
       <button class="sb-link" data-page="dashboard">Dashboard</button>
       <button class="sb-link" data-page="leads">Leads</button>
       <button class="sb-link" data-page="clientes">Clientes</button>
+      <button class="sb-link" data-page="formularios">Formulários</button>
     </nav>
 
     <div class="sidebar-subnav" id="sidebarSubnav" style="display:none">
@@ -259,6 +282,7 @@
       <div class="table-filters" id="tableFilters" style="display:none"></div>
       <div class="board" id="board"></div>
       <div class="table-wrap" id="tableWrap" style="display:none"></div>
+      <div id="formsWrap" style="display:none"></div>
     </div>
   </main>
 </div>
@@ -292,6 +316,9 @@ const ORIGEM_CATEGORIES = ['Ex-aluno', 'Indicação', 'Instagram', 'Site', 'Club
 
 let leads = [];
 let clientes = [];
+let forms = [];
+let selectedFormId = null;
+let formResponses = [];
 let selectedId = null;
 let page = ['dashboard','leads','clientes'].includes(localStorage.getItem('crm_page')) ? localStorage.getItem('crm_page') : 'dashboard';
 let viewMode = localStorage.getItem('crm_view') === 'table' ? 'table' : 'kanban';
@@ -433,6 +460,7 @@ document.getElementById('refreshBtn').addEventListener('click', loadAll);
 document.getElementById('newItemBtn').addEventListener('click', ()=>{
   if(page === 'leads') openDrawer(null);
   else if(page === 'clientes') openClienteDrawer(null);
+  else if(page === 'formularios') openFormBuilder();
 });
 document.getElementById('sidebarNav').addEventListener('click', (e)=>{
   const btn = e.target.closest('.sb-link');
@@ -451,12 +479,13 @@ document.getElementById('searchInput').addEventListener('input', (e)=>{
 function setPage(p){
   page = p;
   localStorage.setItem('crm_page', p);
+  selectedFormId = null;
   document.querySelectorAll('.sb-link').forEach(b=>b.classList.toggle('active', b.dataset.page===p));
   const isListPage = p === 'leads' || p === 'clientes';
   document.getElementById('sidebarSubnav').style.display = isListPage ? 'flex' : 'none';
   const newBtn = document.getElementById('newItemBtn');
-  newBtn.style.display = isListPage ? 'block' : 'none';
-  newBtn.textContent = p==='clientes' ? '+ Novo Cliente' : '+ Novo Lead';
+  newBtn.style.display = (isListPage || p==='formularios') ? 'block' : 'none';
+  newBtn.textContent = p==='clientes' ? '+ Novo Cliente' : (p==='formularios' ? '+ Novo Formulário' : '+ Novo Lead');
   searchQuery = '';
   document.getElementById('searchInput').value = '';
   render();
@@ -520,7 +549,16 @@ function ensureFiltersUI(){
 }
 
 async function loadAll(){
-  await Promise.all([loadLeads(), loadClientes()]);
+  await Promise.all([loadLeads(), loadClientes(), loadForms()]);
+}
+
+async function loadForms(){
+  try{
+    forms = await api('/api/forms');
+    render();
+  }catch(err){
+    if(err.message !== 'unauthorized') toast('Erro ao carregar formulários: '+err.message);
+  }
 }
 
 async function loadLeads(){
@@ -548,6 +586,7 @@ function render(){
   document.getElementById('tableFilters').style.display = (isListPage && viewMode==='table') ? 'flex' : 'none';
   document.getElementById('board').style.display = (isListPage && viewMode==='kanban') ? 'grid' : 'none';
   document.getElementById('tableWrap').style.display = (isListPage && viewMode==='table') ? 'block' : 'none';
+  document.getElementById('formsWrap').style.display = page === 'formularios' ? 'block' : 'none';
 
   if(page === 'dashboard'){
     renderDashboard();
@@ -557,6 +596,8 @@ function render(){
   } else if(page === 'clientes'){
     ensureFiltersUI();
     if(viewMode === 'table') renderClientTable(); else renderClientBoard();
+  } else if(page === 'formularios'){
+    if(selectedFormId) renderFormDetail(selectedFormId); else renderFormsList();
   }
 }
 
@@ -1525,6 +1566,273 @@ function openClienteDrawer(id){
   document.getElementById('overlay').classList.add('show');
 }
 
+/* ===================== FORMULÁRIOS ===================== */
+
+const FIELD_TYPES = [
+  {key:'nps', label:'NPS (0 a 10)'},
+  {key:'text', label:'Texto curto'},
+  {key:'textarea', label:'Texto longo'},
+  {key:'select', label:'Múltipla escolha'},
+];
+
+function formLink(slug){
+  return `${location.origin}/f?s=${slug}`;
+}
+
+function renderFormsList(){
+  const wrap = document.getElementById('formsWrap');
+  wrap.innerHTML = `
+    <h1 class="page-title">Formulários</h1>
+    ${forms.length ? `<div class="forms-list">${forms.map(f=>`
+      <div class="form-card" data-id="${f.id}">
+        <div>
+          <h4>${escapeHtml(f.title)}</h4>
+          <p>${escapeHtml(f.description) || (f.fields||[]).length + ' pergunta(s)'}</p>
+        </div>
+        <span class="fc-count">${f.response_count} resposta${f.response_count===1?'':'s'}</span>
+      </div>
+    `).join('')}</div>` : `<div class="forms-empty">Nenhum formulário criado ainda. Clique em "+ Novo Formulário" para criar o primeiro.</div>`}
+  `;
+  wrap.querySelectorAll('.form-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      selectedFormId = Number(card.dataset.id);
+      render();
+    });
+  });
+}
+
+async function renderFormDetail(id){
+  const wrap = document.getElementById('formsWrap');
+  const form = forms.find(f=>f.id===id);
+  if(!form){ selectedFormId = null; renderFormsList(); return; }
+
+  wrap.innerHTML = `
+    <button class="form-back" id="formBackBtn">← Formulários</button>
+    <h1 class="page-title">${escapeHtml(form.title)}</h1>
+    <div class="link-row">
+      <input id="formLinkInput" readonly value="${formLink(form.slug)}">
+      <button class="btn-small save" id="copyLinkBtn">Copiar link</button>
+      <button class="btn-small wa" id="exportCsvBtn">Exportar CSV</button>
+      <button class="btn-small del" id="deleteFormBtn">Excluir</button>
+    </div>
+    <div id="formRespWrap">Carregando respostas…</div>
+  `;
+  document.getElementById('formBackBtn').addEventListener('click', ()=>{ selectedFormId = null; render(); });
+  document.getElementById('copyLinkBtn').addEventListener('click', ()=>{
+    const input = document.getElementById('formLinkInput');
+    input.select();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(input.value).then(()=>toast('Link copiado')).catch(()=>{
+        document.execCommand('copy'); toast('Link copiado');
+      });
+    } else {
+      document.execCommand('copy'); toast('Link copiado');
+    }
+  });
+  document.getElementById('deleteFormBtn').addEventListener('click', async ()=>{
+    if(!confirm(`Excluir o formulário "${form.title}"? Todas as respostas serão perdidas. Essa ação não pode ser desfeita.`)) return;
+    try{
+      await api(`/api/forms/${id}`, {method:'DELETE'});
+      toast('Formulário excluído');
+      selectedFormId = null;
+      await loadForms();
+    }catch(err){ toast('Erro: '+err.message); }
+  });
+
+  try{
+    formResponses = await api(`/api/forms/${id}/responses`);
+  }catch(err){
+    document.getElementById('formRespWrap').textContent = 'Erro ao carregar respostas: '+err.message;
+    return;
+  }
+  if(selectedFormId !== id) return;
+
+  document.getElementById('exportCsvBtn').addEventListener('click', ()=> exportFormCsv(form, formResponses));
+
+  const respWrap = document.getElementById('formRespWrap');
+  const fields = form.fields || [];
+  const npsField = fields.find(f=>f.type==='nps');
+  let summaryHtml = '';
+  if(npsField){
+    const scores = formResponses.map(r=>r.answers[npsField.key]).filter(v=>typeof v === 'number');
+    if(scores.length){
+      const avg = (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+      const promoters = scores.filter(s=>s>=9).length;
+      const passives = scores.filter(s=>s>=7 && s<=8).length;
+      const detractors = scores.filter(s=>s<=6).length;
+      const npsScore = Math.round((promoters/scores.length - detractors/scores.length)*100);
+      summaryHtml = `
+        <div class="nps-summary">
+          <div class="stat"><div class="n">${npsScore}</div><div class="l">Score NPS</div></div>
+          <div class="stat"><div class="n">${avg}</div><div class="l">Média (0–10)</div></div>
+          <div class="stat"><div class="n">${promoters}</div><div class="l">Promotores (9–10)</div></div>
+          <div class="stat"><div class="n">${passives}</div><div class="l">Neutros (7–8)</div></div>
+          <div class="stat"><div class="n">${detractors}</div><div class="l">Detratores (0–6)</div></div>
+        </div>
+      `;
+    }
+  }
+
+  if(!formResponses.length){
+    respWrap.innerHTML = summaryHtml + `<div class="forms-empty">Ainda não chegou nenhuma resposta.</div>`;
+    return;
+  }
+
+  respWrap.innerHTML = summaryHtml + `
+    <div class="table-wrap">
+      <table class="crm-table">
+        <thead><tr>${fields.map(f=>`<th>${escapeHtml(f.label)}</th>`).join('')}<th>Enviado em</th></tr></thead>
+        <tbody>
+          ${formResponses.map(r=>`
+            <tr>${fields.map(f=>`<td${f.type==='textarea'?' class="wrap"':''}>${escapeHtml(r.answers[f.key])}</td>`).join('')}<td>${new Date(r.submitted_at).toLocaleString('pt-BR')}</td></tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function csvEscape(v){
+  const s = String(v==null ? '' : v);
+  if(/[",\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+  return s;
+}
+
+function exportFormCsv(form, responses){
+  const fields = form.fields || [];
+  const header = [...fields.map(f=>f.label), 'Enviado em'];
+  const lines = [header.map(csvEscape).join(',')];
+  responses.forEach(r=>{
+    const row = [...fields.map(f=> r.answers[f.key]), new Date(r.submitted_at).toLocaleString('pt-BR')];
+    lines.push(row.map(csvEscape).join(','));
+  });
+  const csv = '﻿' + lines.join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${form.slug}-respostas.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ---- Builder de formulário ---- */
+
+let qbCounter = 0;
+
+function qbRowHTML(idx, q){
+  q = q || {};
+  const typeOpts = FIELD_TYPES.map(t=>`<option value="${t.key}" ${q.type===t.key?'selected':''}>${t.label}</option>`).join('');
+  return `
+    <div class="qbuilder-row" data-idx="${idx}">
+      <button type="button" class="qb-remove" data-remove="${idx}">×</button>
+      <div class="drawer-row">
+        <div class="field"><label>Pergunta</label><input class="qb-label" value="${escapeHtml(q.label||'')}" placeholder="Ex: De 0 a 10, o quanto você recomendaria...?"></div>
+      </div>
+      <div class="drawer-row">
+        <div class="field"><label>Tipo</label><select class="qb-type">${typeOpts}</select></div>
+        <div class="field"><label>Obrigatório</label><select class="qb-required"><option value="1" ${q.required?'selected':''}>Sim</option><option value="0" ${!q.required?'selected':''}>Não</option></select></div>
+      </div>
+      <div class="drawer-row qb-options-row" style="display:${q.type==='select'?'flex':'none'}">
+        <div class="field" style="flex:1"><label>Opções (uma por linha)</label><textarea class="qb-options" rows="3">${escapeHtml((q.options||[]).join('\n'))}</textarea></div>
+      </div>
+    </div>
+  `;
+}
+
+function openFormBuilder(){
+  const drawer = document.getElementById('drawer');
+  drawer.innerHTML = '';
+  qbCounter = 0;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'drawer-close';
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', closeDrawer);
+  drawer.appendChild(closeBtn);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Novo formulário';
+  drawer.appendChild(h2);
+
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="drawer-row">
+      <div class="field"><label>Título</label><input id="fTitle" placeholder="Ex: Pesquisa NPS — Retiro 360°"></div>
+    </div>
+    <div class="drawer-row">
+      <div class="field" style="flex:1"><label>Descrição (opcional)</label><textarea id="fDesc" rows="2" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);resize:vertical"></textarea></div>
+    </div>
+    <div class="notes-title">Perguntas</div>
+    <div id="qbList"></div>
+    <button type="button" class="qb-add" id="qbAddBtn">+ Adicionar pergunta</button>
+  `;
+  drawer.appendChild(wrap);
+
+  function addQuestion(preset){
+    const idx = qbCounter++;
+    const holder = document.createElement('div');
+    holder.innerHTML = qbRowHTML(idx, preset);
+    document.getElementById('qbList').appendChild(holder.firstElementChild);
+    wireQuestionRow(idx);
+  }
+
+  function wireQuestionRow(idx){
+    const row = document.querySelector(`.qbuilder-row[data-idx="${idx}"]`);
+    row.querySelector('.qb-type').addEventListener('change', (e)=>{
+      row.querySelector('.qb-options-row').style.display = e.target.value === 'select' ? 'flex' : 'none';
+    });
+    row.querySelector('[data-remove]').addEventListener('click', ()=> row.remove());
+  }
+
+  document.getElementById('qbAddBtn').addEventListener('click', ()=> addQuestion());
+
+  addQuestion({label:'De 0 a 10, o quanto você recomendaria para um amigo ou colega?', type:'nps', required:true});
+
+  const saveRow = document.createElement('div');
+  saveRow.className = 'save-row';
+  saveRow.innerHTML = `<button class="btn-small save" id="saveFormBtn">Criar formulário</button>`;
+  drawer.appendChild(saveRow);
+
+  document.getElementById('saveFormBtn').addEventListener('click', async ()=>{
+    const title = document.getElementById('fTitle').value.trim();
+    const description = document.getElementById('fDesc').value.trim();
+    if(!title){ toast('Informe o título do formulário'); return; }
+
+    const rows = [...document.querySelectorAll('.qbuilder-row')];
+    if(!rows.length){ toast('Adicione ao menos uma pergunta'); return; }
+
+    const fields = [];
+    for(const row of rows){
+      const label = row.querySelector('.qb-label').value.trim();
+      const type = row.querySelector('.qb-type').value;
+      const required = row.querySelector('.qb-required').value === '1';
+      if(!label){ toast('Preencha o texto de todas as perguntas'); return; }
+      const key = 'q' + (fields.length+1) + '_' + label.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,30);
+      const field = {key, label, type, required};
+      if(type === 'select'){
+        const opts = row.querySelector('.qb-options').value.split('\n').map(s=>s.trim()).filter(Boolean);
+        if(!opts.length){ toast('Adicione ao menos uma opção para "'+label+'"'); return; }
+        field.options = opts;
+      }
+      fields.push(field);
+    }
+
+    try{
+      const created = await api('/api/forms', {method:'POST', body: JSON.stringify({title, description, fields})});
+      toast('Formulário criado');
+      closeDrawer();
+      await loadForms();
+      selectedFormId = created.id;
+      render();
+    }catch(err){ toast('Erro: '+err.message); }
+  });
+
+  document.getElementById('overlay').classList.add('show');
+}
+
 function closeDrawer(){
   document.getElementById('overlay').classList.remove('show');
   selectedId = null;
@@ -1536,8 +1844,8 @@ document.getElementById('overlay').addEventListener('click', (e)=>{
 document.querySelectorAll('.sb-link').forEach(b=>b.classList.toggle('active', b.dataset.page===page));
 document.querySelectorAll('.sb-sub').forEach(b=>b.classList.toggle('active', b.dataset.view===viewMode));
 document.getElementById('sidebarSubnav').style.display = (page==='leads'||page==='clientes') ? 'flex' : 'none';
-document.getElementById('newItemBtn').style.display = (page==='leads'||page==='clientes') ? 'block' : 'none';
-document.getElementById('newItemBtn').textContent = page==='clientes' ? '+ Novo Cliente' : '+ Novo Lead';
+document.getElementById('newItemBtn').style.display = (page==='leads'||page==='clientes'||page==='formularios') ? 'block' : 'none';
+document.getElementById('newItemBtn').textContent = page==='clientes' ? '+ Novo Cliente' : (page==='formularios' ? '+ Novo Formulário' : '+ Novo Lead');
 checkAuth();
 </script>
 </body>

@@ -41,6 +41,26 @@ async function runMigrations() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS forms (
+      id SERIAL PRIMARY KEY,
+      slug TEXT UNIQUE NOT NULL,
+      title TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
+      fields JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS form_responses (
+      id SERIAL PRIMARY KEY,
+      form_id INTEGER NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+      answers JSONB NOT NULL DEFAULT '{}'::jsonb,
+      submitted_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS form_responses_form_idx ON form_responses (form_id)`;
 }
 
 function ensureSchema() {

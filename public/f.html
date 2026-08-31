@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulário</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#F7F6F4;--sand:#EDE6DA;--taupe:#C8B0B0;--green:#205447;--petrol:#13434C;
+    --wine:#4B1F2D;--graphite:#333333;--muted:#6B6058;--border:rgba(0,0,0,.08);
+    --fd:'Cormorant Garamond',Georgia,serif;--fb:'Montserrat','Helvetica Neue',sans-serif;
+    --radius:10px;--radius-sm:6px;
+    --shadow-card:0 1px 2px rgba(19,67,76,.05),0 1px 6px rgba(19,67,76,.06);
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--fb);background:var(--petrol);color:var(--graphite);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+  .card{background:var(--white);max-width:520px;width:100%;padding:2.5rem 2.2rem;border-radius:var(--radius);box-shadow:0 30px 80px rgba(0,0,0,.25)}
+  h1{font-family:var(--fd);font-weight:500;font-size:1.6rem;margin-bottom:.5rem}
+  p.desc{color:var(--muted);font-size:.9rem;margin-bottom:2rem;line-height:1.6}
+  .field{margin-bottom:1.5rem}
+  .field label{display:block;font-size:.85rem;font-weight:600;color:var(--graphite);margin-bottom:.7rem;line-height:1.5}
+  .field input[type=text],.field textarea,.field select{width:100%;padding:.75rem .9rem;border:1px solid var(--border);background:var(--white);outline:none;transition:border-color .3s;border-radius:var(--radius-sm);font-family:var(--fb);font-size:.9rem}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green)}
+  .field textarea{resize:vertical;min-height:80px}
+
+  .nps-scale{display:flex;gap:.4rem;flex-wrap:wrap}
+  .nps-btn{width:2.5rem;height:2.5rem;border:1px solid var(--border);background:var(--white);border-radius:var(--radius-sm);font-family:var(--fb);font-size:.85rem;font-weight:600;color:var(--graphite);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+  .nps-btn:hover{border-color:var(--green)}
+  .nps-btn.selected{background:var(--green);border-color:var(--green);color:var(--white)}
+  .nps-labels{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:.5rem}
+
+  .btn-primary{width:100%;background:var(--green);color:var(--white);border:0;padding:.9rem;font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:background .3s;border-radius:var(--radius-sm);cursor:pointer}
+  .btn-primary:hover{background:var(--petrol)}
+  .btn-primary:disabled{opacity:.6;cursor:default}
+  .error-msg{color:var(--wine);font-size:.8rem;margin-top:1rem;display:none}
+  .error-msg.show{display:block}
+
+  .thanks{text-align:center;padding:1.5rem 0}
+  .thanks .icon{font-size:2.4rem;margin-bottom:1rem}
+  .thanks h1{margin-bottom:.6rem}
+  .thanks p{color:var(--muted);font-size:.92rem}
+
+  .loading, .notfound{color:var(--white);text-align:center;font-size:.9rem}
+</style>
+</head>
+<body>
+  <div id="root" class="loading">Carregando…</div>
+
+<script>
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fieldHTML(f){
+  const id = 'q_' + f.key;
+  const req = f.required ? ' *' : '';
+  if(f.type === 'nps'){
+    return `
+      <div class="field">
+        <label>${escapeHtml(f.label)}${req}</label>
+        <div class="nps-scale" data-key="${f.key}">
+          ${Array.from({length:11},(_,i)=>`<button type="button" class="nps-btn" data-val="${i}">${i}</button>`).join('')}
+        </div>
+        <div class="nps-labels"><span>${escapeHtml(f.lowLabel || 'Pouco provável')}</span><span>${escapeHtml(f.highLabel || 'Muito provável')}</span></div>
+      </div>
+    `;
+  }
+  if(f.type === 'textarea'){
+    return `<div class="field"><label>${escapeHtml(f.label)}${req}</label><textarea id="${id}"></textarea></div>`;
+  }
+  if(f.type === 'select'){
+    const opts = Array.isArray(f.options) ? f.options : [];
+    return `<div class="field"><label>${escapeHtml(f.label)}${req}</label><select id="${id}"><option value="">—</option>${opts.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}</select></div>`;
+  }
+  return `<div class="field"><label>${escapeHtml(f.label)}${req}</label><input id="${id}" type="text"></div>`;
+}
+
+async function init(){
+  const root = document.getElementById('root');
+  const slug = new URLSearchParams(location.search).get('s') || '';
+  if(!slug){
+    root.className = 'notfound';
+    root.textContent = 'Link inválido.';
+    return;
+  }
+
+  let form;
+  try{
+    const res = await fetch('/api/forms/public/' + encodeURIComponent(slug));
+    if(!res.ok) throw new Error('not found');
+    form = await res.json();
+  }catch(err){
+    root.className = 'notfound';
+    root.textContent = 'Formulário não encontrado ou expirado.';
+    return;
+  }
+
+  root.className = '';
+  root.innerHTML = `
+    <div class="card">
+      <h1>${escapeHtml(form.title)}</h1>
+      ${form.description ? `<p class="desc">${escapeHtml(form.description)}</p>` : ''}
+      <form id="respForm">
+        ${form.fields.map(fieldHTML).join('')}
+        <button class="btn-primary" type="submit" id="sendBtn">Enviar</button>
+        <p class="error-msg" id="errMsg"></p>
+      </form>
+    </div>
+  `;
+
+  document.querySelectorAll('.nps-scale').forEach(scale=>{
+    scale.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.nps-btn');
+      if(!btn) return;
+      scale.querySelectorAll('.nps-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      scale.dataset.value = btn.dataset.val;
+    });
+  });
+
+  document.getElementById('respForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const btn = document.getElementById('sendBtn');
+    const errEl = document.getElementById('errMsg');
+    errEl.classList.remove('show');
+
+    const answers = {};
+    for(const f of form.fields){
+      if(f.type === 'nps'){
+        const scale = document.querySelector(`.nps-scale[data-key="${f.key}"]`);
+        if(scale.dataset.value !== undefined) answers[f.key] = Number(scale.dataset.value);
+      } else {
+        const el = document.getElementById('q_' + f.key);
+        if(el && el.value.trim()) answers[f.key] = el.value.trim();
+      }
+      if(f.required && (answers[f.key] === undefined || answers[f.key] === '')){
+        errEl.textContent = 'Preencha: ' + f.label;
+        errEl.classList.add('show');
+        return;
+      }
+    }
+
+    btn.disabled = true;
+    try{
+      const res = await fetch(`/api/forms/public/${encodeURIComponent(slug)}/responses`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({answers})
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(data.error || 'Erro ao enviar');
+      root.innerHTML = `
+        <div class="card thanks">
+          <div class="icon">✓</div>
+          <h1>Obrigado!</h1>
+          <p>Sua resposta foi registrada com sucesso.</p>
+        </div>
+      `;
+    }catch(err){
+      errEl.textContent = err.message;
+      errEl.classList.add('show');
+      btn.disabled = false;
+    }
+  });
+}
+init();
+</script>
+</body>
+</html>

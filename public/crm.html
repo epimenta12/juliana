@@ -226,6 +226,21 @@
   .qbuilder-row .drawer-row{margin-bottom:.6rem}
   .qb-add{width:100%;padding:.7rem;border:1px dashed var(--border);background:0;color:var(--green);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s}
   .qb-add:hover{border-color:var(--green);background:rgba(32,84,71,.05)}
+  .view-toggle-light{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-sm);padding:2px;gap:2px;margin-bottom:1.2rem}
+  .vtl-btn{background:0;border:0;color:var(--muted);padding:.45rem 1rem;font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:calc(var(--radius-sm) - 2px);transition:all .2s;font-family:var(--fb)}
+  .vtl-btn.active{background:var(--green);color:var(--white)}
+  .resp-cards{display:flex;flex-direction:column;gap:.6rem}
+  .resp-card{background:var(--white);border:1px solid var(--border);padding:1rem 1.2rem;border-radius:var(--radius-sm);box-shadow:var(--shadow-card);cursor:pointer;transition:box-shadow .2s;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+  .resp-card:hover{box-shadow:var(--shadow-card-hover)}
+  .resp-card .rc-name{font-weight:600;font-size:.92rem}
+  .resp-card .rc-meta{font-size:.78rem;color:var(--muted);margin-top:.15rem}
+  .resp-card .rc-right{display:flex;align-items:center;gap:.9rem;flex-shrink:0}
+  .resp-card .rc-badge{background:var(--sand);color:var(--petrol);padding:.3rem .7rem;border-radius:var(--radius-pill);font-size:.72rem;font-weight:700;white-space:nowrap}
+  .resp-card .rc-date{font-size:.7rem;color:var(--muted);white-space:nowrap}
+  .qa-row{margin-bottom:1.3rem}
+  .qa-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.3rem}
+  .qa-value{font-size:.92rem;color:var(--graphite);line-height:1.55;white-space:pre-line}
+  .qa-value.empty{color:var(--muted);font-style:italic}
 
   @media(max-width:900px){.board{grid-template-columns:1fr !important;}}
 </style>
@@ -319,6 +334,8 @@ let clientes = [];
 let forms = [];
 let selectedFormId = null;
 let formResponses = [];
+let formRespView = null;
+let formRespViewFormId = null;
 let selectedId = null;
 let page = ['dashboard','leads','clientes'].includes(localStorage.getItem('crm_page')) ? localStorage.getItem('crm_page') : 'dashboard';
 let viewMode = localStorage.getItem('crm_view') === 'table' ? 'table' : 'kanban';
@@ -1607,6 +1624,7 @@ async function renderFormDetail(id){
   const wrap = document.getElementById('formsWrap');
   const form = forms.find(f=>f.id===id);
   if(!form){ selectedFormId = null; renderFormsList(); return; }
+  if(formRespViewFormId !== id){ formRespView = null; formRespViewFormId = id; }
 
   wrap.innerHTML = `
     <button class="form-back" id="formBackBtn">← Formulários</button>
@@ -1682,7 +1700,36 @@ async function renderFormDetail(id){
     return;
   }
 
+  if(!formRespView) formRespView = fields.length > 6 ? 'fichas' : 'table';
+
   respWrap.innerHTML = summaryHtml + `
+    <div class="view-toggle-light">
+      <button type="button" class="vtl-btn" data-view="fichas">Fichas</button>
+      <button type="button" class="vtl-btn" data-view="table">Planilha</button>
+    </div>
+    <div id="formRespBody"></div>
+  `;
+  respWrap.querySelectorAll('.vtl-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view===formRespView);
+    b.addEventListener('click', ()=>{ formRespView = b.dataset.view; renderFormDetail(id); });
+  });
+
+  const body = document.getElementById('formRespBody');
+  if(formRespView === 'fichas') renderRespCards(body, form, fields, formResponses);
+  else renderRespTable(body, form, fields, formResponses);
+}
+
+function guessSummaryFields(fields){
+  const find = (patterns) => fields.find(f => patterns.some(p => f.key.toLowerCase().includes(p) || f.label.toLowerCase().includes(p)));
+  const nameF = find(['nome','name']) || fields.find(f=>f.type==='text') || fields[0];
+  const phoneF = find(['telefone','phone','celular']) || fields.find(f=>f.type==='tel');
+  const emailF = find(['email','e-mail']) || fields.find(f=>f.type==='email');
+  const npsF = fields.find(f=>f.type==='nps');
+  return {nameF, phoneF, emailF, npsF};
+}
+
+function renderRespTable(container, form, fields, formResponses){
+  container.innerHTML = `
     <div class="table-wrap">
       <table class="crm-table">
         <thead><tr>${fields.map(f=>`<th>${escapeHtml(f.label)}</th>`).join('')}<th>Enviado em</th><th></th></tr></thead>
@@ -1694,18 +1741,96 @@ async function renderFormDetail(id){
       </table>
     </div>
   `;
-  respWrap.querySelectorAll('.resp-del').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      if(!confirm('Excluir essa resposta? Essa ação não pode ser desfeita.')) return;
-      try{
-        await api(`/api/forms?id=${form.id}&responseId=${btn.dataset.respId}`, {method:'DELETE'});
-        toast('Resposta excluída');
-        await loadForms();
-        render();
-      }catch(err){ toast('Erro: '+err.message); }
+  container.querySelectorAll('.resp-del').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); deleteResponse(form, btn.dataset.respId); });
+  });
+}
+
+function renderRespCards(container, form, fields, formResponses){
+  const {nameF, phoneF, emailF, npsF} = guessSummaryFields(fields);
+  container.innerHTML = `
+    <div class="resp-cards">
+      ${formResponses.map(r=>{
+        const name = (nameF && r.answers[nameF.key]) || '(sem nome)';
+        const metaParts = [phoneF && r.answers[phoneF.key], emailF && r.answers[emailF.key]].filter(Boolean);
+        const score = npsF ? r.answers[npsF.key] : null;
+        return `
+          <div class="resp-card" data-resp-id="${r.id}">
+            <div>
+              <div class="rc-name">${escapeHtml(name)}</div>
+              ${metaParts.length ? `<div class="rc-meta">${escapeHtml(metaParts.join(' · '))}</div>` : ''}
+            </div>
+            <div class="rc-right">
+              ${typeof score === 'number' ? `<span class="rc-badge">Nota ${score}</span>` : ''}
+              <span class="rc-date">${new Date(r.submitted_at).toLocaleDateString('pt-BR')}</span>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  container.querySelectorAll('.resp-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const resp = formResponses.find(r=>String(r.id)===card.dataset.respId);
+      openResponseDrawer(form, fields, resp);
     });
   });
+}
+
+function openResponseDrawer(form, fields, resp){
+  const drawer = document.getElementById('drawer');
+  drawer.innerHTML = '';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'drawer-close';
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', closeDrawer);
+  drawer.appendChild(closeBtn);
+
+  const {nameF} = guessSummaryFields(fields);
+  const h2 = document.createElement('h2');
+  h2.textContent = (nameF && resp.answers[nameF.key]) || 'Resposta';
+  drawer.appendChild(h2);
+
+  const sub = document.createElement('p');
+  sub.style.cssText = 'color:var(--muted);font-size:.78rem;margin:-1rem 0 1.6rem';
+  sub.textContent = 'Enviado em ' + new Date(resp.submitted_at).toLocaleString('pt-BR');
+  drawer.appendChild(sub);
+
+  const qa = document.createElement('div');
+  qa.innerHTML = fields.map(f=>{
+    const v = resp.answers[f.key];
+    const hasVal = v !== undefined && v !== null && String(v).trim() !== '';
+    return `
+      <div class="qa-row">
+        <div class="qa-label">${escapeHtml(f.label)}</div>
+        <div class="qa-value${hasVal?'':' empty'}">${hasVal ? escapeHtml(v) : 'Não respondido'}</div>
+      </div>
+    `;
+  }).join('');
+  drawer.appendChild(qa);
+
+  const saveRow = document.createElement('div');
+  saveRow.className = 'save-row';
+  saveRow.innerHTML = `<button class="btn-small del" id="respDrawerDelBtn">Excluir resposta</button>`;
+  drawer.appendChild(saveRow);
+  document.getElementById('respDrawerDelBtn').addEventListener('click', async ()=>{
+    const ok = await deleteResponse(form, resp.id);
+    if(ok) closeDrawer();
+  });
+
+  document.getElementById('overlay').classList.add('show');
+}
+
+async function deleteResponse(form, responseId){
+  if(!confirm('Excluir essa resposta? Essa ação não pode ser desfeita.')) return false;
+  try{
+    await api(`/api/forms?id=${form.id}&responseId=${responseId}`, {method:'DELETE'});
+    toast('Resposta excluída');
+    await loadForms();
+    render();
+    return true;
+  }catch(err){ toast('Erro: '+err.message); return false; }
 }
 
 function csvEscape(v){

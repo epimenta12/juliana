@@ -1632,7 +1632,7 @@ async function renderFormDetail(id){
   document.getElementById('deleteFormBtn').addEventListener('click', async ()=>{
     if(!confirm(`Excluir o formulário "${form.title}"? Todas as respostas serão perdidas. Essa ação não pode ser desfeita.`)) return;
     try{
-      await api(`/api/forms/${id}`, {method:'DELETE'});
+      await api(`/api/forms?id=${id}`, {method:'DELETE'});
       toast('Formulário excluído');
       selectedFormId = null;
       await loadForms();
@@ -1640,7 +1640,7 @@ async function renderFormDetail(id){
   });
 
   try{
-    formResponses = await api(`/api/forms/${id}/responses`);
+    formResponses = await api(`/api/forms?id=${id}&responses=1`);
   }catch(err){
     document.getElementById('formRespWrap').textContent = 'Erro ao carregar respostas: '+err.message;
     return;

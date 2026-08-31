@@ -1,6 +1,14 @@
 const { sql, ensureSchema } = require('../_db');
 const { isAuthed } = require('../_auth');
 
+// Uma única function cuida de toda a gestão de formulários (a Vercel Hobby
+// limita o número de serverless functions por deploy, então evitamos criar
+// um arquivo por rota):
+//   GET    /api/forms                    -> lista formulários
+//   POST   /api/forms                    -> cria formulário
+//   DELETE /api/forms?id=5               -> exclui formulário
+//   GET    /api/forms?id=5&responses=1   -> lista respostas do formulário
+
 function parseBody(req) {
   if (!req.body) return {};
   if (typeof req.body === 'string') {
@@ -26,6 +34,17 @@ module.exports = async (req, res) => {
     }
     await ensureSchema();
 
+    const id = req.query.id ? Number(req.query.id) : null;
+
+    if (req.method === 'GET' && id && req.query.responses) {
+      const { rows } = await sql`
+        SELECT id, answers, submitted_at FROM form_responses
+        WHERE form_id = ${id} ORDER BY submitted_at DESC
+      `;
+      res.status(200).json(rows);
+      return;
+    }
+
     if (req.method === 'GET') {
       const { rows } = await sql`
         SELECT f.id, f.slug, f.title, f.description, f.fields, f.created_at,
@@ -44,14 +63,8 @@ module.exports = async (req, res) => {
       const title = String(body.title || '').trim().slice(0, 200);
       const description = String(body.description || '').trim().slice(0, 2000);
       const fields = Array.isArray(body.fields) ? body.fields : [];
-      if (!title) {
-        res.status(400).json({ error: 'título é obrigatório' });
-        return;
-      }
-      if (!fields.length) {
-        res.status(400).json({ error: 'adicione ao menos um campo' });
-        return;
-      }
+      if (!title) { res.status(400).json({ error: 'título é obrigatório' }); return; }
+      if (!fields.length) { res.status(400).json({ error: 'adicione ao menos um campo' }); return; }
 
       const base = slugify(title);
       let slug = base;
@@ -67,6 +80,13 @@ module.exports = async (req, res) => {
         RETURNING id, slug, title, description, fields, created_at
       `;
       res.status(201).json(Object.assign({ response_count: 0 }, rows[0]));
+      return;
+    }
+
+    if (req.method === 'DELETE') {
+      if (!id) { res.status(400).json({ error: 'id inválido' }); return; }
+      await sql`DELETE FROM forms WHERE id = ${id}`;
+      res.status(200).json({ ok: true });
       return;
     }
 

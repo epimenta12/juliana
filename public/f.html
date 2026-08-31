@@ -146,7 +146,7 @@ async function init(){
 
     btn.disabled = true;
     try{
-      const res = await fetch(`/api/forms/public/${encodeURIComponent(slug)}/responses`, {
+      const res = await fetch(`/api/forms/public/${encodeURIComponent(slug)}`, {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({answers})
       });

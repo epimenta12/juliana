@@ -7,6 +7,7 @@ const { isAuthed } = require('../_auth');
 //   GET    /api/forms                    -> lista formulários
 //   POST   /api/forms                    -> cria formulário
 //   DELETE /api/forms?id=5               -> exclui formulário
+//   DELETE /api/forms?id=5&responseId=9  -> exclui só uma resposta
 //   GET    /api/forms?id=5&responses=1   -> lista respostas do formulário
 
 function parseBody(req) {
@@ -85,7 +86,12 @@ module.exports = async (req, res) => {
 
     if (req.method === 'DELETE') {
       if (!id) { res.status(400).json({ error: 'id inválido' }); return; }
-      await sql`DELETE FROM forms WHERE id = ${id}`;
+      const responseId = req.query.responseId ? Number(req.query.responseId) : null;
+      if (responseId) {
+        await sql`DELETE FROM form_responses WHERE id = ${responseId} AND form_id = ${id}`;
+      } else {
+        await sql`DELETE FROM forms WHERE id = ${id}`;
+      }
       res.status(200).json({ ok: true });
       return;
     }

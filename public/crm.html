@@ -1681,15 +1681,27 @@ async function renderFormDetail(id){
   respWrap.innerHTML = summaryHtml + `
     <div class="table-wrap">
       <table class="crm-table">
-        <thead><tr>${fields.map(f=>`<th>${escapeHtml(f.label)}</th>`).join('')}<th>Enviado em</th></tr></thead>
+        <thead><tr>${fields.map(f=>`<th>${escapeHtml(f.label)}</th>`).join('')}<th>Enviado em</th><th></th></tr></thead>
         <tbody>
           ${formResponses.map(r=>`
-            <tr>${fields.map(f=>`<td${f.type==='textarea'?' class="wrap"':''}>${escapeHtml(r.answers[f.key])}</td>`).join('')}<td>${new Date(r.submitted_at).toLocaleString('pt-BR')}</td></tr>
+            <tr>${fields.map(f=>`<td${f.type==='textarea'?' class="wrap"':''}>${escapeHtml(r.answers[f.key])}</td>`).join('')}<td>${new Date(r.submitted_at).toLocaleString('pt-BR')}</td><td><button type="button" class="resp-del" data-resp-id="${r.id}" title="Excluir resposta" style="background:0;border:0;color:var(--muted);cursor:pointer;font-size:.9rem">🗑</button></td></tr>
           `).join('')}
         </tbody>
       </table>
     </div>
   `;
+  respWrap.querySelectorAll('.resp-del').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      if(!confirm('Excluir essa resposta? Essa ação não pode ser desfeita.')) return;
+      try{
+        await api(`/api/forms?id=${form.id}&responseId=${btn.dataset.respId}`, {method:'DELETE'});
+        toast('Resposta excluída');
+        await loadForms();
+        render();
+      }catch(err){ toast('Erro: '+err.message); }
+    });
+  });
 }
 
 function csvEscape(v){

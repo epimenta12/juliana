@@ -14,37 +14,64 @@
     --wine:#4B1F2D;--graphite:#333333;--muted:#6B6058;--border:rgba(0,0,0,.08);
     --fd:'Cormorant Garamond',Georgia,serif;--fb:'Montserrat','Helvetica Neue',sans-serif;
     --radius:10px;--radius-sm:6px;
-    --shadow-card:0 1px 2px rgba(19,67,76,.05),0 1px 6px rgba(19,67,76,.06);
   }
   *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:var(--fb);background:var(--petrol);color:var(--graphite);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
-  .card{background:var(--white);max-width:520px;width:100%;padding:2.5rem 2.2rem;border-radius:var(--radius);box-shadow:0 30px 80px rgba(0,0,0,.25)}
-  h1{font-family:var(--fd);font-weight:500;font-size:1.6rem;margin-bottom:.5rem}
-  p.desc{color:var(--muted);font-size:.9rem;margin-bottom:2rem;line-height:1.6}
-  .field{margin-bottom:1.5rem}
-  .field label{display:block;font-size:.85rem;font-weight:600;color:var(--graphite);margin-bottom:.7rem;line-height:1.5}
-  .field input[type=text],.field input[type=tel],.field input[type=email],.field textarea,.field select{width:100%;padding:.75rem .9rem;border:1px solid var(--border);background:var(--white);outline:none;transition:border-color .3s;border-radius:var(--radius-sm);font-family:var(--fb);font-size:.9rem}
-  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green)}
-  .field textarea{resize:vertical;min-height:80px}
+  html,body{height:100%}
+  body{font-family:var(--fb);background:var(--petrol);color:var(--graphite);overflow:hidden}
 
-  .nps-scale{display:flex;gap:.4rem;flex-wrap:wrap}
-  .nps-btn{width:2.5rem;height:2.5rem;border:1px solid var(--border);background:var(--white);border-radius:var(--radius-sm);font-family:var(--fb);font-size:.85rem;font-weight:600;color:var(--graphite);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
-  .nps-btn:hover{border-color:var(--green)}
-  .nps-btn.selected{background:var(--green);border-color:var(--green);color:var(--white)}
-  .nps-labels{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:.5rem}
+  .tf-progress{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,.15);z-index:10}
+  .tf-progress-bar{height:100%;background:var(--white);transition:width .35s var(--ease,ease)}
 
-  .btn-primary{width:100%;background:var(--green);color:var(--white);border:0;padding:.9rem;font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:background .3s;border-radius:var(--radius-sm);cursor:pointer}
-  .btn-primary:hover{background:var(--petrol)}
-  .btn-primary:disabled{opacity:.6;cursor:default}
-  .error-msg{color:var(--wine);font-size:.8rem;margin-top:1rem;display:none}
-  .error-msg.show{display:block}
+  .tf-stage{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem}
+  .tf-card{max-width:600px;width:100%;color:var(--white);animation:tfIn .35s ease}
+  @keyframes tfIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-  .thanks{text-align:center;padding:1.5rem 0}
-  .thanks .icon{font-size:2.4rem;margin-bottom:1rem}
-  .thanks h1{margin-bottom:.6rem}
-  .thanks p{color:var(--muted);font-size:.92rem}
+  .tf-counter{font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:1rem}
+  .tf-desc{font-size:.92rem;color:rgba(255,255,255,.7);margin-bottom:1.2rem;line-height:1.6}
+  .tf-question{font-family:var(--fd);font-weight:500;font-size:clamp(1.5rem,4vw,2.1rem);line-height:1.35;margin-bottom:.4rem}
+  .tf-optional{font-family:var(--fb);font-size:.7rem;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.05em;vertical-align:middle;margin-left:.4rem}
 
-  .loading, .notfound{color:var(--white);text-align:center;font-size:.9rem}
+  .tf-answer{margin-top:1.8rem}
+  .tf-answer input[type=text],.tf-answer input[type=tel],.tf-answer input[type=email],.tf-answer textarea{
+    width:100%;padding:.9rem 0;border:0;border-bottom:2px solid rgba(255,255,255,.35);background:transparent;
+    color:var(--white);outline:none;font-family:var(--fb);font-size:1.15rem;transition:border-color .25s
+  }
+  .tf-answer input::placeholder,.tf-answer textarea::placeholder{color:rgba(255,255,255,.35)}
+  .tf-answer input:focus,.tf-answer textarea:focus{border-color:var(--white)}
+  .tf-answer textarea{resize:vertical;min-height:90px}
+  .tf-hint{font-size:.72rem;color:rgba(255,255,255,.4);margin-top:.6rem}
+
+  .tf-choices{display:flex;flex-direction:column;gap:.6rem}
+  .tf-choice{display:flex;align-items:center;gap:.8rem;text-align:left;padding:.9rem 1.1rem;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.04);color:var(--white);border-radius:var(--radius-sm);cursor:pointer;transition:all .18s;font-family:var(--fb);font-size:1rem}
+  .tf-choice:hover{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.09)}
+  .tf-choice.selected{border-color:var(--white);background:rgba(255,255,255,.16)}
+  .tf-choice .letter{width:1.7rem;height:1.7rem;border:1px solid rgba(255,255,255,.4);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+  .tf-choice.selected .letter{background:var(--white);color:var(--petrol);border-color:var(--white)}
+
+  .tf-nps-scale{display:flex;gap:.4rem;flex-wrap:wrap}
+  .tf-nps-btn{width:2.9rem;height:2.9rem;border:1px solid rgba(255,255,255,.35);background:transparent;border-radius:var(--radius-sm);font-family:var(--fb);font-size:.95rem;font-weight:600;color:var(--white);cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center}
+  .tf-nps-btn:hover{border-color:rgba(255,255,255,.8)}
+  .tf-nps-btn.selected{background:var(--white);border-color:var(--white);color:var(--petrol)}
+  .tf-nps-labels{display:flex;justify-content:space-between;font-size:.7rem;color:rgba(255,255,255,.5);margin-top:.6rem}
+
+  .tf-actions{display:flex;justify-content:space-between;align-items:center;margin-top:2.2rem}
+  .tf-back{background:0;border:0;color:rgba(255,255,255,.55);font-size:.82rem;font-family:var(--fb);cursor:pointer;padding:.5rem 0}
+  .tf-back:hover{color:var(--white)}
+  .tf-next{background:var(--white);color:var(--petrol);border:0;padding:.75rem 1.6rem;font-size:.82rem;font-weight:700;letter-spacing:.03em;border-radius:var(--radius-sm);cursor:pointer;transition:transform .15s,opacity .15s}
+  .tf-next:hover{transform:translateY(-1px)}
+  .tf-next:disabled{opacity:.4;cursor:default;transform:none}
+
+  .tf-error{color:#ff9b9b;font-size:.82rem;margin-top:.9rem;display:none}
+  .tf-error.show{display:block}
+
+  .tf-thanks .icon{font-size:2.6rem;margin-bottom:1rem}
+  .tf-thanks p{color:rgba(255,255,255,.7);font-size:.95rem;margin-top:.4rem}
+
+  .loading,.notfound{color:var(--white);text-align:center;font-size:.9rem;min-height:100vh;display:flex;align-items:center;justify-content:center}
+
+  @media(max-width:520px){
+    .tf-nps-btn{width:2.4rem;height:2.4rem;font-size:.85rem}
+  }
 </style>
 </head>
 <body>
@@ -55,41 +82,151 @@ function escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function fieldHTML(f){
-  const id = 'q_' + f.key;
-  const req = f.required ? ' *' : '';
+let form = null;
+let currentIndex = 0;
+let answers = {};
+let slug = '';
+
+function isAnswered(f){
+  const v = answers[f.key];
+  if(f.type === 'nps') return typeof v === 'number';
+  return v !== undefined && v !== null && String(v).trim() !== '';
+}
+
+function answerControlHTML(f){
   if(f.type === 'nps'){
     return `
-      <div class="field">
-        <label>${escapeHtml(f.label)}${req}</label>
-        <div class="nps-scale" data-key="${f.key}">
-          ${Array.from({length:11},(_,i)=>`<button type="button" class="nps-btn" data-val="${i}">${i}</button>`).join('')}
-        </div>
-        <div class="nps-labels"><span>${escapeHtml(f.lowLabel || 'Pouco provável')}</span><span>${escapeHtml(f.highLabel || 'Muito provável')}</span></div>
+      <div class="tf-nps-scale" data-key="${f.key}">
+        ${Array.from({length:11},(_,i)=>`<button type="button" class="tf-nps-btn${answers[f.key]===i?' selected':''}" data-val="${i}">${i}</button>`).join('')}
+      </div>
+      <div class="tf-nps-labels"><span>${escapeHtml(f.lowLabel || 'Pouco provável')}</span><span>${escapeHtml(f.highLabel || 'Muito provável')}</span></div>
+    `;
+  }
+  if(f.type === 'select'){
+    const opts = Array.isArray(f.options) ? f.options : [];
+    const letters = 'ABCDEFGHIJ';
+    return `
+      <div class="tf-choices" data-key="${f.key}">
+        ${opts.map((o,i)=>`<button type="button" class="tf-choice${answers[f.key]===o?' selected':''}" data-val="${escapeHtml(o)}"><span class="letter">${letters[i]||i+1}</span>${escapeHtml(o)}</button>`).join('')}
       </div>
     `;
   }
   if(f.type === 'textarea'){
-    return `<div class="field"><label>${escapeHtml(f.label)}${req}</label><textarea id="${id}"></textarea></div>`;
-  }
-  if(f.type === 'select'){
-    const opts = Array.isArray(f.options) ? f.options : [];
-    return `<div class="field"><label>${escapeHtml(f.label)}${req}</label><select id="${id}"><option value="">—</option>${opts.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}</select></div>`;
+    return `<textarea id="tfInput" placeholder="Digite sua resposta...">${escapeHtml(answers[f.key]||'')}</textarea><p class="tf-hint">Shift + Enter para pular linha</p>`;
   }
   const inputType = f.type === 'tel' ? 'tel' : (f.type === 'email' ? 'email' : 'text');
-  return `<div class="field"><label>${escapeHtml(f.label)}${req}</label><input id="${id}" type="${inputType}"></div>`;
+  return `<input id="tfInput" type="${inputType}" placeholder="Digite sua resposta..." value="${escapeHtml(answers[f.key]||'')}"><p class="tf-hint">Pressione Enter ↵</p>`;
+}
+
+function renderStep(){
+  const f = form.fields[currentIndex];
+  const isLast = currentIndex === form.fields.length - 1;
+  const pct = Math.round((currentIndex/form.fields.length)*100);
+  const root = document.getElementById('root');
+  root.className = '';
+  root.innerHTML = `
+    <div class="tf-progress"><div class="tf-progress-bar" style="width:${pct}%"></div></div>
+    <div class="tf-stage"><div class="tf-card">
+      <div class="tf-counter">${currentIndex+1} de ${form.fields.length}</div>
+      ${currentIndex===0 && form.description ? `<p class="tf-desc">${escapeHtml(form.description)}</p>` : ''}
+      <h1 class="tf-question">${escapeHtml(f.label)}${f.required?'':'<span class="tf-optional">Opcional</span>'}</h1>
+      <div class="tf-answer">${answerControlHTML(f)}</div>
+      <p class="tf-error" id="tfError"></p>
+      <div class="tf-actions">
+        ${currentIndex>0 ? `<button type="button" class="tf-back" id="tfBack">← Voltar</button>` : `<span></span>`}
+        <button type="button" class="tf-next" id="tfNext">${isLast ? 'Enviar' : 'OK'}</button>
+      </div>
+    </div></div>
+  `;
+  wireStep(f, isLast);
+}
+
+function showError(msg){
+  const el = document.getElementById('tfError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function goNext(f, isLast){
+  if(f.required && !isAnswered(f)){
+    showError('Essa pergunta é obrigatória');
+    return;
+  }
+  if(isLast){ submitForm(); return; }
+  currentIndex++;
+  renderStep();
+}
+
+function wireStep(f, isLast){
+  const input = document.getElementById('tfInput');
+  if(input){
+    input.focus();
+    input.addEventListener('input', ()=>{ answers[f.key] = input.value; });
+    input.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' && !(f.type === 'textarea' && !e.ctrlKey && !e.metaKey)){
+        e.preventDefault();
+        goNext(f, isLast);
+      }
+    });
+  }
+
+  const npsScale = document.querySelector('.tf-nps-scale');
+  if(npsScale){
+    npsScale.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.tf-nps-btn');
+      if(!btn) return;
+      answers[f.key] = Number(btn.dataset.val);
+      npsScale.querySelectorAll('.tf-nps-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+      setTimeout(()=> goNext(f, isLast), 280);
+    });
+  }
+
+  const choices = document.querySelector('.tf-choices');
+  if(choices){
+    choices.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.tf-choice');
+      if(!btn) return;
+      answers[f.key] = btn.dataset.val;
+      choices.querySelectorAll('.tf-choice').forEach(b=>b.classList.toggle('selected', b===btn));
+      setTimeout(()=> goNext(f, isLast), 280);
+    });
+  }
+
+  document.getElementById('tfNext').addEventListener('click', ()=> goNext(f, isLast));
+  const backBtn = document.getElementById('tfBack');
+  if(backBtn) backBtn.addEventListener('click', ()=>{ currentIndex--; renderStep(); });
+}
+
+async function submitForm(){
+  const root = document.getElementById('root');
+  root.innerHTML = `<div class="tf-stage"><div class="tf-card"><p style="color:rgba(255,255,255,.7)">Enviando...</p></div></div>`;
+  try{
+    const res = await fetch(`/api/forms/public/${encodeURIComponent(slug)}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({answers})
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || 'Erro ao enviar');
+    root.innerHTML = `
+      <div class="tf-stage"><div class="tf-card tf-thanks" style="text-align:center">
+        <div class="icon">✓</div>
+        <h1 class="tf-question">Obrigado!</h1>
+        <p>Sua resposta foi registrada com sucesso.</p>
+      </div></div>
+    `;
+  }catch(err){
+    root.innerHTML = `<div class="tf-stage"><div class="tf-card"><p style="color:#ff9b9b">${escapeHtml(err.message)}</p></div></div>`;
+  }
 }
 
 async function init(){
   const root = document.getElementById('root');
-  const slug = new URLSearchParams(location.search).get('s') || '';
+  slug = new URLSearchParams(location.search).get('s') || '';
   if(!slug){
     root.className = 'notfound';
     root.textContent = 'Link inválido.';
     return;
   }
-
-  let form;
   try{
     const res = await fetch('/api/forms/public/' + encodeURIComponent(slug));
     if(!res.ok) throw new Error('not found');
@@ -99,73 +236,12 @@ async function init(){
     root.textContent = 'Formulário não encontrado ou expirado.';
     return;
   }
-
-  root.className = '';
-  root.innerHTML = `
-    <div class="card">
-      <h1>${escapeHtml(form.title)}</h1>
-      ${form.description ? `<p class="desc">${escapeHtml(form.description)}</p>` : ''}
-      <form id="respForm">
-        ${form.fields.map(fieldHTML).join('')}
-        <button class="btn-primary" type="submit" id="sendBtn">Enviar</button>
-        <p class="error-msg" id="errMsg"></p>
-      </form>
-    </div>
-  `;
-
-  document.querySelectorAll('.nps-scale').forEach(scale=>{
-    scale.addEventListener('click', (e)=>{
-      const btn = e.target.closest('.nps-btn');
-      if(!btn) return;
-      scale.querySelectorAll('.nps-btn').forEach(b=>b.classList.remove('selected'));
-      btn.classList.add('selected');
-      scale.dataset.value = btn.dataset.val;
-    });
-  });
-
-  document.getElementById('respForm').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const btn = document.getElementById('sendBtn');
-    const errEl = document.getElementById('errMsg');
-    errEl.classList.remove('show');
-
-    const answers = {};
-    for(const f of form.fields){
-      if(f.type === 'nps'){
-        const scale = document.querySelector(`.nps-scale[data-key="${f.key}"]`);
-        if(scale.dataset.value !== undefined) answers[f.key] = Number(scale.dataset.value);
-      } else {
-        const el = document.getElementById('q_' + f.key);
-        if(el && el.value.trim()) answers[f.key] = el.value.trim();
-      }
-      if(f.required && (answers[f.key] === undefined || answers[f.key] === '')){
-        errEl.textContent = 'Preencha: ' + f.label;
-        errEl.classList.add('show');
-        return;
-      }
-    }
-
-    btn.disabled = true;
-    try{
-      const res = await fetch(`/api/forms/public/${encodeURIComponent(slug)}`, {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({answers})
-      });
-      const data = await res.json().catch(()=>({}));
-      if(!res.ok) throw new Error(data.error || 'Erro ao enviar');
-      root.innerHTML = `
-        <div class="card thanks">
-          <div class="icon">✓</div>
-          <h1>Obrigado!</h1>
-          <p>Sua resposta foi registrada com sucesso.</p>
-        </div>
-      `;
-    }catch(err){
-      errEl.textContent = err.message;
-      errEl.classList.add('show');
-      btn.disabled = false;
-    }
-  });
+  if(!form.fields || !form.fields.length){
+    root.className = 'notfound';
+    root.textContent = 'Esse formulário ainda não tem perguntas.';
+    return;
+  }
+  renderStep();
 }
 init();
 </script>

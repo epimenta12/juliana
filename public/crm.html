@@ -1612,12 +1612,14 @@ async function renderFormDetail(id){
     <div class="link-row">
       <input id="formLinkInput" readonly value="${formLink(form.slug)}">
       <button class="btn-small save" id="copyLinkBtn">Copiar link</button>
+      <button class="btn-small wa" id="editFormBtn">Editar</button>
       <button class="btn-small wa" id="exportCsvBtn">Exportar CSV</button>
       <button class="btn-small del" id="deleteFormBtn">Excluir</button>
     </div>
     <div id="formRespWrap">Carregando respostas…</div>
   `;
   document.getElementById('formBackBtn').addEventListener('click', ()=>{ selectedFormId = null; render(); });
+  document.getElementById('editFormBtn').addEventListener('click', ()=> openFormBuilder(form));
   document.getElementById('copyLinkBtn').addEventListener('click', ()=>{
     const input = document.getElementById('formLinkInput');
     input.select();
@@ -1738,7 +1740,7 @@ function qbRowHTML(idx, q){
   q = q || {};
   const typeOpts = FIELD_TYPES.map(t=>`<option value="${t.key}" ${q.type===t.key?'selected':''}>${t.label}</option>`).join('');
   return `
-    <div class="qbuilder-row" data-idx="${idx}">
+    <div class="qbuilder-row" data-idx="${idx}" data-key="${escapeHtml(q.key||'')}">
       <button type="button" class="qb-remove" data-remove="${idx}">×</button>
       <div class="drawer-row">
         <div class="field"><label>Pergunta</label><input class="qb-label" value="${escapeHtml(q.label||'')}" placeholder="Ex: De 0 a 10, o quanto você recomendaria...?"></div>
@@ -1754,7 +1756,8 @@ function qbRowHTML(idx, q){
   `;
 }
 
-function openFormBuilder(){
+function openFormBuilder(existingForm){
+  const isEdit = !!existingForm;
   const drawer = document.getElementById('drawer');
   drawer.innerHTML = '';
   qbCounter = 0;
@@ -1766,7 +1769,7 @@ function openFormBuilder(){
   drawer.appendChild(closeBtn);
 
   const h2 = document.createElement('h2');
-  h2.textContent = 'Novo formulário';
+  h2.textContent = isEdit ? 'Editar formulário' : 'Novo formulário';
   drawer.appendChild(h2);
 
   const wrap = document.createElement('div');
@@ -1778,10 +1781,13 @@ function openFormBuilder(){
       <div class="field" style="flex:1"><label>Descrição (opcional)</label><textarea id="fDesc" rows="2" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);resize:vertical"></textarea></div>
     </div>
     <div class="notes-title">Perguntas</div>
+    ${isEdit ? `<p style="font-size:.78rem;color:var(--muted);margin:-.4rem 0 .8rem">Editar o texto de uma pergunta já existente não afeta as respostas antigas — elas continuam ligadas a ela. Perguntas novas só valem para respostas futuras.</p>` : ''}
     <div id="qbList"></div>
     <button type="button" class="qb-add" id="qbAddBtn">+ Adicionar pergunta</button>
   `;
   drawer.appendChild(wrap);
+  document.getElementById('fTitle').value = existingForm?.title || '';
+  document.getElementById('fDesc').value = existingForm?.description || '';
 
   function addQuestion(preset){
     const idx = qbCounter++;
@@ -1801,11 +1807,15 @@ function openFormBuilder(){
 
   document.getElementById('qbAddBtn').addEventListener('click', ()=> addQuestion());
 
-  addQuestion({label:'De 0 a 10, o quanto você recomendaria para um amigo ou colega?', type:'nps', required:true});
+  if(isEdit && existingForm.fields && existingForm.fields.length){
+    existingForm.fields.forEach(f=> addQuestion(f));
+  } else {
+    addQuestion({label:'De 0 a 10, o quanto você recomendaria para um amigo ou colega?', type:'nps', required:true});
+  }
 
   const saveRow = document.createElement('div');
   saveRow.className = 'save-row';
-  saveRow.innerHTML = `<button class="btn-small save" id="saveFormBtn">Criar formulário</button>`;
+  saveRow.innerHTML = `<button class="btn-small save" id="saveFormBtn">${isEdit ? 'Salvar alterações' : 'Criar formulário'}</button>`;
   drawer.appendChild(saveRow);
 
   document.getElementById('saveFormBtn').addEventListener('click', async ()=>{
@@ -1816,13 +1826,19 @@ function openFormBuilder(){
     const rows = [...document.querySelectorAll('.qbuilder-row')];
     if(!rows.length){ toast('Adicione ao menos uma pergunta'); return; }
 
+    const usedKeys = new Set();
     const fields = [];
     for(const row of rows){
       const label = row.querySelector('.qb-label').value.trim();
       const type = row.querySelector('.qb-type').value;
       const required = row.querySelector('.qb-required').value === '1';
       if(!label){ toast('Preencha o texto de todas as perguntas'); return; }
-      const key = 'q' + (fields.length+1) + '_' + label.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,30);
+      // pergunta já existente mantém a mesma key, pra não perder o vínculo com respostas antigas
+      let key = row.dataset.key;
+      if(!key || usedKeys.has(key)){
+        key = 'q' + (fields.length+1) + '_' + label.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,30);
+      }
+      usedKeys.add(key);
       const field = {key, label, type, required};
       if(type === 'select'){
         const opts = row.querySelector('.qb-options').value.split('\n').map(s=>s.trim()).filter(Boolean);
@@ -1833,12 +1849,21 @@ function openFormBuilder(){
     }
 
     try{
-      const created = await api('/api/forms', {method:'POST', body: JSON.stringify({title, description, fields})});
-      toast('Formulário criado');
-      closeDrawer();
-      await loadForms();
-      selectedFormId = created.id;
-      render();
+      if(isEdit){
+        const updated = await api(`/api/forms?id=${existingForm.id}`, {method:'PATCH', body: JSON.stringify({title, description, fields})});
+        toast('Formulário atualizado');
+        closeDrawer();
+        await loadForms();
+        selectedFormId = updated.id;
+        render();
+      } else {
+        const created = await api('/api/forms', {method:'POST', body: JSON.stringify({title, description, fields})});
+        toast('Formulário criado');
+        closeDrawer();
+        await loadForms();
+        selectedFormId = created.id;
+        render();
+      }
     }catch(err){ toast('Erro: '+err.message); }
   });
 

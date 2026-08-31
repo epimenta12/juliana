@@ -6,6 +6,7 @@ const { isAuthed } = require('../_auth');
 // um arquivo por rota):
 //   GET    /api/forms                    -> lista formulários
 //   POST   /api/forms                    -> cria formulário
+//   PATCH  /api/forms?id=5               -> edita título/descrição/perguntas (o link não muda)
 //   DELETE /api/forms?id=5               -> exclui formulário
 //   DELETE /api/forms?id=5&responseId=9  -> exclui só uma resposta
 //   GET    /api/forms?id=5&responses=1   -> lista respostas do formulário
@@ -81,6 +82,27 @@ module.exports = async (req, res) => {
         RETURNING id, slug, title, description, fields, created_at
       `;
       res.status(201).json(Object.assign({ response_count: 0 }, rows[0]));
+      return;
+    }
+
+    if (req.method === 'PATCH') {
+      if (!id) { res.status(400).json({ error: 'id inválido' }); return; }
+      const body = parseBody(req);
+      const title = String(body.title || '').trim().slice(0, 200);
+      const description = String(body.description || '').trim().slice(0, 2000);
+      const fields = Array.isArray(body.fields) ? body.fields : [];
+      if (!title) { res.status(400).json({ error: 'título é obrigatório' }); return; }
+      if (!fields.length) { res.status(400).json({ error: 'adicione ao menos um campo' }); return; }
+
+      // slug nunca muda aqui — o link que já foi compartilhado continua valendo
+      const { rows } = await sql`
+        UPDATE forms SET title = ${title}, description = ${description}, fields = ${JSON.stringify(fields)}::jsonb
+        WHERE id = ${id}
+        RETURNING id, slug, title, description, fields, created_at
+      `;
+      if (!rows.length) { res.status(404).json({ error: 'formulário não encontrado' }); return; }
+      const { rows: countRows } = await sql`SELECT COUNT(*)::int AS c FROM form_responses WHERE form_id = ${id}`;
+      res.status(200).json(Object.assign({ response_count: countRows[0].c }, rows[0]));
       return;
     }
 

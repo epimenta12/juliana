@@ -67,6 +67,13 @@
   .tf-thanks .icon{font-size:2.6rem;margin-bottom:1rem}
   .tf-thanks p{color:rgba(255,255,255,.7);font-size:.95rem;margin-top:.4rem}
 
+  .tf-welcome .tf-eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:1rem}
+  .tf-welcome h1{font-family:var(--fd);font-weight:500;font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.3;margin-bottom:1rem}
+  .tf-welcome p{color:rgba(255,255,255,.72);font-size:1rem;line-height:1.7;margin-bottom:2.2rem}
+  .tf-start{background:var(--white);color:var(--petrol);border:0;padding:.9rem 2rem;font-size:.85rem;font-weight:700;letter-spacing:.03em;border-radius:var(--radius-sm);cursor:pointer;transition:transform .15s}
+  .tf-start:hover{transform:translateY(-1px)}
+  .tf-start-hint{display:block;margin-top:1rem;font-size:.72rem;color:rgba(255,255,255,.4)}
+
   .loading,.notfound{color:var(--white);text-align:center;font-size:.9rem;min-height:100vh;display:flex;align-items:center;justify-content:center}
 
   @media(max-width:520px){
@@ -118,6 +125,21 @@ function answerControlHTML(f){
   return `<input id="tfInput" type="${inputType}" placeholder="Digite sua resposta..." value="${escapeHtml(answers[f.key]||'')}"><p class="tf-hint">Pressione Enter ↵</p>`;
 }
 
+function renderWelcome(){
+  const root = document.getElementById('root');
+  root.className = '';
+  root.innerHTML = `
+    <div class="tf-stage"><div class="tf-card tf-welcome">
+      <p class="tf-eyebrow">Formulário</p>
+      <h1>${escapeHtml(form.title)}</h1>
+      ${form.description ? `<p>${escapeHtml(form.description)}</p>` : ''}
+      <button type="button" class="tf-start" id="tfStart">Começar →</button>
+      <span class="tf-start-hint">${form.fields.length} pergunta${form.fields.length===1?'':'s'} · leva só um minuto</span>
+    </div></div>
+  `;
+  document.getElementById('tfStart').addEventListener('click', ()=> renderStep());
+}
+
 function renderStep(){
   const f = form.fields[currentIndex];
   const isLast = currentIndex === form.fields.length - 1;
@@ -128,7 +150,6 @@ function renderStep(){
     <div class="tf-progress"><div class="tf-progress-bar" style="width:${pct}%"></div></div>
     <div class="tf-stage"><div class="tf-card">
       <div class="tf-counter">${currentIndex+1} de ${form.fields.length}</div>
-      ${currentIndex===0 && form.description ? `<p class="tf-desc">${escapeHtml(form.description)}</p>` : ''}
       <h1 class="tf-question">${escapeHtml(f.label)}${f.required?'':'<span class="tf-optional">Opcional</span>'}</h1>
       <div class="tf-answer">${answerControlHTML(f)}</div>
       <p class="tf-error" id="tfError"></p>
@@ -241,7 +262,7 @@ async function init(){
     root.textContent = 'Esse formulário ainda não tem perguntas.';
     return;
   }
-  renderStep();
+  renderWelcome();
 }
 init();
 </script>

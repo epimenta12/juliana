@@ -1,4 +1,4 @@
-const { sql, ensureSchema } = require('../../../_db');
+const { sql, ensureSchema } = require('../../_db');
 
 // Rota pública — sem isAuthed: qualquer pessoa com o link deve conseguir
 // abrir o formulário para responder.

@@ -111,6 +111,11 @@
   .tf-start:hover{transform:translateY(-1px)}
   .tf-start-hint{display:block;margin-top:1rem;font-size:.72rem;color:rgba(255,255,255,.4)}
 
+  .tf-final-check{width:3rem;height:3rem;border:1.5px solid rgba(255,255,255,.55);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1.6rem}
+  .tf-final h1{font-family:var(--fd);font-weight:500;font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.3;margin-bottom:1.2rem}
+  .tf-final p{color:rgba(255,255,255,.78);font-size:1rem;line-height:1.75;margin-bottom:2rem;white-space:pre-line}
+  .tf-final-btn{display:inline-block;text-decoration:none}
+
   .loading,.notfound{color:var(--white);text-align:center;font-size:.9rem;min-height:100vh;display:flex;align-items:center;justify-content:center}
 
   @media(max-width:520px){
@@ -433,6 +438,31 @@ function wireStep(f, isLast){
   if(backBtn) backBtn.addEventListener('click', ()=>{ currentIndex--; renderStep(); });
 }
 
+// Página final configurada no CRM (título, mensagem e botão opcional). Sem
+// configuração, mostra o agradecimento simples.
+function renderFinal(){
+  const root = document.getElementById('root');
+  const fp = form.final_page || {};
+  window.scrollTo(0, 0);
+  if(!fp.title && !fp.message){
+    root.innerHTML = `
+      <div class="tf-stage"><div class="tf-card tf-thanks" style="text-align:center">
+        <div class="icon">✓</div>
+        <h1 class="tf-question">Obrigado!</h1>
+        <p>Sua resposta foi registrada com sucesso.</p>
+      </div></div>`;
+    return;
+  }
+  const url = /^https?:\/\//i.test(fp.buttonUrl || '') ? fp.buttonUrl : '';
+  root.innerHTML = `
+    <div class="tf-stage"><div class="tf-card tf-final">
+      <div class="tf-final-check" aria-hidden="true">✓</div>
+      ${fp.title ? `<h1>${escapeHtml(fp.title)}</h1>` : ''}
+      ${fp.message ? `<p>${escapeHtml(fp.message)}</p>` : ''}
+      ${url && fp.buttonLabel ? `<a class="tf-start tf-final-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(fp.buttonLabel)}</a>` : ''}
+    </div></div>`;
+}
+
 async function submitForm(){
   const root = document.getElementById('root');
   root.innerHTML = `<div class="tf-stage"><div class="tf-card"><p style="color:rgba(255,255,255,.7)">Enviando...</p></div></div>`;
@@ -443,13 +473,7 @@ async function submitForm(){
     });
     const data = await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(data.error || 'Erro ao enviar');
-    root.innerHTML = `
-      <div class="tf-stage"><div class="tf-card tf-thanks" style="text-align:center">
-        <div class="icon">✓</div>
-        <h1 class="tf-question">Obrigado!</h1>
-        <p>Sua resposta foi registrada com sucesso.</p>
-      </div></div>
-    `;
+    renderFinal();
   }catch(err){
     root.innerHTML = `<div class="tf-stage"><div class="tf-card"><p style="color:#ff9b9b">${escapeHtml(err.message)}</p></div></div>`;
   }

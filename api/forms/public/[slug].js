@@ -109,7 +109,7 @@ module.exports = async (req, res) => {
 
     if (req.method === 'GET') {
       const { rows } = await sql`
-        SELECT id, slug, title, description, fields
+        SELECT id, slug, title, description, fields, final_page
         FROM forms WHERE slug = ${slug}
       `;
       if (!rows.length) { res.status(404).json({ error: 'formulário não encontrado' }); return; }

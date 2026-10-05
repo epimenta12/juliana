@@ -2099,10 +2099,24 @@ function openFormBuilder(existingForm){
     ${isEdit ? `<p style="font-size:.78rem;color:var(--muted);margin:-.4rem 0 .8rem">Editar o texto de uma pergunta já existente não afeta as respostas antigas — elas continuam ligadas a ela. Perguntas novas só valem para respostas futuras.</p>` : ''}
     <div id="qbList"></div>
     <button type="button" class="qb-add" id="qbAddBtn">+ Adicionar pergunta</button>
+
+    <div class="notes-title" style="margin-top:2rem">Página final (depois do envio)</div>
+    <p style="font-size:.78rem;color:var(--muted);margin:-.4rem 0 .8rem;line-height:1.5">Mensagem que a pessoa vê ao terminar, por exemplo o texto de boas-vindas do onboarding. Deixe em branco para mostrar só "Obrigado!".</p>
+    <div class="drawer-row"><div class="field"><label>Título</label><input id="fpTitle" placeholder="Ex: Parabéns por essa escolha por você"></div></div>
+    <div class="drawer-row"><div class="field" style="flex:1"><label>Mensagem</label><textarea id="fpMessage" rows="8" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);font-size:.9rem;line-height:1.5;resize:vertical;border-radius:var(--radius-sm)"></textarea></div></div>
+    <div class="drawer-row">
+      <div class="field"><label>Botão (opcional)</label><input id="fpBtnLabel" placeholder="Ex: Entrar no grupo do WhatsApp"></div>
+      <div class="field"><label>Link do botão</label><input id="fpBtnUrl" type="url" placeholder="https://..."></div>
+    </div>
   `;
   drawer.appendChild(wrap);
   document.getElementById('fTitle').value = existingForm?.title || '';
   document.getElementById('fDesc').value = existingForm?.description || '';
+  const fp = (existingForm && existingForm.final_page) || {};
+  document.getElementById('fpTitle').value = fp.title || '';
+  document.getElementById('fpMessage').value = fp.message || '';
+  document.getElementById('fpBtnLabel').value = fp.buttonLabel || '';
+  document.getElementById('fpBtnUrl').value = fp.buttonUrl || '';
 
   function addQuestion(preset){
     const idx = qbCounter++;
@@ -2189,16 +2203,26 @@ function openFormBuilder(existingForm){
       fields.push(field);
     }
 
+    let buttonUrl = document.getElementById('fpBtnUrl').value.trim();
+    if(buttonUrl && !/^https?:\/\//i.test(buttonUrl)) buttonUrl = 'https://' + buttonUrl;
+    const finalPage = {
+      title: document.getElementById('fpTitle').value.trim(),
+      message: document.getElementById('fpMessage').value.trim(),
+      buttonLabel: document.getElementById('fpBtnLabel').value.trim(),
+      buttonUrl,
+    };
+    if(finalPage.buttonLabel && !finalPage.buttonUrl){ toast('Informe o link do botão da página final'); return; }
+
     try{
       if(isEdit){
-        const updated = await api(`/api/forms?id=${existingForm.id}`, {method:'PATCH', body: JSON.stringify({title, description, fields})});
+        const updated = await api(`/api/forms?id=${existingForm.id}`, {method:'PATCH', body: JSON.stringify({title, description, fields, finalPage})});
         toast('Formulário atualizado');
         closeDrawer();
         await loadForms();
         selectedFormId = updated.id;
         render();
       } else {
-        const created = await api('/api/forms', {method:'POST', body: JSON.stringify({title, description, fields})});
+        const created = await api('/api/forms', {method:'POST', body: JSON.stringify({title, description, fields, finalPage})});
         toast('Formulário criado');
         closeDrawer();
         await loadForms();

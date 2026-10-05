@@ -62,6 +62,9 @@ async function runMigrations() {
   `;
   await sql`CREATE INDEX IF NOT EXISTS form_responses_form_idx ON form_responses (form_id)`;
 
+  // Página exibida depois do envio (título, mensagem e botão opcional).
+  await sql`ALTER TABLE forms ADD COLUMN IF NOT EXISTS final_page JSONB NOT NULL DEFAULT '{}'::jsonb`;
+
   // Arquivos enviados em perguntas do tipo "upload". Ficam fora do JSON da
   // resposta (que só guarda a referência) para não pesar a listagem.
   await sql`

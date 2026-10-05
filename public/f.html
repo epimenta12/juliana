@@ -275,11 +275,57 @@ function goNext(f, isLast){
   renderStep();
 }
 
-function readFileAsAnswer(f, file){
-  if(!ALLOWED_FILE_TYPES.includes(file.type)){
+// Fotos de celular têm milhões de pixels a mais do que qualquer impressão pede.
+// Reduz só o excesso (lado maior até 2000 px, JPG de alta qualidade): numa
+// polaroid de ~8 cm isso ainda dá mais de 600 dpi, o dobro dos 300 dpi de gráfica.
+const PHOTO_MAX_SIDE = 2000;
+const PHOTO_TARGET_BYTES = 900 * 1024; // 3 fotos cabem no limite de 3 MB por envio
+const PHOTO_ORIGINAL_CAP = 40 * 1024 * 1024;
+
+function compressImage(file){
+  return new Promise((resolve)=>{
+    if(file.type === 'application/pdf') return resolve(file);
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, PHOTO_MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+      if(scale === 1 && file.size <= PHOTO_TARGET_BYTES) return resolve(file);
+      const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); // PNG com transparência vira fundo branco
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, w, h);
+      let q = 0.9;
+      const attempt = ()=> canvas.toBlob((blob)=>{
+        if(!blob) return resolve(file);
+        if(blob.size > PHOTO_TARGET_BYTES && q > 0.66){ q -= 0.05; return attempt(); }
+        if(scale === 1 && blob.size >= file.size) return resolve(file);
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', {type:'image/jpeg'}));
+      }, 'image/jpeg', q);
+      attempt();
+    };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+async function readFileAsAnswer(f, original){
+  if(!ALLOWED_FILE_TYPES.includes(original.type)){
     showError('Formato não aceito. Envie uma imagem (JPG, PNG, WebP) ou um PDF.');
     return;
   }
+  if(original.size > PHOTO_ORIGINAL_CAP){
+    showError('O arquivo tem ' + fmtSize(original.size) + ' e é grande demais. O limite é ' + fmtSize(PHOTO_ORIGINAL_CAP) + '.');
+    return;
+  }
+  const area = document.querySelector('.tf-answer');
+  const isImage = original.type !== 'application/pdf';
+  if(isImage) area.innerHTML = '<div class="tf-file-chosen"><span>Preparando a foto…</span></div>';
+  const file = isImage ? await compressImage(original) : original;
+  if(isImage && !answers[f.key]){ area.innerHTML = fileControlHTML(f); wireFileStep(f); }
   if(file.size > MAX_FILE_BYTES){
     showError('O arquivo tem ' + fmtSize(file.size) + '. O limite é ' + fmtSize(MAX_FILE_BYTES) + '.');
     return;

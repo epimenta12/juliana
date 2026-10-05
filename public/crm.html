@@ -212,6 +212,9 @@
   .form-card h4{font-family:var(--fd);font-weight:500;font-size:1.15rem;margin-bottom:.25rem}
   .form-card p{font-size:.78rem;color:var(--muted)}
   .form-card .fc-count{background:var(--sand);color:var(--petrol);padding:.35rem .8rem;border-radius:var(--radius-pill);font-size:.72rem;font-weight:700;flex-shrink:0;white-space:nowrap}
+  .terms-intro{font-size:.85rem;color:var(--muted);line-height:1.6;max-width:62ch;margin:-.6rem 0 1.6rem}
+  .terms-group{margin-bottom:2rem}
+  .terms-product{font-family:var(--fd);font-size:1.3rem;font-weight:500;color:var(--green);margin-bottom:.7rem}
   .forms-empty{color:var(--muted);font-size:.85rem;padding:2rem;text-align:center;background:var(--white);border:1px dashed var(--border);border-radius:var(--radius)}
   .form-back{background:0;border:0;color:var(--green);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;margin-bottom:1rem;padding:0}
   .form-back:hover{text-decoration:underline}
@@ -275,6 +278,7 @@
       <button class="sb-link" data-page="leads">Leads</button>
       <button class="sb-link" data-page="clientes">Clientes</button>
       <button class="sb-link" data-page="formularios">Formulários</button>
+      <button class="sb-link" data-page="termos">Termos</button>
     </nav>
 
     <div class="sidebar-subnav" id="sidebarSubnav" style="display:none">
@@ -300,6 +304,7 @@
       <div class="board" id="board"></div>
       <div class="table-wrap" id="tableWrap" style="display:none"></div>
       <div id="formsWrap" style="display:none"></div>
+      <div id="termsWrap" style="display:none"></div>
     </div>
   </main>
 </div>
@@ -334,6 +339,7 @@ const ORIGEM_CATEGORIES = ['Ex-aluno', 'Indicação', 'Instagram', 'Site', 'Club
 let leads = [];
 let clientes = [];
 let forms = [];
+let termsList = [];
 let selectedFormId = null;
 let formResponses = [];
 let formRespView = null;
@@ -480,6 +486,7 @@ document.getElementById('newItemBtn').addEventListener('click', ()=>{
   if(page === 'leads') openDrawer(null);
   else if(page === 'clientes') openClienteDrawer(null);
   else if(page === 'formularios') openFormBuilder();
+  else if(page === 'termos') openTermDrawer(null);
 });
 document.getElementById('sidebarNav').addEventListener('click', (e)=>{
   const btn = e.target.closest('.sb-link');
@@ -503,8 +510,8 @@ function setPage(p){
   const isListPage = p === 'leads' || p === 'clientes';
   document.getElementById('sidebarSubnav').style.display = isListPage ? 'flex' : 'none';
   const newBtn = document.getElementById('newItemBtn');
-  newBtn.style.display = (isListPage || p==='formularios') ? 'block' : 'none';
-  newBtn.textContent = p==='clientes' ? '+ Novo Cliente' : (p==='formularios' ? '+ Novo Formulário' : '+ Novo Lead');
+  newBtn.style.display = (isListPage || p==='formularios' || p==='termos') ? 'block' : 'none';
+  newBtn.textContent = p==='clientes' ? '+ Novo Cliente' : (p==='formularios' ? '+ Novo Formulário' : (p==='termos' ? '+ Novo Termo' : '+ Novo Lead'));
   searchQuery = '';
   document.getElementById('searchInput').value = '';
   render();
@@ -568,7 +575,16 @@ function ensureFiltersUI(){
 }
 
 async function loadAll(){
-  await Promise.all([loadLeads(), loadClientes(), loadForms()]);
+  await Promise.all([loadLeads(), loadClientes(), loadForms(), loadTerms()]);
+}
+
+async function loadTerms(){
+  try{
+    termsList = await api('/api/forms?terms=1');
+    render();
+  }catch(err){
+    if(err.message !== 'unauthorized') toast('Erro ao carregar termos: '+err.message);
+  }
 }
 
 async function loadForms(){
@@ -606,6 +622,7 @@ function render(){
   document.getElementById('board').style.display = (isListPage && viewMode==='kanban') ? 'grid' : 'none';
   document.getElementById('tableWrap').style.display = (isListPage && viewMode==='table') ? 'block' : 'none';
   document.getElementById('formsWrap').style.display = page === 'formularios' ? 'block' : 'none';
+  document.getElementById('termsWrap').style.display = page === 'termos' ? 'block' : 'none';
 
   if(page === 'dashboard'){
     renderDashboard();
@@ -617,6 +634,8 @@ function render(){
     if(viewMode === 'table') renderClientTable(); else renderClientBoard();
   } else if(page === 'formularios'){
     if(selectedFormId) renderFormDetail(selectedFormId); else renderFormsList();
+  } else if(page === 'termos'){
+    renderTermsPage();
   }
 }
 
@@ -1612,7 +1631,7 @@ function answerText(f, v){
   if(v === undefined || v === null || v === '') return '';
   if(f.type === 'grid' && typeof v === 'object') return Object.keys(v).map(r=>`${r}: ${v[r]}`).join(' | ');
   if(f.type === 'file' && typeof v === 'object') return `${v.name} (${location.origin}${fileUrl(v.fileId)})`;
-  if(f.type === 'terms' && typeof v === 'object') return v.accepted ? `Aceito em ${fmtDateTime(v.at)}` : '';
+  if(f.type === 'terms' && typeof v === 'object') return v.accepted ? `Aceito em ${fmtDateTime(v.at)}${v.version ? ' (v' + v.version + ')' : ''}${v.url ? ' ' + v.url : ''}` : '';
   return String(v);
 }
 
@@ -1621,7 +1640,11 @@ function answerHtml(f, v){
   if(v === undefined || v === null || v === '') return '';
   if(f.type === 'grid' && typeof v === 'object') return Object.keys(v).map(r=>`<b>${escapeHtml(r)}:</b> ${escapeHtml(v[r])}`).join('<br>');
   if(f.type === 'file' && typeof v === 'object') return `<a href="${fileUrl(v.fileId)}" target="_blank" rel="noopener" style="color:var(--green);font-weight:600">${escapeHtml(v.name)}</a> <span style="color:var(--muted);font-size:.78rem">${fmtBytes(v.size)}</span>`;
-  if(f.type === 'terms' && typeof v === 'object') return v.accepted ? `✓ Aceito em ${escapeHtml(fmtDateTime(v.at))}` : '';
+  if(f.type === 'terms' && typeof v === 'object'){
+    if(!v.accepted) return '';
+    const link = /^https?:\/\//i.test(v.url || '') ? ` · <a href="${escapeHtml(v.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--green);font-weight:600">ver termos</a>` : '';
+    return `✓ Aceito em ${escapeHtml(fmtDateTime(v.at))}${v.version ? ' · v' + escapeHtml(v.version) : ''}${link}`;
+  }
   return escapeHtml(v);
 }
 
@@ -1890,9 +1913,125 @@ function exportFormCsv(form, responses){
   URL.revokeObjectURL(url);
 }
 
+/* ---- Termos ---- */
+
+function renderTermsPage(){
+  const wrap = document.getElementById('termsWrap');
+  const groups = {};
+  termsList.forEach(t => (groups[t.product] = groups[t.product] || []).push(t));
+  const order = [...PRODUCTS.filter(p=>groups[p]), ...Object.keys(groups).filter(p=>!PRODUCTS.includes(p))];
+  wrap.innerHTML = `
+    <h1 class="page-title">Termos</h1>
+    <p class="terms-intro">Termos de compra e prestação de serviço, autorização de imagem, cancelamento e reembolso, organizados por produto. Nos formulários, a pergunta "Termos e aceite" escolhe um destes termos.</p>
+    ${order.length ? order.map(p=>`
+      <div class="terms-group">
+        <h3 class="terms-product">${escapeHtml(p)}</h3>
+        <div class="forms-list">${groups[p].map(t=>`
+          <div class="form-card" data-term-id="${t.id}">
+            <div>
+              <h4>${escapeHtml(t.title)}</h4>
+              <p>${t.url ? 'Link' : ''}${t.url && t.text ? ' + ' : ''}${t.text ? 'Texto' : ''} · ${t.used_by.length ? 'Usado em: ' + escapeHtml(t.used_by.join(', ')) : 'Não usado em nenhum formulário'}</p>
+            </div>
+            <span class="fc-count">Versão ${t.version}</span>
+          </div>`).join('')}</div>
+      </div>`).join('') : `<div class="forms-empty">Nenhum termo cadastrado ainda. Clique em "+ Novo Termo" para criar o primeiro (por exemplo, o do Retiro Pausa).</div>`}
+  `;
+  wrap.querySelectorAll('.form-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      openTermDrawer(termsList.find(t=>String(t.id)===card.dataset.termId));
+    });
+  });
+}
+
+function openTermDrawer(term){
+  const isEdit = !!term;
+  const drawer = document.getElementById('drawer');
+  drawer.innerHTML = '';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'drawer-close';
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', closeDrawer);
+  drawer.appendChild(closeBtn);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = isEdit ? 'Editar termo' : 'Novo termo';
+  drawer.appendChild(h2);
+
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="drawer-row"><div class="field"><label>Produto</label>${productSelectHTML('tProduct')}</div></div>
+    <div class="drawer-row"><div class="field"><label>Título</label><input id="tTitle" placeholder="Ex: Termos de compra e prestação de serviço"></div></div>
+    <div class="drawer-row"><div class="field"><label>Link dos termos</label><input id="tUrl" type="url" placeholder="https://... (PDF, Google Docs, site)"></div></div>
+    <div class="drawer-row"><div class="field" style="flex:1"><label>Texto dos termos (opcional se houver link)</label>
+      <textarea id="tText" rows="8" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);font-size:.9rem;line-height:1.5;resize:vertical;border-radius:var(--radius-sm)" placeholder="Se preferir, cole aqui o texto completo. Ele aparece numa caixa com rolagem no formulário."></textarea></div></div>
+    <p style="font-size:.76rem;color:var(--muted);line-height:1.55;margin-bottom:1rem">
+      ${isEdit ? `<b>Versão atual: ${term.version}.</b> Se você mudar o link ou o texto, vira a versão ${term.version+1} e todos os formulários que usam este termo passam a mostrar o novo conteúdo. Quem já aceitou continua com o registro da versão que aceitou (data, hora, versão e o texto daquele momento). ` : ''}
+      Para o link valer como prova, use um endereço de versão fixa (ex.: um PDF) e confirme que abre sem pedir login. Peça a um advogado para revisar o conteúdo.
+    </p>
+  `;
+  drawer.appendChild(wrap);
+
+  setupProductSelect(document.getElementById('tProduct'), document.getElementById('tProductCustom'), term ? term.product : '');
+  document.getElementById('tTitle').value = term ? term.title : '';
+  document.getElementById('tUrl').value = term ? term.url : '';
+  document.getElementById('tText').value = term ? term.text : '';
+
+  const saveRow = document.createElement('div');
+  saveRow.className = 'save-row';
+  saveRow.innerHTML = `<button class="btn-small save" id="saveTermBtn">${isEdit ? 'Salvar alterações' : 'Criar termo'}</button>${isEdit ? '<button class="btn-small del" id="deleteTermBtn">Excluir</button>' : ''}`;
+  drawer.appendChild(saveRow);
+
+  document.getElementById('saveTermBtn').addEventListener('click', async ()=>{
+    const product = getProductValue(document.getElementById('tProduct'), document.getElementById('tProductCustom'));
+    const title = document.getElementById('tTitle').value.trim();
+    const url = document.getElementById('tUrl').value.trim();
+    const text = document.getElementById('tText').value.trim();
+    if(!product){ toast('Escolha o produto'); return; }
+    if(!title){ toast('Informe o título do termo'); return; }
+    if(!url && !text){ toast('Informe o link ou o texto dos termos'); return; }
+    try{
+      await api(isEdit ? `/api/forms?terms=1&id=${term.id}` : '/api/forms?terms=1', {method: isEdit ? 'PATCH' : 'POST', body: JSON.stringify({product, title, url, text})});
+      toast(isEdit ? 'Termo atualizado' : 'Termo criado');
+      closeDrawer();
+      await loadTerms();
+    }catch(err){ toast('Erro: '+err.message); }
+  });
+
+  if(isEdit){
+    document.getElementById('deleteTermBtn').addEventListener('click', async ()=>{
+      if(!confirm(`Excluir o termo "${term.title}"? Os aceites já registrados não são afetados.`)) return;
+      try{
+        await api(`/api/forms?terms=1&id=${term.id}`, {method:'DELETE'});
+        toast('Termo excluído');
+        closeDrawer();
+        await loadTerms();
+      }catch(err){ toast(err.message); }
+    });
+  }
+
+  document.getElementById('overlay').classList.add('show');
+}
+
 /* ---- Builder de formulário ---- */
 
 let qbCounter = 0;
+
+// valor do seletor de termo: id do termo salvo, "__avulso__" (texto/link próprio) ou "" (nada escolhido)
+function termRefValue(q){
+  if(q && q.termId) return String(q.termId);
+  if(q && (q.url || q.text)) return '__avulso__';
+  return '';
+}
+
+function termRefOptionsHTML(q){
+  const cur = termRefValue(q);
+  const products = [...new Set(termsList.map(t=>t.product))];
+  return `
+    <option value="" ${cur===''?'selected':''}>Escolher termo…</option>
+    ${products.map(p=>`<optgroup label="${escapeHtml(p)}">${termsList.filter(t=>t.product===p).map(t=>`<option value="${t.id}" ${cur===String(t.id)?'selected':''}>${escapeHtml(t.title)}</option>`).join('')}</optgroup>`).join('')}
+    <option value="__avulso__" ${cur==='__avulso__'?'selected':''}>Texto ou link avulso (sem cadastro)</option>`;
+}
 
 function qbRowHTML(idx, q){
   q = q || {};
@@ -1915,8 +2054,17 @@ function qbRowHTML(idx, q){
         <div class="field" style="flex:1"><label>Colunas (1 por linha)</label><textarea class="qb-grid-cols" rows="4" placeholder="Ex: Ruim&#10;Bom&#10;Ótimo">${escapeHtml((q.columns||[]).join('\n'))}</textarea></div>
       </div>
       <div class="drawer-row qb-terms-row" style="display:${q.type==='terms'?'flex':'none'}">
-        <div class="field" style="flex:1"><label>Texto dos termos</label><textarea class="qb-terms-text" rows="8" placeholder="Cole aqui o texto completo: autorização de uso de imagem, cancelamento e reembolso, termos de compra e prestação de serviço...">${escapeHtml(q.text||'')}</textarea>
-          <p style="font-size:.74rem;color:var(--muted);margin-top:.4rem;line-height:1.5">A pergunta acima vira o título da tela. Quem responde lê o texto e marca "Li e concordo". Guardamos a data e hora do aceite e uma cópia do texto aceito. Peça a um advogado para revisar o conteúdo.</p></div>
+        <div class="field" style="flex:1">
+          <label>Termo</label>
+          <select class="qb-terms-ref">${termRefOptionsHTML(q)}</select>
+          <p style="font-size:.74rem;color:var(--muted);margin-top:.4rem;line-height:1.5">${termsList.length ? 'Escolha um termo cadastrado na aba Termos. A pergunta acima vira o título da tela e quem responde marca "Li e concordo".' : 'Nenhum termo cadastrado ainda. Crie o primeiro na aba Termos (ou use um texto/link avulso).'}</p>
+          <div class="qb-terms-inline" style="display:${termRefValue(q)==='__avulso__'?'block':'none'};margin-top:.6rem">
+            <label>Link dos termos</label>
+            <input class="qb-terms-url" type="url" value="${escapeHtml(q.url||'')}" placeholder="https://... (PDF, Google Docs, site)">
+            <label style="margin-top:.9rem;display:block">Texto dos termos (opcional se houver link)</label>
+            <textarea class="qb-terms-text" rows="5" placeholder="Cole aqui o texto completo, se preferir.">${escapeHtml(q.text||'')}</textarea>
+          </div>
+        </div>
       </div>
       <div class="qb-hint" style="display:${q.type==='file'?'block':'none'};font-size:.74rem;color:var(--muted);line-height:1.5">Aceita imagem (JPG, PNG, WebP) ou PDF de até 3 MB. O total de arquivos de uma resposta é de 3 MB.</div>
     </div>
@@ -1974,6 +2122,9 @@ function openFormBuilder(existingForm){
       row.querySelector('.qb-hint').style.display = t === 'file' ? 'block' : 'none';
       if(t === 'terms') row.querySelector('.qb-required').value = '1';
     });
+    row.querySelector('.qb-terms-ref').addEventListener('change', (e)=>{
+      row.querySelector('.qb-terms-inline').style.display = e.target.value === '__avulso__' ? 'block' : 'none';
+    });
     row.querySelector('[data-remove]').addEventListener('click', ()=> row.remove());
   }
 
@@ -2024,8 +2175,16 @@ function openFormBuilder(existingForm){
         if(!field.rows.length || !field.columns.length){ toast('A grade "'+label+'" precisa de linhas e colunas'); return; }
       }
       if(type === 'terms'){
-        field.text = row.querySelector('.qb-terms-text').value.trim();
-        if(!field.text){ toast('Escreva o texto dos termos em "'+label+'"'); return; }
+        const ref = row.querySelector('.qb-terms-ref').value;
+        if(ref === ''){ toast('Escolha o termo em "'+label+'" (cadastre na aba Termos)'); return; }
+        if(ref === '__avulso__'){
+          field.text = row.querySelector('.qb-terms-text').value.trim();
+          field.url = row.querySelector('.qb-terms-url').value.trim();
+          if(field.url && !/^https?:\/\//i.test(field.url)) field.url = 'https://' + field.url;
+          if(!field.text && !field.url){ toast('Informe o link ou o texto dos termos em "'+label+'"'); return; }
+        } else {
+          field.termId = Number(ref);
+        }
       }
       fields.push(field);
     }

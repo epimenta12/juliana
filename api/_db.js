@@ -78,6 +78,46 @@ async function runMigrations() {
     )
   `;
   await sql`CREATE INDEX IF NOT EXISTS form_files_response_idx ON form_files (response_id)`;
+
+  // Termos de compra/prestação de serviço, autorização de imagem etc., por produto.
+  // Os formulários apontam para um termo (termId); "version" sobe a cada alteração
+  // de conteúdo e vai junto no registro do aceite.
+  await sql`
+    CREATE TABLE IF NOT EXISTS terms (
+      id SERIAL PRIMARY KEY,
+      product TEXT NOT NULL DEFAULT '',
+      title TEXT NOT NULL DEFAULT '',
+      url TEXT NOT NULL DEFAULT '',
+      text TEXT NOT NULL DEFAULT '',
+      version INTEGER NOT NULL DEFAULT 1,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+}
+
+// Preenche as perguntas de termos que apontam para um termo salvo (termId) com o
+// conteúdo atual dele. Perguntas com texto/link próprio passam como estão.
+async function resolveTermFields(fields) {
+  const list = Array.isArray(fields) ? fields : [];
+  const cache = {};
+  const out = [];
+  for (const f of list) {
+    if (f && f.type === 'terms' && Number(f.termId)) {
+      const id = Number(f.termId);
+      if (!(id in cache)) {
+        const { rows } = await sql`SELECT id, title, url, text, version FROM terms WHERE id = ${id}`;
+        cache[id] = rows[0] || null;
+      }
+      const t = cache[id];
+      if (t) {
+        out.push(Object.assign({}, f, { text: t.text, url: t.url, termTitle: t.title, termVersion: t.version }));
+        continue;
+      }
+    }
+    out.push(f);
+  }
+  return out;
 }
 
 function ensureSchema() {
@@ -87,4 +127,4 @@ function ensureSchema() {
   return ensured;
 }
 
-module.exports = { sql, ensureSchema };
+module.exports = { sql, ensureSchema, resolveTermFields };

@@ -1,4 +1,4 @@
-const { sql, ensureSchema } = require('../../_db');
+const { sql, ensureSchema, resolveTermFields } = require('../../_db');
 
 // Limites de upload. A Vercel aceita no máximo ~4,5 MB por requisição e o
 // arquivo viaja em base64 (+33%), então o total de arquivos fica em 3 MB.
@@ -69,6 +69,11 @@ function sanitizeAnswer(field, raw) {
         accepted: true,
         at: new Date().toISOString(),
         text: String(field.text || '').slice(0, MAX_TERMS_SNAPSHOT),
+        url: String(field.url || '').slice(0, 500),
+        // quando vem de um termo salvo: qual era e em que versão
+        termId: field.termId ? Number(field.termId) : null,
+        title: String(field.termTitle || '').slice(0, 200),
+        version: field.termVersion || null,
       },
     };
   }
@@ -108,7 +113,9 @@ module.exports = async (req, res) => {
         FROM forms WHERE slug = ${slug}
       `;
       if (!rows.length) { res.status(404).json({ error: 'formulário não encontrado' }); return; }
-      res.status(200).json(rows[0]);
+      const form = rows[0];
+      form.fields = await resolveTermFields(form.fields);
+      res.status(200).json(form);
       return;
     }
 
@@ -116,7 +123,7 @@ module.exports = async (req, res) => {
       const { rows } = await sql`SELECT id, fields FROM forms WHERE slug = ${slug}`;
       if (!rows.length) { res.status(404).json({ error: 'formulário não encontrado' }); return; }
       const form = rows[0];
-      const fields = Array.isArray(form.fields) ? form.fields : [];
+      const fields = await resolveTermFields(Array.isArray(form.fields) ? form.fields : []);
       const body = parseBody(req);
       const rawAnswers = (body && typeof body.answers === 'object' && body.answers) || {};
 

@@ -75,6 +75,11 @@
 
   /* termos e aceite */
   .tf-terms{max-height:min(42vh,22rem);overflow-y:auto;border:1px solid rgba(255,255,255,.28);border-radius:var(--radius-sm);padding:1rem 1.1rem;background:rgba(0,0,0,.14);font-size:.88rem;line-height:1.7;white-space:pre-wrap;color:rgba(255,255,255,.85)}
+  .tf-terms-link{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-top:.8rem;padding:1rem 1.1rem;border:1px solid rgba(255,255,255,.35);border-radius:var(--radius-sm);background:rgba(255,255,255,.05);color:var(--white);text-decoration:none;font-weight:600;font-size:.98rem;transition:all .18s}
+  .tf-terms-link:first-child{margin-top:0}
+  .tf-terms-link:hover{border-color:var(--white);background:rgba(255,255,255,.12)}
+  .tf-terms-link small{font-weight:400;font-size:.72rem;color:rgba(255,255,255,.55)}
+  .tf-terms-link:focus-visible{outline:2px solid var(--white);outline-offset:3px}
   .tf-check{display:flex;align-items:flex-start;gap:.8rem;margin-top:1.1rem;cursor:pointer;font-size:.95rem;line-height:1.5}
   .tf-check input{appearance:none;-webkit-appearance:none;width:1.4rem;height:1.4rem;border:2px solid rgba(255,255,255,.55);border-radius:4px;flex-shrink:0;margin:.05rem 0 0;cursor:pointer;display:grid;place-items:center;transition:all .15s}
   .tf-check input:checked{background:var(--white);border-color:var(--white)}
@@ -181,9 +186,11 @@ function gridControlHTML(f){
 }
 
 function termsControlHTML(f){
+  const url = /^https?:\/\//i.test(f.url || '') ? f.url : '';
   return `
-    <div class="tf-terms" tabindex="0" role="region" aria-label="Texto dos termos">${escapeHtml(f.text || '')}</div>
-    <label class="tf-check"><input type="checkbox" id="tfTermsCheck"${answers[f.key]===true?' checked':''}><span>Li e concordo com os termos acima</span></label>`;
+    ${f.text ? `<div class="tf-terms" tabindex="0" role="region" aria-label="Texto dos termos">${escapeHtml(f.text)}</div>` : ''}
+    ${url ? `<a class="tf-terms-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span>Ler os termos completos <span aria-hidden="true">↗</span></span><small>abre em outra aba</small></a>` : ''}
+    <label class="tf-check"><input type="checkbox" id="tfTermsCheck"${answers[f.key]===true?' checked':''}><span>Li e concordo com os termos${f.text ? ' acima' : ''}</span></label>`;
 }
 
 function answerControlHTML(f){

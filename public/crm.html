@@ -212,6 +212,20 @@
   .form-card h4{font-family:var(--fd);font-weight:500;font-size:1.15rem;margin-bottom:.25rem}
   .form-card p{font-size:.78rem;color:var(--muted)}
   .form-card .fc-count{background:var(--sand);color:var(--petrol);padding:.35rem .8rem;border-radius:var(--radius-pill);font-size:.72rem;font-weight:700;flex-shrink:0;white-space:nowrap}
+  .pv-sub{font-size:.8rem;color:var(--muted);line-height:1.6;margin:-.8rem 0 1.2rem}
+  .pv-item{padding:1rem 0;border-top:1px solid var(--border)}
+  .pv-head{display:flex;gap:.8rem;align-items:baseline}
+  .pv-num{font-family:var(--fd);font-size:1.25rem;color:var(--green);min-width:1.7rem;flex-shrink:0}
+  .pv-label{font-size:.93rem;line-height:1.5}
+  .pv-meta{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:.35rem 0 0 2.5rem}
+  .pv-opts{margin:.5rem 0 0 3.5rem;font-size:.84rem;line-height:1.6;padding:0}
+  .pv-grid{margin:.5rem 0 0 2.5rem;font-size:.82rem;color:var(--graphite);line-height:1.6}
+  .pv-desc{margin:.4rem 0 .6rem 2.5rem;font-size:.82rem}
+  .pv-desc summary{cursor:pointer;color:var(--green);font-weight:600}
+  .pv-desc div{white-space:pre-line;color:var(--graphite);line-height:1.6;margin-top:.5rem;max-height:18rem;overflow:auto}
+  .pv-sub + .pv-desc{margin-left:0;margin-bottom:1rem}
+  .pv-final{background:var(--sand);padding:1rem 1.1rem;border-radius:var(--radius-sm);margin-top:1rem;border-top:0}
+  .pv-final-msg{white-space:pre-line;font-size:.84rem;line-height:1.6;color:var(--graphite);margin-top:.5rem}
   .terms-intro{font-size:.85rem;color:var(--muted);line-height:1.6;max-width:62ch;margin:-.6rem 0 1.6rem}
   .terms-group{margin-bottom:2rem}
   .terms-product{font-family:var(--fd);font-size:1.3rem;font-weight:500;color:var(--green);margin-bottom:.7rem}
@@ -1686,6 +1700,7 @@ async function renderFormDetail(id){
     <div class="link-row">
       <input id="formLinkInput" readonly value="${formLink(form.slug)}">
       <button class="btn-small save" id="copyLinkBtn">Copiar link</button>
+      <button class="btn-small wa" id="previewFormBtn">Ver perguntas</button>
       <button class="btn-small wa" id="editFormBtn">Editar</button>
       <button class="btn-small wa" id="exportCsvBtn">Exportar CSV</button>
       <button class="btn-small del" id="deleteFormBtn">Excluir</button>
@@ -1694,6 +1709,7 @@ async function renderFormDetail(id){
   `;
   document.getElementById('formBackBtn').addEventListener('click', ()=>{ selectedFormId = null; render(); });
   document.getElementById('editFormBtn').addEventListener('click', ()=> openFormBuilder(form));
+  document.getElementById('previewFormBtn').addEventListener('click', ()=> openFormPreview(form));
   document.getElementById('copyLinkBtn').addEventListener('click', ()=>{
     const input = document.getElementById('formLinkInput');
     input.select();
@@ -1911,6 +1927,59 @@ function exportFormCsv(form, responses){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/* ---- Visão geral do formulário (todas as perguntas de uma vez) ---- */
+
+function openFormPreview(form){
+  const drawer = document.getElementById('drawer');
+  drawer.innerHTML = '';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'drawer-close';
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', closeDrawer);
+  drawer.appendChild(closeBtn);
+
+  const fields = form.fields || [];
+  const typeLabel = (t)=> (FIELD_TYPES.find(x=>x.key===t) || {label:t}).label;
+  const required = fields.filter(f=>f.required).length;
+  const fp = form.final_page || {};
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Todas as perguntas';
+  drawer.appendChild(h2);
+
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="pv-sub">${escapeHtml(form.title)}<br>${fields.length} perguntas · ${required} obrigatórias · ${fields.length - required} opcionais</p>
+    ${form.description ? `<details class="pv-desc"><summary>Texto de boas-vindas</summary><div>${escapeHtml(form.description)}</div></details>` : ''}
+    ${fields.map((f,i)=>{
+      let extra = '';
+      if(f.type === 'select') extra = `<ul class="pv-opts">${(f.options||[]).map(o=>`<li>${escapeHtml(o)}</li>`).join('')}</ul>`;
+      if(f.type === 'grid') extra = `<div class="pv-grid"><b>Linhas:</b> ${(f.rows||[]).map(escapeHtml).join(' · ')}<br><b>Colunas:</b> ${(f.columns||[]).map(escapeHtml).join(' · ')}</div>`;
+      if(f.type === 'file') extra = `<div class="pv-grid">Imagem (JPG, PNG, WebP) ou PDF · reduzida automaticamente · limite de 3 MB no total</div>`;
+      if(f.type === 'terms'){
+        const t = f.termId ? termsList.find(x=>x.id===Number(f.termId)) : null;
+        const text = t ? t.text : f.text;
+        const url = t ? t.url : f.url;
+        extra = `<div class="pv-grid">${t ? `Termo: <b>${escapeHtml(t.title)}</b> · versão ${t.version}` : 'Termo avulso'}${url ? `<br><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="color:var(--green);font-weight:600">${escapeHtml(url)}</a>` : ''}</div>${text ? `<details class="pv-desc"><summary>Ver texto do termo</summary><div>${escapeHtml(text)}</div></details>` : ''}`;
+      }
+      return `
+        <div class="pv-item">
+          <div class="pv-head"><span class="pv-num">${i+1}</span><span class="pv-label">${escapeHtml(f.label)}</span></div>
+          <div class="pv-meta">${escapeHtml(typeLabel(f.type))} · ${f.required ? 'Obrigatória' : 'Opcional'}</div>
+          ${extra}
+        </div>`;
+    }).join('')}
+    <div class="pv-item pv-final">
+      <div class="pv-meta" style="margin:0 0 .5rem">Página final (depois do envio)</div>
+      ${(fp.title || fp.message) ? `<div class="pv-label"><b>${escapeHtml(fp.title || '')}</b></div><div class="pv-final-msg">${escapeHtml(fp.message || '')}</div>${fp.buttonLabel ? `<div class="pv-grid">Botão: ${escapeHtml(fp.buttonLabel)} → ${escapeHtml(fp.buttonUrl)}</div>` : ''}` : '<div class="pv-grid">Não configurada: mostra "Obrigado!".</div>'}
+    </div>
+  `;
+  drawer.appendChild(body);
+
+  document.getElementById('overlay').classList.add('show');
 }
 
 /* ---- Termos ---- */

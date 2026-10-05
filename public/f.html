@@ -116,6 +116,22 @@
   .tf-final p{color:rgba(255,255,255,.78);font-size:1rem;line-height:1.75;margin-bottom:2rem;white-space:pre-line}
   .tf-final-btn{display:inline-block;text-decoration:none}
 
+  /* página única: todas as perguntas de uma vez */
+  .pg-wrap{max-width:680px;margin:0 auto;padding:3.2rem 1.5rem 4.5rem;color:var(--white)}
+  .pg-head{margin-bottom:1.2rem}
+  .pg-head .tf-eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:1rem}
+  .pg-head h1{font-family:var(--fd);font-weight:500;font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.3;margin-bottom:1rem}
+  .pg-desc{color:rgba(255,255,255,.75);font-size:1rem;line-height:1.7;white-space:pre-line}
+  .pg-q{padding:2rem 0;border-top:1px solid rgba(255,255,255,.14)}
+  .pg-label{font-family:var(--fd);font-weight:500;font-size:1.3rem;line-height:1.4;display:flex;gap:.8rem;align-items:baseline}
+  .pg-n{font-family:var(--fb);font-size:.78rem;font-weight:600;color:rgba(255,255,255,.45);min-width:1.6rem}
+  .pg-req{color:#ffb4b4}
+  .pg-q .tf-answer{margin-top:1.1rem}
+  .pg-q .tf-hint{display:none}
+  .pg-q .tf-error{margin-top:.8rem}
+  .pg-actions{border-top:1px solid rgba(255,255,255,.14);padding-top:2rem}
+  .pg-submit{padding:.95rem 2.2rem;font-size:.88rem}
+
   .loading,.notfound{color:var(--white);text-align:center;font-size:.9rem;min-height:100vh;display:flex;align-items:center;justify-content:center}
 
   @media(max-width:520px){
@@ -162,13 +178,13 @@ function totalFileBytes(exceptKey){
 function fileControlHTML(f){
   const v = answers[f.key];
   if(v && v.data){
-    return `<div class="tf-file-chosen"><span>${escapeHtml(v.name)}<small>${fmtSize(v.size)}</small></span><button type="button" class="tf-file-remove" id="tfFileRemove">Remover</button></div>`;
+    return `<div class="tf-file-chosen"><span>${escapeHtml(v.name)}<small>${fmtSize(v.size)}</small></span><button type="button" class="tf-file-remove">Remover</button></div>`;
   }
   return `
-    <div class="tf-file-drop" id="tfDrop">
-      <button type="button" class="tf-file-btn" id="tfFileBtn">Escolher arquivo</button>
+    <div class="tf-file-drop">
+      <button type="button" class="tf-file-btn">Escolher arquivo</button>
       <p>ou arraste até aqui · imagem (JPG, PNG, WebP) ou PDF · até ${fmtSize(MAX_FILE_BYTES)}</p>
-      <input type="file" id="tfFileInput" accept="image/jpeg,image/png,image/webp,application/pdf" hidden>
+      <input type="file" class="tf-file-input" accept="image/jpeg,image/png,image/webp,application/pdf" hidden>
     </div>`;
 }
 
@@ -195,7 +211,7 @@ function termsControlHTML(f){
   return `
     ${f.text ? `<div class="tf-terms" tabindex="0" role="region" aria-label="Texto dos termos">${escapeHtml(f.text)}</div>` : ''}
     ${url ? `<a class="tf-terms-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span>Ler os termos completos <span aria-hidden="true">↗</span></span><small>abre em outra aba</small></a>` : ''}
-    <label class="tf-check"><input type="checkbox" id="tfTermsCheck"${answers[f.key]===true?' checked':''}><span>Li e concordo com os termos${f.text ? ' acima' : ''}</span></label>`;
+    <label class="tf-check"><input type="checkbox" class="tf-terms-check"${answers[f.key]===true?' checked':''}><span>Li e concordo com os termos${f.text ? ' acima' : ''}</span></label>`;
 }
 
 function answerControlHTML(f){
@@ -220,10 +236,10 @@ function answerControlHTML(f){
     `;
   }
   if(f.type === 'textarea'){
-    return `<textarea id="tfInput" placeholder="Digite sua resposta...">${escapeHtml(answers[f.key]||'')}</textarea><p class="tf-hint">Shift + Enter para pular linha</p>`;
+    return `<textarea class="tf-text" placeholder="Digite sua resposta...">${escapeHtml(answers[f.key]||'')}</textarea><p class="tf-hint">Shift + Enter para pular linha</p>`;
   }
   const inputType = f.type === 'tel' ? 'tel' : (f.type === 'email' ? 'email' : 'text');
-  return `<input id="tfInput" type="${inputType}" placeholder="Digite sua resposta..." value="${escapeHtml(answers[f.key]||'')}"><p class="tf-hint">Pressione Enter ↵</p>`;
+  return `<input class="tf-text" type="${inputType}" placeholder="Digite sua resposta..." value="${escapeHtml(answers[f.key]||'')}"><p class="tf-hint">Pressione Enter ↵</p>`;
 }
 
 function renderWelcome(){
@@ -265,16 +281,25 @@ function renderStep(){
   wireStep(f, isLast);
 }
 
-function showError(msg){
-  const el = document.getElementById('tfError');
+function showError(msg, el){
+  el = el || document.getElementById('tfError');
   el.textContent = msg;
   el.classList.add('show');
 }
+
+// o aviso de erro de cada pergunta fica logo depois da área de resposta
+function errorOf(root){ return root.parentElement.querySelector('.tf-error'); }
 
 const REQUIRED_MSG = {
   terms: 'Para continuar, marque que leu e concorda com os termos',
   file: 'Envie um arquivo para continuar',
   grid: 'Responda todas as linhas para continuar',
+};
+
+const REQUIRED_MSG_PAGE = {
+  terms: 'Marque que leu e concorda com os termos',
+  file: 'Envie um arquivo',
+  grid: 'Responda todas as linhas',
 };
 
 function goNext(f, isLast){
@@ -324,118 +349,209 @@ function compressImage(file){
   });
 }
 
-async function readFileAsAnswer(f, original){
+async function readFileAsAnswer(f, original, root, hooks){
+  const err = errorOf(root);
   if(!ALLOWED_FILE_TYPES.includes(original.type)){
-    showError('Formato não aceito. Envie uma imagem (JPG, PNG, WebP) ou um PDF.');
+    showError('Formato não aceito. Envie uma imagem (JPG, PNG, WebP) ou um PDF.', err);
     return;
   }
   if(original.size > PHOTO_ORIGINAL_CAP){
-    showError('O arquivo tem ' + fmtSize(original.size) + ' e é grande demais. O limite é ' + fmtSize(PHOTO_ORIGINAL_CAP) + '.');
+    showError('O arquivo tem ' + fmtSize(original.size) + ' e é grande demais. O limite é ' + fmtSize(PHOTO_ORIGINAL_CAP) + '.', err);
     return;
   }
-  const area = document.querySelector('.tf-answer');
   const isImage = original.type !== 'application/pdf';
-  if(isImage) area.innerHTML = '<div class="tf-file-chosen"><span>Preparando a foto…</span></div>';
+  if(isImage) root.innerHTML = '<div class="tf-file-chosen"><span>Preparando a foto…</span></div>';
   const file = isImage ? await compressImage(original) : original;
-  if(isImage && !answers[f.key]){ area.innerHTML = fileControlHTML(f); wireFileStep(f); }
+  if(isImage && !answers[f.key]){ root.innerHTML = fileControlHTML(f); wireFile(f, root, hooks); }
   if(file.size > MAX_FILE_BYTES){
-    showError('O arquivo tem ' + fmtSize(file.size) + '. O limite é ' + fmtSize(MAX_FILE_BYTES) + '.');
+    showError('O arquivo tem ' + fmtSize(file.size) + '. O limite é ' + fmtSize(MAX_FILE_BYTES) + '.', err);
     return;
   }
   if(totalFileBytes(f.key) + file.size > MAX_FILE_BYTES){
-    showError('O total dos arquivos deste formulário não pode passar de ' + fmtSize(MAX_FILE_BYTES) + '.');
+    showError('O total dos arquivos deste formulário não pode passar de ' + fmtSize(MAX_FILE_BYTES) + '.', err);
     return;
   }
   const reader = new FileReader();
   reader.onload = ()=>{
     answers[f.key] = {name: file.name, type: file.type, size: file.size, data: String(reader.result)};
-    document.getElementById('tfError').classList.remove('show');
-    document.querySelector('.tf-answer').innerHTML = fileControlHTML(f);
-    wireFileStep(f);
+    err.classList.remove('show');
+    root.innerHTML = fileControlHTML(f);
+    wireFile(f, root, hooks);
+    if(hooks && hooks.onChange) hooks.onChange();
   };
-  reader.onerror = ()=> showError('Não foi possível ler o arquivo. Tente novamente.');
+  reader.onerror = ()=> showError('Não foi possível ler o arquivo. Tente novamente.', err);
   reader.readAsDataURL(file);
 }
 
-function wireFileStep(f){
-  const remove = document.getElementById('tfFileRemove');
+function wireFile(f, root, hooks){
+  const remove = root.querySelector('.tf-file-remove');
   if(remove){
     remove.addEventListener('click', ()=>{
       delete answers[f.key];
-      document.querySelector('.tf-answer').innerHTML = fileControlHTML(f);
-      wireFileStep(f);
+      root.innerHTML = fileControlHTML(f);
+      wireFile(f, root, hooks);
+      if(hooks && hooks.onChange) hooks.onChange();
     });
     return;
   }
-  const input = document.getElementById('tfFileInput');
-  const drop = document.getElementById('tfDrop');
-  document.getElementById('tfFileBtn').addEventListener('click', ()=> input.click());
-  input.addEventListener('change', ()=>{ if(input.files[0]) readFileAsAnswer(f, input.files[0]); });
+  const input = root.querySelector('.tf-file-input');
+  const drop = root.querySelector('.tf-file-drop');
+  root.querySelector('.tf-file-btn').addEventListener('click', ()=> input.click());
+  input.addEventListener('change', ()=>{ if(input.files[0]) readFileAsAnswer(f, input.files[0], root, hooks); });
   ['dragenter','dragover'].forEach(ev=> drop.addEventListener(ev, (e)=>{ e.preventDefault(); drop.classList.add('over'); }));
   ['dragleave','drop'].forEach(ev=> drop.addEventListener(ev, (e)=>{ e.preventDefault(); drop.classList.remove('over'); }));
-  drop.addEventListener('drop', (e)=>{ if(e.dataTransfer.files[0]) readFileAsAnswer(f, e.dataTransfer.files[0]); });
+  drop.addEventListener('drop', (e)=>{ if(e.dataTransfer.files[0]) readFileAsAnswer(f, e.dataTransfer.files[0], root, hooks); });
 }
 
-function wireStep(f, isLast){
-  const input = document.getElementById('tfInput');
+// Liga os eventos de uma pergunta dentro de "root" (a área de resposta). Serve
+// tanto para a tela de uma pergunta por vez quanto para a página única.
+//   hooks.onChange(): chamado quando a resposta muda
+//   hooks.onPick(): chamado ao escolher uma opção (nota/escolha única)
+//   hooks.onEnter(): chamado ao apertar Enter em campo de texto
+function wireControl(f, root, hooks){
+  hooks = hooks || {};
+  const changed = ()=>{ if(hooks.onChange) hooks.onChange(); };
+
+  const input = root.querySelector('.tf-text');
   if(input){
-    input.focus();
-    input.addEventListener('input', ()=>{ answers[f.key] = input.value; });
-    input.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter' && !(f.type === 'textarea' && !e.ctrlKey && !e.metaKey)){
-        e.preventDefault();
-        goNext(f, isLast);
-      }
-    });
+    input.addEventListener('input', ()=>{ answers[f.key] = input.value; changed(); });
+    if(hooks.onEnter){
+      input.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' && !(f.type === 'textarea' && !e.ctrlKey && !e.metaKey)){
+          e.preventDefault();
+          hooks.onEnter();
+        }
+      });
+    }
   }
 
-  const npsScale = document.querySelector('.tf-nps-scale');
+  const npsScale = root.querySelector('.tf-nps-scale');
   if(npsScale){
     npsScale.addEventListener('click', (e)=>{
       const btn = e.target.closest('.tf-nps-btn');
       if(!btn) return;
       answers[f.key] = Number(btn.dataset.val);
       npsScale.querySelectorAll('.tf-nps-btn').forEach(b=>b.classList.toggle('selected', b===btn));
-      setTimeout(()=> goNext(f, isLast), 280);
+      changed();
+      if(hooks.onPick) hooks.onPick();
     });
   }
 
-  const choices = document.querySelector('.tf-choices');
+  const choices = root.querySelector('.tf-choices');
   if(choices){
     choices.addEventListener('click', (e)=>{
       const btn = e.target.closest('.tf-choice');
       if(!btn) return;
       answers[f.key] = btn.dataset.val;
       choices.querySelectorAll('.tf-choice').forEach(b=>b.classList.toggle('selected', b===btn));
-      setTimeout(()=> goNext(f, isLast), 280);
+      changed();
+      if(hooks.onPick) hooks.onPick();
     });
   }
 
   if(f.type === 'grid'){
     const rows = Array.isArray(f.rows) ? f.rows : [];
     const cols = Array.isArray(f.columns) ? f.columns : [];
-    document.querySelectorAll('.tf-grid input[type=radio]').forEach(r=>{
+    root.querySelectorAll('.tf-grid input[type=radio]').forEach(r=>{
       r.addEventListener('change', ()=>{
         const next = Object.assign({}, answers[f.key] || {});
         next[rows[Number(r.dataset.row)]] = cols[Number(r.dataset.col)];
         answers[f.key] = next;
+        changed();
       });
     });
   }
 
   if(f.type === 'terms'){
-    const check = document.getElementById('tfTermsCheck');
+    const check = root.querySelector('.tf-terms-check');
     check.addEventListener('change', ()=>{
       answers[f.key] = check.checked;
-      if(check.checked) document.getElementById('tfError').classList.remove('show');
+      changed();
     });
   }
 
-  if(f.type === 'file') wireFileStep(f);
+  if(f.type === 'file') wireFile(f, root, hooks);
+}
 
+function wireStep(f, isLast){
+  const root = document.querySelector('.tf-answer');
+  const err = document.getElementById('tfError');
+  const input = root.querySelector('.tf-text');
+  if(input) input.focus();
+  wireControl(f, root, {
+    onChange: ()=> err.classList.remove('show'),
+    onPick: ()=> setTimeout(()=> goNext(f, isLast), 280),
+    onEnter: ()=> goNext(f, isLast),
+  });
   document.getElementById('tfNext').addEventListener('click', ()=> goNext(f, isLast));
   const backBtn = document.getElementById('tfBack');
   if(backBtn) backBtn.addEventListener('click', ()=>{ currentIndex--; renderStep(); });
+}
+
+// ---- Página única: todas as perguntas de uma vez ----
+
+function answeredCount(){
+  return form.fields.filter(f=>isAnswered(f)).length;
+}
+
+function updatePageProgress(){
+  const bar = document.getElementById('pgBar');
+  if(bar) bar.style.width = Math.round(answeredCount() / form.fields.length * 100) + '%';
+}
+
+function renderPage(message){
+  const root = document.getElementById('root');
+  root.className = '';
+  window.scrollTo(0, 0);
+  root.innerHTML = `
+    <div class="tf-progress"><div class="tf-progress-bar" id="pgBar" style="width:0%"></div></div>
+    <div class="pg-wrap">
+      <header class="pg-head">
+        <p class="tf-eyebrow">Formulário</p>
+        <h1>${escapeHtml(form.title)}</h1>
+        ${form.description ? `<p class="pg-desc">${escapeHtml(form.description)}</p>` : ''}
+      </header>
+      <div class="pg-list">
+        ${form.fields.map((f,i)=>`
+          <section class="pg-q" data-i="${i}">
+            <h2 class="pg-label"><span class="pg-n">${i+1}</span><span>${escapeHtml(f.label)}${f.required ? '<span class="pg-req" title="Obrigatória"> *</span>' : '<span class="tf-optional">Opcional</span>'}</span></h2>
+            <div class="tf-answer">${answerControlHTML(f)}</div>
+            <p class="tf-error"></p>
+          </section>`).join('')}
+      </div>
+      <div class="pg-actions">
+        <button type="button" class="tf-next pg-submit" id="pgSubmit">Enviar</button>
+        <p class="tf-error" id="pgError"></p>
+      </div>
+    </div>`;
+  root.querySelectorAll('.pg-q').forEach(sec=>{
+    const f = form.fields[Number(sec.dataset.i)];
+    wireControl(f, sec.querySelector('.tf-answer'), {
+      onChange: ()=>{ sec.querySelector('.tf-error').classList.remove('show'); updatePageProgress(); },
+    });
+  });
+  document.getElementById('pgSubmit').addEventListener('click', submitPage);
+  updatePageProgress();
+  if(message) showError(message, document.getElementById('pgError'));
+}
+
+function submitPage(){
+  const missing = [];
+  document.querySelectorAll('.pg-q').forEach(sec=>{
+    const f = form.fields[Number(sec.dataset.i)];
+    if(f.required && !isAnswered(f)){
+      missing.push(sec);
+      showError(REQUIRED_MSG_PAGE[f.type] || 'Essa pergunta é obrigatória', sec.querySelector('.tf-error'));
+    }
+  });
+  if(missing.length){
+    showError(missing.length === 1 ? 'Falta 1 pergunta obrigatória, marcada acima.' : 'Faltam ' + missing.length + ' perguntas obrigatórias, marcadas acima.', document.getElementById('pgError'));
+    missing[0].scrollIntoView({behavior:'smooth', block:'center'});
+    const first = missing[0].querySelector('.tf-text');
+    if(first) first.focus({preventScroll:true});
+    return;
+  }
+  submitForm();
 }
 
 // Página final configurada no CRM (título, mensagem e botão opcional). Sem
@@ -475,6 +591,8 @@ async function submitForm(){
     if(!res.ok) throw new Error(data.error || 'Erro ao enviar');
     renderFinal();
   }catch(err){
+    // na página única volta para o formulário, com as respostas preservadas
+    if(form.layout === 'page'){ renderPage(err.message); return; }
     root.innerHTML = `<div class="tf-stage"><div class="tf-card"><p style="color:#ff9b9b">${escapeHtml(err.message)}</p></div></div>`;
   }
 }
@@ -501,7 +619,7 @@ async function init(){
     root.textContent = 'Esse formulário ainda não tem perguntas.';
     return;
   }
-  renderWelcome();
+  if(form.layout === 'page') renderPage(); else renderWelcome();
 }
 init();
 </script>

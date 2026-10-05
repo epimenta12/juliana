@@ -213,7 +213,7 @@ module.exports = async (req, res) => {
 
     if (req.method === 'GET') {
       const { rows } = await sql`
-        SELECT f.id, f.slug, f.title, f.description, f.fields, f.final_page, f.created_at,
+        SELECT f.id, f.slug, f.title, f.description, f.fields, f.final_page, f.layout, f.created_at,
                COUNT(r.id)::int AS response_count
         FROM forms f
         LEFT JOIN form_responses r ON r.form_id = f.id
@@ -243,9 +243,9 @@ module.exports = async (req, res) => {
       }
 
       const { rows } = await sql`
-        INSERT INTO forms (slug, title, description, fields, final_page)
-        VALUES (${slug}, ${title}, ${description}, ${JSON.stringify(fields)}::jsonb, ${JSON.stringify(cleanFinalPage(body.finalPage))}::jsonb)
-        RETURNING id, slug, title, description, fields, final_page, created_at
+        INSERT INTO forms (slug, title, description, fields, final_page, layout)
+        VALUES (${slug}, ${title}, ${description}, ${JSON.stringify(fields)}::jsonb, ${JSON.stringify(cleanFinalPage(body.finalPage))}::jsonb, ${body.layout === 'page' ? 'page' : 'step'})
+        RETURNING id, slug, title, description, fields, final_page, layout, created_at
       `;
       res.status(201).json(Object.assign({ response_count: 0 }, rows[0]));
       return;
@@ -265,9 +265,10 @@ module.exports = async (req, res) => {
       // slug nunca muda aqui — o link que já foi compartilhado continua valendo
       const { rows } = await sql`
         UPDATE forms SET title = ${title}, description = ${description}, fields = ${JSON.stringify(fields)}::jsonb,
-          final_page = COALESCE(${body.finalPage === undefined ? null : JSON.stringify(cleanFinalPage(body.finalPage))}::jsonb, final_page)
+          final_page = COALESCE(${body.finalPage === undefined ? null : JSON.stringify(cleanFinalPage(body.finalPage))}::jsonb, final_page),
+          layout = COALESCE(${body.layout === undefined ? null : (body.layout === 'page' ? 'page' : 'step')}::text, layout)
         WHERE id = ${id}
-        RETURNING id, slug, title, description, fields, final_page, created_at
+        RETURNING id, slug, title, description, fields, final_page, layout, created_at
       `;
       if (!rows.length) { res.status(404).json({ error: 'formulário não encontrado' }); return; }
       const { rows: countRows } = await sql`SELECT COUNT(*)::int AS c FROM form_responses WHERE form_id = ${id}`;

@@ -65,6 +65,9 @@ async function runMigrations() {
   // Página exibida depois do envio (título, mensagem e botão opcional).
   await sql`ALTER TABLE forms ADD COLUMN IF NOT EXISTS final_page JSONB NOT NULL DEFAULT '{}'::jsonb`;
 
+  // Visual do formulário público: 'step' (uma pergunta por vez) ou 'page' (todas as perguntas numa página).
+  await sql`ALTER TABLE forms ADD COLUMN IF NOT EXISTS layout TEXT NOT NULL DEFAULT 'step'`;
+
   // Arquivos enviados em perguntas do tipo "upload". Ficam fora do JSON da
   // resposta (que só guarda a referência) para não pesar a listagem.
   await sql`

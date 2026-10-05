@@ -2164,6 +2164,14 @@ function openFormBuilder(existingForm){
     <div class="drawer-row">
       <div class="field" style="flex:1"><label>Descrição (opcional)</label><textarea id="fDesc" rows="2" style="width:100%;padding:.65rem .8rem;border:1px solid var(--border);outline:none;font-family:var(--fb);resize:vertical"></textarea></div>
     </div>
+    <div class="drawer-row">
+      <div class="field" style="flex:1"><label>Como o participante vê o formulário</label>
+        <select id="fLayout">
+          <option value="step">Uma pergunta por vez (passo a passo)</option>
+          <option value="page">Página única (todas as perguntas de uma vez)</option>
+        </select>
+      </div>
+    </div>
     <div class="notes-title">Perguntas</div>
     ${isEdit ? `<p style="font-size:.78rem;color:var(--muted);margin:-.4rem 0 .8rem">Editar o texto de uma pergunta já existente não afeta as respostas antigas — elas continuam ligadas a ela. Perguntas novas só valem para respostas futuras.</p>` : ''}
     <div id="qbList"></div>
@@ -2181,6 +2189,7 @@ function openFormBuilder(existingForm){
   drawer.appendChild(wrap);
   document.getElementById('fTitle').value = existingForm?.title || '';
   document.getElementById('fDesc').value = existingForm?.description || '';
+  document.getElementById('fLayout').value = existingForm?.layout === 'page' ? 'page' : 'step';
   const fp = (existingForm && existingForm.final_page) || {};
   document.getElementById('fpTitle').value = fp.title || '';
   document.getElementById('fpMessage').value = fp.message || '';
@@ -2281,17 +2290,18 @@ function openFormBuilder(existingForm){
       buttonUrl,
     };
     if(finalPage.buttonLabel && !finalPage.buttonUrl){ toast('Informe o link do botão da página final'); return; }
+    const layout = document.getElementById('fLayout').value;
 
     try{
       if(isEdit){
-        const updated = await api(`/api/forms?id=${existingForm.id}`, {method:'PATCH', body: JSON.stringify({title, description, fields, finalPage})});
+        const updated = await api(`/api/forms?id=${existingForm.id}`, {method:'PATCH', body: JSON.stringify({title, description, fields, finalPage, layout})});
         toast('Formulário atualizado');
         closeDrawer();
         await loadForms();
         selectedFormId = updated.id;
         render();
       } else {
-        const created = await api('/api/forms', {method:'POST', body: JSON.stringify({title, description, fields, finalPage})});
+        const created = await api('/api/forms', {method:'POST', body: JSON.stringify({title, description, fields, finalPage, layout})});
         toast('Formulário criado');
         closeDrawer();
         await loadForms();

@@ -61,6 +61,23 @@ async function runMigrations() {
     )
   `;
   await sql`CREATE INDEX IF NOT EXISTS form_responses_form_idx ON form_responses (form_id)`;
+
+  // Arquivos enviados em perguntas do tipo "upload". Ficam fora do JSON da
+  // resposta (que só guarda a referência) para não pesar a listagem.
+  await sql`
+    CREATE TABLE IF NOT EXISTS form_files (
+      id SERIAL PRIMARY KEY,
+      form_id INTEGER NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+      response_id INTEGER NOT NULL REFERENCES form_responses(id) ON DELETE CASCADE,
+      field_key TEXT NOT NULL DEFAULT '',
+      name TEXT NOT NULL DEFAULT '',
+      mime TEXT NOT NULL DEFAULT '',
+      size INTEGER NOT NULL DEFAULT 0,
+      data_b64 TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS form_files_response_idx ON form_files (response_id)`;
 }
 
 function ensureSchema() {

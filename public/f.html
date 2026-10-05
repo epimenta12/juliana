@@ -16,14 +16,15 @@
     --radius:10px;--radius-sm:6px;
   }
   *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%}
-  body{font-family:var(--fb);background:var(--petrol);color:var(--graphite);overflow:hidden}
+  html{background:var(--petrol)}
+  body{font-family:var(--fb);background:var(--petrol);color:var(--graphite);min-height:100vh;min-height:100dvh}
 
   .tf-progress{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,.15);z-index:10}
   .tf-progress-bar{height:100%;background:var(--white);transition:width .35s var(--ease,ease)}
 
-  .tf-stage{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem}
-  .tf-card{max-width:600px;width:100%;color:var(--white);animation:tfIn .35s ease}
+  /* margin:auto centraliza quando cabe na tela e começa do topo (com scroll) quando o conteúdo é maior */
+  .tf-stage{min-height:100vh;min-height:100dvh;display:flex;padding:2.5rem 1.5rem}
+  .tf-card{max-width:600px;width:100%;margin:auto;color:var(--white);animation:tfIn .35s ease}
   @keyframes tfIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
   .tf-counter{font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:1rem}
@@ -47,6 +48,37 @@
   .tf-choice.selected{border-color:var(--white);background:rgba(255,255,255,.16)}
   .tf-choice .letter{width:1.7rem;height:1.7rem;border:1px solid rgba(255,255,255,.4);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
   .tf-choice.selected .letter{background:var(--white);color:var(--petrol);border-color:var(--white)}
+
+  /* grade de múltipla escolha */
+  .tf-grid-wrap{overflow-x:auto;margin:0 -.2rem;padding:0 .2rem}
+  .tf-grid{border-collapse:collapse;width:100%;min-width:max-content}
+  .tf-grid th{font-size:.74rem;font-weight:600;color:rgba(255,255,255,.65);text-align:center;padding:.4rem .6rem;letter-spacing:.02em}
+  .tf-grid th:first-child{text-align:left}
+  .tf-grid td{border-top:1px solid rgba(255,255,255,.14);padding:.2rem .6rem;text-align:center}
+  .tf-grid td.rowlabel{text-align:left;font-size:.95rem;padding-right:1.2rem;min-width:8rem}
+  .tf-grid label{display:flex;align-items:center;justify-content:center;width:2.6rem;height:2.6rem;margin:0 auto;cursor:pointer}
+  .tf-grid input{appearance:none;-webkit-appearance:none;width:1.25rem;height:1.25rem;border:2px solid rgba(255,255,255,.5);border-radius:50%;margin:0;cursor:pointer;transition:all .15s}
+  .tf-grid input:hover{border-color:var(--white)}
+  .tf-grid input:checked{border-color:var(--white);background:radial-gradient(var(--white) 0 45%,transparent 50%)}
+  .tf-grid input:focus-visible,.tf-check input:focus-visible,.tf-file-btn:focus-visible{outline:2px solid var(--white);outline-offset:3px}
+
+  /* upload de arquivo */
+  .tf-file-drop{border:1.5px dashed rgba(255,255,255,.4);border-radius:var(--radius);padding:1.6rem 1.2rem;text-align:center;transition:all .18s}
+  .tf-file-drop.over{border-color:var(--white);background:rgba(255,255,255,.08)}
+  .tf-file-btn{background:transparent;border:1px solid rgba(255,255,255,.5);color:var(--white);padding:.7rem 1.3rem;border-radius:var(--radius-sm);font-family:var(--fb);font-size:.85rem;font-weight:600;cursor:pointer}
+  .tf-file-btn:hover{background:rgba(255,255,255,.1)}
+  .tf-file-drop p{font-size:.78rem;color:rgba(255,255,255,.5);margin-top:.8rem}
+  .tf-file-chosen{display:flex;align-items:center;justify-content:space-between;gap:1rem;border:1px solid rgba(255,255,255,.35);border-radius:var(--radius-sm);padding:.8rem 1rem;background:rgba(255,255,255,.06)}
+  .tf-file-chosen span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.92rem}
+  .tf-file-chosen small{color:rgba(255,255,255,.5);margin-left:.5rem}
+  .tf-file-remove{background:0;border:0;color:rgba(255,255,255,.65);font-size:.8rem;font-family:var(--fb);cursor:pointer;flex-shrink:0;text-decoration:underline}
+
+  /* termos e aceite */
+  .tf-terms{max-height:min(42vh,22rem);overflow-y:auto;border:1px solid rgba(255,255,255,.28);border-radius:var(--radius-sm);padding:1rem 1.1rem;background:rgba(0,0,0,.14);font-size:.88rem;line-height:1.7;white-space:pre-wrap;color:rgba(255,255,255,.85)}
+  .tf-check{display:flex;align-items:flex-start;gap:.8rem;margin-top:1.1rem;cursor:pointer;font-size:.95rem;line-height:1.5}
+  .tf-check input{appearance:none;-webkit-appearance:none;width:1.4rem;height:1.4rem;border:2px solid rgba(255,255,255,.55);border-radius:4px;flex-shrink:0;margin:.05rem 0 0;cursor:pointer;display:grid;place-items:center;transition:all .15s}
+  .tf-check input:checked{background:var(--white);border-color:var(--white)}
+  .tf-check input:checked::after{content:"";width:.7rem;height:.38rem;border-left:2.5px solid var(--petrol);border-bottom:2.5px solid var(--petrol);transform:rotate(-45deg) translate(1px,-1px)}
 
   .tf-nps-scale{display:flex;gap:.4rem;flex-wrap:wrap}
   .tf-nps-btn{width:2.9rem;height:2.9rem;border:1px solid rgba(255,255,255,.35);background:transparent;border-radius:var(--radius-sm);font-family:var(--fb);font-size:.95rem;font-weight:600;color:var(--white);cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center}
@@ -94,13 +126,70 @@ let currentIndex = 0;
 let answers = {};
 let slug = '';
 
+const MAX_FILE_BYTES = 3 * 1024 * 1024;
+const ALLOWED_FILE_TYPES = ['image/jpeg','image/png','image/webp','application/pdf'];
+
 function isAnswered(f){
   const v = answers[f.key];
   if(f.type === 'nps') return typeof v === 'number';
+  if(f.type === 'terms') return v === true;
+  if(f.type === 'file') return !!(v && v.data);
+  if(f.type === 'grid'){
+    const rows = Array.isArray(f.rows) ? f.rows : [];
+    return !!v && rows.length > 0 && rows.every(r => v[r]);
+  }
   return v !== undefined && v !== null && String(v).trim() !== '';
 }
 
+function fmtSize(bytes){
+  return bytes >= 1024*1024 ? (bytes/1024/1024).toFixed(1).replace(/\.0$/, '').replace('.', ',') + ' MB' : Math.max(1, Math.round(bytes/1024)) + ' KB';
+}
+
+function totalFileBytes(exceptKey){
+  return form.fields.reduce((sum, f) => (f.type === 'file' && f.key !== exceptKey && answers[f.key]) ? sum + answers[f.key].size : sum, 0);
+}
+
+function fileControlHTML(f){
+  const v = answers[f.key];
+  if(v && v.data){
+    return `<div class="tf-file-chosen"><span>${escapeHtml(v.name)}<small>${fmtSize(v.size)}</small></span><button type="button" class="tf-file-remove" id="tfFileRemove">Remover</button></div>`;
+  }
+  return `
+    <div class="tf-file-drop" id="tfDrop">
+      <button type="button" class="tf-file-btn" id="tfFileBtn">Escolher arquivo</button>
+      <p>ou arraste até aqui · imagem (JPG, PNG, WebP) ou PDF · até ${fmtSize(MAX_FILE_BYTES)}</p>
+      <input type="file" id="tfFileInput" accept="image/jpeg,image/png,image/webp,application/pdf" hidden>
+    </div>`;
+}
+
+function gridControlHTML(f){
+  const rows = Array.isArray(f.rows) ? f.rows : [];
+  const cols = Array.isArray(f.columns) ? f.columns : [];
+  const cur = answers[f.key] || {};
+  return `
+    <div class="tf-grid-wrap">
+      <table class="tf-grid">
+        <thead><tr><th></th>${cols.map(c=>`<th scope="col">${escapeHtml(c)}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${rows.map((r,ri)=>`
+            <tr><td class="rowlabel" id="gr${ri}">${escapeHtml(r)}</td>
+            ${cols.map((c,ci)=>`<td><label><input type="radio" name="g${ri}" data-row="${ri}" data-col="${ci}" aria-labelledby="gr${ri}" aria-label="${escapeHtml(c)}"${cur[r]===c?' checked':''}></label></td>`).join('')}</tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function termsControlHTML(f){
+  return `
+    <div class="tf-terms" tabindex="0" role="region" aria-label="Texto dos termos">${escapeHtml(f.text || '')}</div>
+    <label class="tf-check"><input type="checkbox" id="tfTermsCheck"${answers[f.key]===true?' checked':''}><span>Li e concordo com os termos acima</span></label>`;
+}
+
 function answerControlHTML(f){
+  if(f.type === 'grid') return gridControlHTML(f);
+  if(f.type === 'file') return fileControlHTML(f);
+  if(f.type === 'terms') return termsControlHTML(f);
   if(f.type === 'nps'){
     return `
       <div class="tf-nps-scale" data-key="${f.key}">
@@ -128,6 +217,7 @@ function answerControlHTML(f){
 function renderWelcome(){
   const root = document.getElementById('root');
   root.className = '';
+  window.scrollTo(0, 0);
   root.innerHTML = `
     <div class="tf-stage"><div class="tf-card tf-welcome">
       <p class="tf-eyebrow">Formulário</p>
@@ -146,6 +236,7 @@ function renderStep(){
   const pct = Math.round((currentIndex/form.fields.length)*100);
   const root = document.getElementById('root');
   root.className = '';
+  window.scrollTo(0, 0);
   root.innerHTML = `
     <div class="tf-progress"><div class="tf-progress-bar" style="width:${pct}%"></div></div>
     <div class="tf-stage"><div class="tf-card">
@@ -168,14 +259,63 @@ function showError(msg){
   el.classList.add('show');
 }
 
+const REQUIRED_MSG = {
+  terms: 'Para continuar, marque que leu e concorda com os termos',
+  file: 'Envie um arquivo para continuar',
+  grid: 'Responda todas as linhas para continuar',
+};
+
 function goNext(f, isLast){
   if(f.required && !isAnswered(f)){
-    showError('Essa pergunta é obrigatória');
+    showError(REQUIRED_MSG[f.type] || 'Essa pergunta é obrigatória');
     return;
   }
   if(isLast){ submitForm(); return; }
   currentIndex++;
   renderStep();
+}
+
+function readFileAsAnswer(f, file){
+  if(!ALLOWED_FILE_TYPES.includes(file.type)){
+    showError('Formato não aceito. Envie uma imagem (JPG, PNG, WebP) ou um PDF.');
+    return;
+  }
+  if(file.size > MAX_FILE_BYTES){
+    showError('O arquivo tem ' + fmtSize(file.size) + '. O limite é ' + fmtSize(MAX_FILE_BYTES) + '.');
+    return;
+  }
+  if(totalFileBytes(f.key) + file.size > MAX_FILE_BYTES){
+    showError('O total dos arquivos deste formulário não pode passar de ' + fmtSize(MAX_FILE_BYTES) + '.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    answers[f.key] = {name: file.name, type: file.type, size: file.size, data: String(reader.result)};
+    document.getElementById('tfError').classList.remove('show');
+    document.querySelector('.tf-answer').innerHTML = fileControlHTML(f);
+    wireFileStep(f);
+  };
+  reader.onerror = ()=> showError('Não foi possível ler o arquivo. Tente novamente.');
+  reader.readAsDataURL(file);
+}
+
+function wireFileStep(f){
+  const remove = document.getElementById('tfFileRemove');
+  if(remove){
+    remove.addEventListener('click', ()=>{
+      delete answers[f.key];
+      document.querySelector('.tf-answer').innerHTML = fileControlHTML(f);
+      wireFileStep(f);
+    });
+    return;
+  }
+  const input = document.getElementById('tfFileInput');
+  const drop = document.getElementById('tfDrop');
+  document.getElementById('tfFileBtn').addEventListener('click', ()=> input.click());
+  input.addEventListener('change', ()=>{ if(input.files[0]) readFileAsAnswer(f, input.files[0]); });
+  ['dragenter','dragover'].forEach(ev=> drop.addEventListener(ev, (e)=>{ e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev=> drop.addEventListener(ev, (e)=>{ e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e)=>{ if(e.dataTransfer.files[0]) readFileAsAnswer(f, e.dataTransfer.files[0]); });
 }
 
 function wireStep(f, isLast){
@@ -212,6 +352,28 @@ function wireStep(f, isLast){
       setTimeout(()=> goNext(f, isLast), 280);
     });
   }
+
+  if(f.type === 'grid'){
+    const rows = Array.isArray(f.rows) ? f.rows : [];
+    const cols = Array.isArray(f.columns) ? f.columns : [];
+    document.querySelectorAll('.tf-grid input[type=radio]').forEach(r=>{
+      r.addEventListener('change', ()=>{
+        const next = Object.assign({}, answers[f.key] || {});
+        next[rows[Number(r.dataset.row)]] = cols[Number(r.dataset.col)];
+        answers[f.key] = next;
+      });
+    });
+  }
+
+  if(f.type === 'terms'){
+    const check = document.getElementById('tfTermsCheck');
+    check.addEventListener('change', ()=>{
+      answers[f.key] = check.checked;
+      if(check.checked) document.getElementById('tfError').classList.remove('show');
+    });
+  }
+
+  if(f.type === 'file') wireFileStep(f);
 
   document.getElementById('tfNext').addEventListener('click', ()=> goNext(f, isLast));
   const backBtn = document.getElementById('tfBack');

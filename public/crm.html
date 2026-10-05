@@ -223,7 +223,9 @@
   .qbuilder-row{background:var(--sand);border-radius:var(--radius-sm);padding:1rem;margin-bottom:.8rem;position:relative}
   .qbuilder-row .qb-remove{position:absolute;top:.6rem;right:.6rem;background:0;border:0;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1}
   .qbuilder-row .qb-remove:hover{color:var(--wine)}
-  .qbuilder-row .drawer-row{margin-bottom:.6rem}
+  .qbuilder-row .drawer-row{margin-bottom:.6rem;align-items:flex-start}
+  .qbuilder-row textarea{width:100%;padding:.65rem .8rem;border:1px solid var(--border);background:var(--white);outline:none;border-radius:var(--radius-sm);font-family:var(--fb);font-size:.9rem;line-height:1.5;resize:vertical;transition:border-color .3s}
+  .qbuilder-row textarea:focus{border-color:var(--green)}
   .qb-add{width:100%;padding:.7rem;border:1px dashed var(--border);background:0;color:var(--green);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s}
   .qb-add:hover{border-color:var(--green);background:rgba(32,84,71,.05)}
   .view-toggle-light{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-sm);padding:2px;gap:2px;margin-bottom:1.2rem}
@@ -1592,7 +1594,36 @@ const FIELD_TYPES = [
   {key:'email', label:'E-mail'},
   {key:'textarea', label:'Texto longo'},
   {key:'select', label:'Múltipla escolha'},
+  {key:'grid', label:'Grade de múltipla escolha'},
+  {key:'file', label:'Upload de arquivo'},
+  {key:'terms', label:'Termos e aceite (checkbox)'},
 ];
+
+function fmtDateTime(iso){ return new Date(iso).toLocaleString('pt-BR'); }
+
+function fmtBytes(n){
+  return n >= 1024*1024 ? (n/1024/1024).toFixed(1).replace(/\.0$/, '').replace('.', ',') + ' MB' : Math.max(1, Math.round(n/1024)) + ' KB';
+}
+
+function fileUrl(fileId){ return `/api/forms?file=${encodeURIComponent(fileId)}`; }
+
+// Resposta em texto puro (CSV).
+function answerText(f, v){
+  if(v === undefined || v === null || v === '') return '';
+  if(f.type === 'grid' && typeof v === 'object') return Object.keys(v).map(r=>`${r}: ${v[r]}`).join(' | ');
+  if(f.type === 'file' && typeof v === 'object') return `${v.name} (${location.origin}${fileUrl(v.fileId)})`;
+  if(f.type === 'terms' && typeof v === 'object') return v.accepted ? `Aceito em ${fmtDateTime(v.at)}` : '';
+  return String(v);
+}
+
+// Resposta em HTML (planilha e ficha). Arquivos viram link para abrir/baixar.
+function answerHtml(f, v){
+  if(v === undefined || v === null || v === '') return '';
+  if(f.type === 'grid' && typeof v === 'object') return Object.keys(v).map(r=>`<b>${escapeHtml(r)}:</b> ${escapeHtml(v[r])}`).join('<br>');
+  if(f.type === 'file' && typeof v === 'object') return `<a href="${fileUrl(v.fileId)}" target="_blank" rel="noopener" style="color:var(--green);font-weight:600">${escapeHtml(v.name)}</a> <span style="color:var(--muted);font-size:.78rem">${fmtBytes(v.size)}</span>`;
+  if(f.type === 'terms' && typeof v === 'object') return v.accepted ? `✓ Aceito em ${escapeHtml(fmtDateTime(v.at))}` : '';
+  return escapeHtml(v);
+}
 
 function formLink(slug){
   return `${location.origin}/f?s=${slug}`;
@@ -1735,7 +1766,7 @@ function renderRespTable(container, form, fields, formResponses){
         <thead><tr>${fields.map(f=>`<th>${escapeHtml(f.label)}</th>`).join('')}<th>Enviado em</th><th></th></tr></thead>
         <tbody>
           ${formResponses.map(r=>`
-            <tr>${fields.map(f=>`<td${f.type==='textarea'?' class="wrap"':''}>${escapeHtml(r.answers[f.key])}</td>`).join('')}<td>${new Date(r.submitted_at).toLocaleString('pt-BR')}</td><td><button type="button" class="resp-del" data-resp-id="${r.id}" title="Excluir resposta" style="background:0;border:0;color:var(--muted);cursor:pointer;font-size:.9rem">🗑</button></td></tr>
+            <tr>${fields.map(f=>`<td${f.type==='textarea'||f.type==='grid'?' class="wrap"':''}>${answerHtml(f, r.answers[f.key])}</td>`).join('')}<td>${new Date(r.submitted_at).toLocaleString('pt-BR')}</td><td><button type="button" class="resp-del" data-resp-id="${r.id}" title="Excluir resposta" style="background:0;border:0;color:var(--muted);cursor:pointer;font-size:.9rem">🗑</button></td></tr>
           `).join('')}
         </tbody>
       </table>
@@ -1800,11 +1831,11 @@ function openResponseDrawer(form, fields, resp){
   const qa = document.createElement('div');
   qa.innerHTML = fields.map(f=>{
     const v = resp.answers[f.key];
-    const hasVal = v !== undefined && v !== null && String(v).trim() !== '';
+    const hasVal = v !== undefined && v !== null && (typeof v === 'object' || String(v).trim() !== '');
     return `
       <div class="qa-row">
         <div class="qa-label">${escapeHtml(f.label)}</div>
-        <div class="qa-value${hasVal?'':' empty'}">${hasVal ? escapeHtml(v) : 'Não respondido'}</div>
+        <div class="qa-value${hasVal?'':' empty'}">${hasVal ? answerHtml(f, v) : 'Não respondido'}</div>
       </div>
     `;
   }).join('');
@@ -1844,7 +1875,7 @@ function exportFormCsv(form, responses){
   const header = [...fields.map(f=>f.label), 'Enviado em'];
   const lines = [header.map(csvEscape).join(',')];
   responses.forEach(r=>{
-    const row = [...fields.map(f=> r.answers[f.key]), new Date(r.submitted_at).toLocaleString('pt-BR')];
+    const row = [...fields.map(f=> answerText(f, r.answers[f.key])), new Date(r.submitted_at).toLocaleString('pt-BR')];
     lines.push(row.map(csvEscape).join(','));
   });
   const csv = '﻿' + lines.join('\r\n');
@@ -1873,12 +1904,21 @@ function qbRowHTML(idx, q){
         <div class="field"><label>Pergunta</label><input class="qb-label" value="${escapeHtml(q.label||'')}" placeholder="Ex: De 0 a 10, o quanto você recomendaria...?"></div>
       </div>
       <div class="drawer-row">
-        <div class="field"><label>Tipo</label><select class="qb-type">${typeOpts}</select></div>
+        <div class="field" style="flex:1.7"><label>Tipo</label><select class="qb-type">${typeOpts}</select></div>
         <div class="field"><label>Obrigatório</label><select class="qb-required"><option value="1" ${q.required?'selected':''}>Sim</option><option value="0" ${!q.required?'selected':''}>Não</option></select></div>
       </div>
       <div class="drawer-row qb-options-row" style="display:${q.type==='select'?'flex':'none'}">
         <div class="field" style="flex:1"><label>Opções (uma por linha)</label><textarea class="qb-options" rows="3">${escapeHtml((q.options||[]).join('\n'))}</textarea></div>
       </div>
+      <div class="drawer-row qb-grid-row" style="display:${q.type==='grid'?'flex':'none'}">
+        <div class="field" style="flex:1"><label>Linhas (1 por linha)</label><textarea class="qb-grid-rows" rows="4" placeholder="Ex: Hospedagem&#10;Alimentação&#10;Programação">${escapeHtml((q.rows||[]).join('\n'))}</textarea></div>
+        <div class="field" style="flex:1"><label>Colunas (1 por linha)</label><textarea class="qb-grid-cols" rows="4" placeholder="Ex: Ruim&#10;Bom&#10;Ótimo">${escapeHtml((q.columns||[]).join('\n'))}</textarea></div>
+      </div>
+      <div class="drawer-row qb-terms-row" style="display:${q.type==='terms'?'flex':'none'}">
+        <div class="field" style="flex:1"><label>Texto dos termos</label><textarea class="qb-terms-text" rows="8" placeholder="Cole aqui o texto completo: autorização de uso de imagem, cancelamento e reembolso, termos de compra e prestação de serviço...">${escapeHtml(q.text||'')}</textarea>
+          <p style="font-size:.74rem;color:var(--muted);margin-top:.4rem;line-height:1.5">A pergunta acima vira o título da tela. Quem responde lê o texto e marca "Li e concordo". Guardamos a data e hora do aceite e uma cópia do texto aceito. Peça a um advogado para revisar o conteúdo.</p></div>
+      </div>
+      <div class="qb-hint" style="display:${q.type==='file'?'block':'none'};font-size:.74rem;color:var(--muted);line-height:1.5">Aceita imagem (JPG, PNG, WebP) ou PDF de até 3 MB. O total de arquivos de uma resposta é de 3 MB.</div>
     </div>
   `;
 }
@@ -1927,7 +1967,12 @@ function openFormBuilder(existingForm){
   function wireQuestionRow(idx){
     const row = document.querySelector(`.qbuilder-row[data-idx="${idx}"]`);
     row.querySelector('.qb-type').addEventListener('change', (e)=>{
-      row.querySelector('.qb-options-row').style.display = e.target.value === 'select' ? 'flex' : 'none';
+      const t = e.target.value;
+      row.querySelector('.qb-options-row').style.display = t === 'select' ? 'flex' : 'none';
+      row.querySelector('.qb-grid-row').style.display = t === 'grid' ? 'flex' : 'none';
+      row.querySelector('.qb-terms-row').style.display = t === 'terms' ? 'flex' : 'none';
+      row.querySelector('.qb-hint').style.display = t === 'file' ? 'block' : 'none';
+      if(t === 'terms') row.querySelector('.qb-required').value = '1';
     });
     row.querySelector('[data-remove]').addEventListener('click', ()=> row.remove());
   }
@@ -1971,6 +2016,16 @@ function openFormBuilder(existingForm){
         const opts = row.querySelector('.qb-options').value.split('\n').map(s=>s.trim()).filter(Boolean);
         if(!opts.length){ toast('Adicione ao menos uma opção para "'+label+'"'); return; }
         field.options = opts;
+      }
+      if(type === 'grid'){
+        const lines = (sel)=> [...new Set(row.querySelector(sel).value.split('\n').map(s=>s.trim()).filter(Boolean))];
+        field.rows = lines('.qb-grid-rows');
+        field.columns = lines('.qb-grid-cols');
+        if(!field.rows.length || !field.columns.length){ toast('A grade "'+label+'" precisa de linhas e colunas'); return; }
+      }
+      if(type === 'terms'){
+        field.text = row.querySelector('.qb-terms-text').value.trim();
+        if(!field.text){ toast('Escreva o texto dos termos em "'+label+'"'); return; }
       }
       fields.push(field);
     }

@@ -238,6 +238,7 @@
   .nps-summary .stat .n{font-family:var(--fd);font-size:1.8rem;color:var(--petrol);line-height:1}
   .nps-summary .stat .l{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:.25rem}
   .qbuilder-row{background:var(--sand);border-radius:var(--radius-sm);padding:1rem;margin-bottom:.8rem;position:relative}
+  .qb-num{display:inline-block;min-width:1.5rem;padding:.08rem .4rem;margin-left:.45rem;background:var(--green);color:var(--white);border-radius:99px;font-size:.72rem;font-weight:700;letter-spacing:.02em;text-align:center;line-height:1.3}
   .qbuilder-row .qb-remove{position:absolute;top:.6rem;right:.6rem;background:0;border:0;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1}
   .qbuilder-row .qb-remove:hover{color:var(--wine)}
   .qbuilder-row .drawer-row{margin-bottom:.6rem;align-items:flex-start}
@@ -1702,6 +1703,7 @@ async function renderFormDetail(id){
       <button class="btn-small save" id="copyLinkBtn">Copiar link</button>
       <button class="btn-small wa" id="previewFormBtn">Ver perguntas</button>
       <button class="btn-small wa" id="editFormBtn">Editar</button>
+      <button class="btn-small wa" id="duplicateFormBtn">Duplicar</button>
       <button class="btn-small wa" id="exportCsvBtn">Exportar CSV</button>
       <button class="btn-small del" id="deleteFormBtn">Excluir</button>
     </div>
@@ -1710,6 +1712,7 @@ async function renderFormDetail(id){
   document.getElementById('formBackBtn').addEventListener('click', ()=>{ selectedFormId = null; render(); });
   document.getElementById('editFormBtn').addEventListener('click', ()=> openFormBuilder(form));
   document.getElementById('previewFormBtn').addEventListener('click', ()=> openFormPreview(form));
+  document.getElementById('duplicateFormBtn').addEventListener('click', ()=> duplicateForm(form));
   document.getElementById('copyLinkBtn').addEventListener('click', ()=>{
     const input = document.getElementById('formLinkInput');
     input.select();
@@ -2086,6 +2089,32 @@ function openTermDrawer(term){
 
 let qbCounter = 0;
 
+// Mantém a numeração das perguntas do editor igual à do formulário público.
+function renumberQuestions(){
+  document.querySelectorAll('#qbList .qbuilder-row .qb-num').forEach((el, i)=>{ el.textContent = i + 1; });
+}
+
+// Cria uma cópia do formulário (perguntas, termos, página final e visual; sem as
+// respostas) e já abre o editor na cópia para ajustar.
+async function duplicateForm(form){
+  const name = prompt('Nome do novo formulário.\n\nSão copiados as perguntas, os termos, a página final e o visual. As respostas não são copiadas.', form.title + ' (cópia)');
+  if(name === null) return;
+  const title = name.trim();
+  if(!title){ toast('Informe o nome do novo formulário'); return; }
+  try{
+    const created = await api('/api/forms', {method:'POST', body: JSON.stringify({
+      title, description: form.description || '', fields: form.fields || [],
+      finalPage: form.final_page || {}, layout: form.layout || 'step',
+    })});
+    toast('Formulário duplicado');
+    await loadForms();
+    selectedFormId = created.id;
+    render();
+    const copy = forms.find(f=>f.id===created.id);
+    if(copy) openFormBuilder(copy);
+  }catch(err){ toast('Erro: '+err.message); }
+}
+
 // valor do seletor de termo: id do termo salvo, "__avulso__" (texto/link próprio) ou "" (nada escolhido)
 function termRefValue(q){
   if(q && q.termId) return String(q.termId);
@@ -2109,7 +2138,7 @@ function qbRowHTML(idx, q){
     <div class="qbuilder-row" data-idx="${idx}" data-key="${escapeHtml(q.key||'')}">
       <button type="button" class="qb-remove" data-remove="${idx}">×</button>
       <div class="drawer-row">
-        <div class="field"><label>Pergunta</label><input class="qb-label" value="${escapeHtml(q.label||'')}" placeholder="Ex: De 0 a 10, o quanto você recomendaria...?"></div>
+        <div class="field"><label>Pergunta <span class="qb-num"></span></label><input class="qb-label" value="${escapeHtml(q.label||'')}" placeholder="Ex: De 0 a 10, o quanto você recomendaria...?"></div>
       </div>
       <div class="drawer-row">
         <div class="field" style="flex:1.7"><label>Tipo</label><select class="qb-type">${typeOpts}</select></div>
@@ -2202,6 +2231,7 @@ function openFormBuilder(existingForm){
     holder.innerHTML = qbRowHTML(idx, preset);
     document.getElementById('qbList').appendChild(holder.firstElementChild);
     wireQuestionRow(idx);
+    renumberQuestions();
   }
 
   function wireQuestionRow(idx){
@@ -2217,7 +2247,7 @@ function openFormBuilder(existingForm){
     row.querySelector('.qb-terms-ref').addEventListener('change', (e)=>{
       row.querySelector('.qb-terms-inline').style.display = e.target.value === '__avulso__' ? 'block' : 'none';
     });
-    row.querySelector('[data-remove]').addEventListener('click', ()=> row.remove());
+    row.querySelector('[data-remove]').addEventListener('click', ()=>{ row.remove(); renumberQuestions(); });
   }
 
   document.getElementById('qbAddBtn').addEventListener('click', ()=> addQuestion());
